@@ -3539,11 +3539,8 @@ function openTxDetail(txId, quyKey) {
     /* iPhone notch safe area */
     padding-top: env(safe-area-inset-top, 0px) !important;
   }
-  /* Adjust content padding to account for bottom nav + safe area */
+  /* Adjust main padding to account for taller bottom nav (safe area) */
   .main {
-    padding-bottom: 0 !important;
-  }
-  .content {
     padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .nav-item.active::before,
