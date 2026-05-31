@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tools</title>
 <link rel="icon" type="image/png" href="https://acwlagoieszpydklikqw.supabase.co/storage/v1/object/public/Logo/icon_web.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -188,8 +188,6 @@
     box-shadow: 0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.05) inset,
                 0 -1px 0 rgba(232,187,80,.08) inset;
     overflow: hidden;
-    max-height: calc(85vh - var(--topbar-h));
-    display: flex; flex-direction: column;
     opacity: 0; transform: translateY(-10px) scale(.97);
     transition: opacity .2s ease, transform .2s cubic-bezier(.17,.67,.35,1.3);
   }
@@ -217,8 +215,6 @@
   .dropdown-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 6px; padding: 10px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .dropdown-item {
@@ -695,7 +691,7 @@
   .form-input, .form-textarea {
     width: 100%; background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
-    color: var(--text); font-family: var(--font); font-size: 16px;
+    color: var(--text); font-family: var(--font); font-size: 14px;
     padding: 11px 14px; outline: none; transition: all .18s;
     box-shadow: inset 0 1px 3px rgba(0,0,0,.3);
   }
@@ -855,51 +851,12 @@
   .tab-close:hover { background: rgba(252,129,129,.2); color: var(--red); }
 
   /* Responsive */
-  /* ── iPhone notch / home indicator safe areas ── */
-  @supports (padding-top: env(safe-area-inset-top)) {
-    #topbar {
-      padding-top: env(safe-area-inset-top);
-      height: calc(var(--topbar-h) + env(safe-area-inset-top));
-    }
-    #content {
-      top: calc(var(--topbar-h) + env(safe-area-inset-top));
-    }
-    #apps-dropdown {
-      top: calc(var(--topbar-h) + env(safe-area-inset-top) + 6px);
-    }
-    #home {
-      padding-bottom: calc(48px + env(safe-area-inset-bottom));
-    }
-    #toast-container {
-      bottom: calc(28px + env(safe-area-inset-bottom));
-      right: calc(28px + env(safe-area-inset-right));
-    }
-    .modal {
-      padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    }
-  }
-
   @media (max-width: 600px) {
     .tab { padding: 0 10px; font-size: 12px; }
     .logo-text { display: none; }
     .badge { display: none; }
     .form-row { grid-template-columns: 1fr; }
     .cards { grid-template-columns: 1fr; }
-    /* Toast full-width on small screens */
-    #toast-container {
-      right: 12px;
-      left: 12px;
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    }
-    .toast { min-width: unset; max-width: 100%; }
-    /* Modal wider on mobile */
-    .modal { width: min(500px, 96vw); padding: 24px 20px; }
-    .modal-scroll { max-height: 70vh; }
-    /* Dropdown full-screen-width */
-    .dropdown-inner { border-radius: 0 0 18px 18px; }
-    /* Better tap targets */
-    .btn { min-height: 48px; }
-    .btn-icon { width: 36px; height: 36px; }
   }
 
   /* Entry animations */
@@ -1247,7 +1204,7 @@
           <div style="margin-top:8px;">
             <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.09em;text-transform:uppercase;font-family:var(--mono);margin-bottom:5px;">Hoặc dán link ảnh</div>
             <div style="display:flex;gap:6px;align-items:center;">
-              <input class="form-input" id="fIconUrl" placeholder="https://…/icon.png" style="font-size:16px;padding:7px 10px;flex:1;" oninput="onIconUrlChange(this.value)"/>
+              <input class="form-input" id="fIconUrl" placeholder="https://…/icon.png" style="font-size:12px;padding:7px 10px;flex:1;" oninput="onIconUrlChange(this.value)"/>
               <div id="iconUrlPreview" style="width:36px;height:36px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;">🖼️</div>
             </div>
           </div>
@@ -2558,7 +2515,6 @@ document.addEventListener('keydown', e => {
     openApp(_restored);
   }
 })();
-
 </script>
 
 
