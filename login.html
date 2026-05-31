@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Đăng nhập — Vàng Tích Trữ</title>
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="icon" href="assets/icon.png">
@@ -34,12 +34,13 @@
     background: #0F0E0A;
     color: var(--text);
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: max(20px, env(safe-area-inset-top, 20px)) max(20px, env(safe-area-inset-right, 20px)) max(20px, env(safe-area-inset-bottom, 20px)) max(20px, env(safe-area-inset-left, 20px));
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   /* ── Canvas background ── */
@@ -190,7 +191,7 @@
     border: 1px solid var(--border);
     color: var(--text);
     padding: 13px 16px; border-radius: 10px;
-    font-size: 15px; font-family: var(--font-label);
+    font-size: 16px; font-family: var(--font-label);
     outline: none; transition: border-color 0.25s, box-shadow 0.25s;
     -webkit-appearance: none;
   }
@@ -452,6 +453,11 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const { createClient } = supabase;
 const auth = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Nếu login.html bị load trong iframe, thoát ra top-level ngay
+if (window.top && window.top !== window) {
+  window.top.location.replace(window.location.href);
+}
 
 (async () => {
   const { data: { session } } = await auth.auth.getSession();

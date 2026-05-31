@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Vàng Tích Trữ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,16 +38,24 @@
   body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; -webkit-font-smoothing: antialiased; }
 
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 50; }
+  /* iPhone notch: push header down */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .header { padding-top: max(14px, env(safe-area-inset-top)); top: 0; }
+    .tabs { top: calc(57px + env(safe-area-inset-top)); }
+    .toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
+    .modal-backdrop { padding-bottom: env(safe-area-inset-bottom); }
+  }
   .header-icon { font-size: 24px; }
   .header h1 { font-size: 20px; font-weight: 600; color: var(--gold); letter-spacing: 1px; font-family: var(--font-display); }
   .header-sub { font-size: 11px; color: var(--text3); font-family: var(--font-label); letter-spacing: 0.5px; }
 
-  .tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 57px; z-index: 49; }
+  .tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 57px; z-index: 49; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab { flex: 1; min-width: 80px; padding: 12px 8px; text-align: center; cursor: pointer; font-size: 11px; color: var(--text3); border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; -webkit-tap-highlight-color: transparent; font-family: var(--font-label); letter-spacing: 0.8px; text-transform: uppercase; }
   .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
   .tab-icon { font-size: 16px; display: block; margin-bottom: 4px; }
 
-  .panel { display: none; padding: 16px; max-width: 1100px; margin: 0 auto; }
+  .panel { display: none; padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 1100px; margin: 0 auto; }
   .panel.active { display: block; }
 
   /* GOLD PRICES */
@@ -122,7 +130,7 @@
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-label); font-weight: 500; }
-  .form-group input, .form-group select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px; font-family: var(--font-body); outline: none; -webkit-appearance: none; width: 100%; }
+  .form-group input, .form-group select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 16px; font-family: var(--font-body); outline: none; -webkit-appearance: none; width: 100%; }
   .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
   .form-group select option { background: var(--bg3); }
   .form-group.full { grid-column: 1/-1; }
@@ -567,11 +575,22 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Ẩn toàn bộ nội dung cho đến khi xác thực xong
 document.body.style.visibility = 'hidden';
 
+// Helper: redirect đúng context (iframe → điều hướng top-level window)
+function redirectToLogin() {
+  const loginUrl = new URL('login.html', window.location.href).href;
+  if (window.top && window.top !== window) {
+    // Đang chạy trong iframe → điều hướng cửa sổ cha
+    window.top.location.replace(loginUrl);
+  } else {
+    window.location.replace(loginUrl);
+  }
+}
+
 (async () => {
   const { data: { session } } = await db.auth.getSession();
   if (!session) {
     // Chưa đăng nhập → về trang login
-    window.location.replace('login.html');
+    redirectToLogin();
     return;
   }
   // Đã xác thực → hiện nội dung
@@ -605,7 +624,7 @@ document.body.style.visibility = 'hidden';
     };
     logoutBtn.onclick = async () => {
       await db.auth.signOut();
-      window.location.replace('login.html');
+      redirectToLogin();
     };
     header.appendChild(logoutBtn);
   }
@@ -613,7 +632,7 @@ document.body.style.visibility = 'hidden';
   // Lắng nghe nếu session hết hạn / bị thu hồi
   db.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !db.auth.getSession()) {
-      window.location.replace('login.html');
+      redirectToLogin();
     }
   });
 })();
