@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>💕Thu Chi Gia Đình💕</title>
 <link rel="icon" type="image/png" href="assets/icon_quanlythuchi.png">
 <link rel="apple-touch-icon" href="assets/icon_quanlythuchi.png">
@@ -41,7 +41,7 @@
   --sidebar:220px;
   --topbar:56px;
 }
-html{height:100%}
+html,body{height:100%}
 body{
   font-family:'Nunito',sans-serif;
   background:var(--bg);
@@ -51,9 +51,10 @@ body{
 }
 button{font-family:inherit;cursor:pointer;border:none;outline:none}
 input,select,textarea{font-family:inherit;outline:none}
-/* iOS auto-zoom fix: chỉ áp cho input/textarea khi focus, không đụng select */
+/* iOS auto-zoom fix: tất cả input/select/textarea phải >= 16px */
 @media (max-width:768px){
   input:not([type="checkbox"]):not([type="radio"]),
+  select,
   textarea{ font-size:16px!important; }
 }
 a{text-decoration:none;color:inherit}
@@ -102,9 +103,11 @@ a{text-decoration:none;color:inherit}
 /* ── SCREEN ─────────────────────────────────── */
 #screen-login{
   display:flex;align-items:center;justify-content:center;
-  min-height:100vh;
-  position:relative;overflow:hidden;
+  min-height:100%;
+  height:100%;
+  position:relative;overflow-y:auto;overflow-x:hidden;
   background:var(--bg);
+  padding: max(16px, env(safe-area-inset-top, 16px)) max(16px, env(safe-area-inset-right, 16px)) max(16px, env(safe-area-inset-bottom, 16px)) max(16px, env(safe-area-inset-left, 16px));
 }
 
 /* ── BG LAYER 1 — hai vầng sáng lớn, thở cùng nhịp ── */
@@ -352,7 +355,7 @@ a{text-decoration:none;color:inherit}
 }
 .main{
   margin-left:var(--sidebar);
-  flex:1;display:flex;flex-direction:column;min-height:100vh;
+  flex:1;display:flex;flex-direction:column;min-height:100%;
 }
 
 /* ── SIDEBAR ────────────────────────────────────────────── */
@@ -1611,7 +1614,7 @@ a{text-decoration:none;color:inherit}
 
   /* Item rows in month modal */
   .item-row{gap:0;padding:0}
-  .item-row input{padding:9px 10px;font-size:13px}
+  .item-row input{padding:9px 10px;font-size:16px}
   .item-row .item-amount{width:110px;font-size:13px}
   .item-row .item-name{font-size:13px}
 
@@ -2586,6 +2589,10 @@ function stopIdleWatcher() {
 
 async function doSignOut() {
   await sb.auth.signOut();
+  // Nếu đang chạy trong iframe (Family Tools Hub), điều hướng parent về home
+  if (window.top && window.top !== window) {
+    window.top.location.replace(new URL('index.html', window.location.href).href);
+  }
 }
 
 function showLogin() {
@@ -3522,11 +3529,23 @@ function openTxDetail(txId, quyKey) {
     -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
     border-top: 1px solid rgba(45,212,160,.14) !important;
     box-shadow: 0 -4px 32px rgba(0,0,0,.55), 0 -8px 48px rgba(0,0,0,.2) !important;
+    /* iPhone home indicator safe area */
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
   .topbar {
     background: rgba(10,24,17,.92) !important;
     backdrop-filter: blur(24px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    /* iPhone notch safe area */
+    padding-top: env(safe-area-inset-top, 0px) !important;
+  }
+  /* Adjust main padding to account for taller bottom nav (safe area) */
+  .main {
+    padding-bottom: 0 !important;
+  }
+  /* padding-bottom phải đặt trên .content (overflow-y:auto) thì mới có tác dụng khi scroll */
+  .content {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .nav-item.active::before,
   .nav-item.active-anh::before,
