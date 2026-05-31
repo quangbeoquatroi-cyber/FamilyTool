@@ -1238,8 +1238,8 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════
-const ADMIN_PASSWORD_HASH = '8b85ce9a68ea550e7cd7417fc9c94fe9e53cb6e151bc094d0c3053bb2533e9e3';
 const STORAGE_KEY = 'itHub_apps_v2';
+let ADMIN_PASSWORD_HASH = null; // loaded from Supabase config table
 
 const COLORS = [
   { name:'amber',   hex:'#f59e0b', hex2:'#d97706', glow:'rgba(245,158,11,.08)',  shadow:'rgba(245,158,11,.2)',  iconBg:'rgba(245,158,11,.12)', iconShadow:'rgba(245,158,11,.25)' },
@@ -1340,6 +1340,21 @@ async function loadApps() {
   }
 }
 
+
+// Load admin password hash from Supabase config table
+async function loadConfig() {
+  try {
+    const { data, error } = await sb
+      .from('config')
+      .select('value')
+      .eq('key', 'admin_password_hash')
+      .single();
+    if (error) throw error;
+    ADMIN_PASSWORD_HASH = data.value;
+  } catch (e) {
+    console.error('[Supabase] loadConfig failed:', e);
+  }
+}
 // Upsert one app row to Supabase
 async function upsertApp(app) {
   const { error } = await sb.from('apps').upsert(app, { onConflict: 'id' });
@@ -1877,6 +1892,10 @@ async function sha256(str) {
 
 async function submitLogin() {
   const pw = document.getElementById('adminPassword').value;
+  if (!ADMIN_PASSWORD_HASH) {
+    alert('Chưa load được cấu hình từ Supabase. Vui lòng kiểm tra bảng config.');
+    return;
+  }
   const hash = await sha256(pw);
   if (hash === ADMIN_PASSWORD_HASH) {
     sessionStorage.setItem('itHub_admin', '1');
@@ -2438,6 +2457,7 @@ document.addEventListener('keydown', e => {
     setAdminUI(true);
   }
 
+  await loadConfig();
   apps = await loadApps();
   render();
   const _restored = loadSession();
