@@ -41,7 +41,7 @@
   --sidebar:220px;
   --topbar:56px;
 }
-html{height:100%}
+html,body{height:100%}
 body{
   font-family:'Nunito',sans-serif;
   background:var(--bg);
@@ -103,8 +103,8 @@ a{text-decoration:none;color:inherit}
 /* ── SCREEN ─────────────────────────────────── */
 #screen-login{
   display:flex;align-items:center;justify-content:center;
-  min-height:100vh;
-  min-height:-webkit-fill-available;
+  min-height:100%;
+  height:100%;
   position:relative;overflow-y:auto;overflow-x:hidden;
   background:var(--bg);
   padding: max(16px, env(safe-area-inset-top, 16px)) max(16px, env(safe-area-inset-right, 16px)) max(16px, env(safe-area-inset-bottom, 16px)) max(16px, env(safe-area-inset-left, 16px));

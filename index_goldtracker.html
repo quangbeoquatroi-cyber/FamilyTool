@@ -216,9 +216,214 @@
   .delta-up { color: var(--green); }
   .delta-down { color: var(--red); }
   .delta-flat { color: var(--text3); }
+
+  /* ══════════════════════════════════════════════
+     INLINE LOGIN SCREEN (thay thế login.html)
+  ══════════════════════════════════════════════ */
+  #login-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0F0E0A;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Josefin Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: auto;
+  }
+  #login-screen.active { display: flex; }
+
+  #login-bg-canvas {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+  .ls-vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 75% 75% at 50% 50%,
+      transparent 20%, rgba(15,14,10,0.5) 65%, rgba(15,14,10,0.9) 100%);
+  }
+  .ls-aurora { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .ls-aurora-beam {
+    position: absolute; width: 220%; height: 280px;
+    top: 50%; left: -60%;
+    background: linear-gradient(180deg, transparent 0%, rgba(201,146,42,0.022) 35%,
+      rgba(245,225,180,0.042) 50%, rgba(201,146,42,0.022) 65%, transparent 100%);
+    filter: blur(28px);
+    animation: ls-sweep1 16s ease-in-out infinite alternate;
+    transform: translateY(-50%) rotate(-16deg);
+  }
+  .ls-aurora-beam:nth-child(2) {
+    top: 22%; height: 160px; filter: blur(40px);
+    animation: ls-sweep2 21s ease-in-out infinite alternate;
+    transform: translateY(-50%) rotate(-10deg);
+  }
+  @keyframes ls-sweep1 {
+    from { transform: translateY(-50%) rotate(-16deg) translateX(-6%); opacity:.7; }
+    to   { transform: translateY(-50%) rotate(-16deg) translateX( 6%); opacity:1; }
+  }
+  @keyframes ls-sweep2 {
+    from { transform: translateY(-50%) rotate(-10deg) translateX( 5%); }
+    to   { transform: translateY(-50%) rotate(-10deg) translateX(-5%); }
+  }
+  .ls-wrap {
+    position: relative; z-index: 10; width: 100%; max-width: 400px;
+    animation: ls-rise 0.9s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes ls-rise {
+    from { opacity:0; transform: translateY(30px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .ls-card {
+    background: linear-gradient(155deg, rgba(28,25,16,0.97), rgba(20,18,12,0.97));
+    border: 1px solid rgba(201,146,42,0.22); border-radius: 20px; padding: 40px 36px;
+    width: 100%;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,146,42,0.06),
+      inset 0 1px 0 rgba(201,146,42,0.13);
+    position: relative; overflow: hidden;
+  }
+  .ls-card::before {
+    content: ''; position: absolute; top:-50%; left:-40%; width:55%; height:200%;
+    background: linear-gradient(105deg, transparent 38%, rgba(201,146,42,0.035) 48%,
+      rgba(245,225,170,0.055) 52%, rgba(201,146,42,0.035) 56%, transparent 66%);
+    animation: ls-shimmer 7s ease-in-out infinite; pointer-events:none; z-index:0;
+  }
+  @keyframes ls-shimmer {
+    0%,100% { transform: translateX(-20%) skewX(-8deg); opacity:0; }
+    8%       { opacity:1; }
+    48%      { transform: translateX(240%) skewX(-8deg); opacity:1; }
+    49%      { opacity:0; }
+  }
+  .ls-card::after {
+    content: ''; position: absolute; inset:0; border-radius: 20px;
+    background:
+      linear-gradient(to right,  rgba(201,146,42,0.2), transparent 40%) top left / 64px 1px no-repeat,
+      linear-gradient(to bottom, rgba(201,146,42,0.2), transparent 40%) top left / 1px 64px no-repeat,
+      linear-gradient(to left,   rgba(201,146,42,0.2), transparent 40%) bottom right / 64px 1px no-repeat,
+      linear-gradient(to top,    rgba(201,146,42,0.2), transparent 40%) bottom right / 1px 64px no-repeat;
+    pointer-events:none; z-index:0;
+  }
+  .ls-card > * { position: relative; z-index: 1; }
+  .ls-logo { text-align:center; margin-bottom:36px; }
+  .ls-logo-icon {
+    font-size:48px; display:block; margin-bottom:12px;
+    animation: ls-glow 3.5s ease-in-out infinite;
+  }
+  @keyframes ls-glow {
+    0%,100% { filter: drop-shadow(0 0 14px rgba(201,146,42,0.4)); }
+    50%      { filter: drop-shadow(0 0 28px rgba(201,146,42,0.75)) drop-shadow(0 0 8px rgba(245,220,150,0.3)); }
+  }
+  .ls-logo-title {
+    font-size:26px; font-weight:700; color:var(--gold);
+    letter-spacing:1px; margin-bottom:6px;
+    text-shadow: 0 0 28px rgba(201,146,42,0.28);
+  }
+  .ls-logo-sub { font-size:11px; color:var(--text3); letter-spacing:1.5px; text-transform:uppercase; }
+  .ls-divider {
+    height:1px; margin-bottom:28px;
+    background: linear-gradient(90deg, transparent, rgba(201,146,42,0.25), transparent);
+  }
+  .ls-group { margin-bottom:16px; }
+  .ls-group label {
+    display:block; font-size:10px; color:var(--text3);
+    text-transform:uppercase; letter-spacing:1.2px; font-weight:500; margin-bottom:8px;
+  }
+  .ls-group input {
+    width:100%; background:rgba(36,34,24,0.85); border:1px solid var(--border);
+    color:var(--text); padding:13px 16px; border-radius:10px;
+    font-size:16px; font-family:var(--font-label);
+    outline:none; transition:border-color .25s,box-shadow .25s; -webkit-appearance:none;
+  }
+  .ls-group input:focus {
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(201,146,42,0.1),0 0 18px rgba(201,146,42,0.08);
+  }
+  .ls-pw-wrap { position:relative; }
+  .ls-pw-wrap input { padding-right:48px; }
+  .ls-toggle-pw {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--text3); cursor:pointer;
+    font-size:16px; padding:4px; line-height:1; transition:color .2s;
+  }
+  .ls-toggle-pw:hover { color:var(--gold); }
+  .ls-error {
+    display:none; background:rgba(226,75,74,0.1); border:1px solid rgba(226,75,74,0.3);
+    color:var(--red); padding:10px 14px; border-radius:8px;
+    font-size:12px; margin-bottom:16px; line-height:1.5;
+  }
+  .ls-error.show { display:block; }
+  .ls-btn {
+    width:100%;
+    background: linear-gradient(120deg,#A97020 0%,#C9922A 25%,#E8B455 50%,#C9922A 75%,#A97020 100%);
+    background-size:300% 100%;
+    border:none; color:#0F0E0A; padding:14px; border-radius:10px;
+    font-size:13px; font-family:var(--font-label); font-weight:700;
+    letter-spacing:1px; text-transform:uppercase; cursor:pointer; margin-top:8px;
+    transition:opacity .2s,transform .1s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 4px 22px rgba(201,146,42,0.28);
+    animation:ls-btn-flow 5s linear infinite;
+  }
+  @keyframes ls-btn-flow { 0% { background-position:0% 50%; } 100% { background-position:300% 50%; } }
+  .ls-btn:hover { opacity:.91; box-shadow:0 6px 32px rgba(201,146,42,0.42); }
+  .ls-btn:active { transform:scale(0.98); }
+  .ls-btn:disabled { opacity:.5; cursor:not-allowed; animation:none; }
+  .ls-spinner {
+    display:inline-block; width:14px; height:14px;
+    border:2px solid rgba(15,14,10,0.3); border-top-color:var(--bg);
+    border-radius:50%; animation:ls-spin .7s linear infinite;
+  }
+  @keyframes ls-spin { to { transform:rotate(360deg); } }
+  .ls-footer {
+    text-align:center; margin-top:24px; font-size:10px;
+    color:var(--text3); letter-spacing:.5px; line-height:1.6;
+  }
+  .ls-footer span { display:block; margin-top:4px; color:rgba(201,146,42,0.4); }
+
 </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════════
+     INLINE LOGIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <canvas id="login-bg-canvas"></canvas>
+  <div class="ls-aurora"><div class="ls-aurora-beam"></div><div class="ls-aurora-beam"></div></div>
+  <div class="ls-vignette"></div>
+  <div class="ls-wrap">
+    <div class="ls-card">
+      <div class="ls-logo">
+        <span class="ls-logo-icon">🏅</span>
+        <div class="ls-logo-title">Vàng Tích Trữ</div>
+        <div class="ls-logo-sub">Xác thực để tiếp tục</div>
+      </div>
+      <div class="ls-divider"></div>
+      <div class="ls-group">
+        <label>Email</label>
+        <input type="email" id="ls-email" placeholder="your@email.com" autocomplete="email" autocapitalize="none">
+      </div>
+      <div class="ls-group">
+        <label>Mật khẩu</label>
+        <div class="ls-pw-wrap">
+          <input type="password" id="ls-password" placeholder="••••••••" autocomplete="current-password">
+          <button class="ls-toggle-pw" type="button" onclick="lsTogglePw()" title="Hiện/ẩn">👁</button>
+        </div>
+      </div>
+      <div class="ls-error" id="ls-error"></div>
+      <button class="ls-btn" id="ls-btn" onclick="lsDoLogin()">
+        <span id="ls-btn-text">Đăng nhập</span>
+      </button>
+      <div class="ls-footer">
+        Hệ thống riêng tư — chỉ dành cho thành viên
+        <span>🔒 Bảo mật bởi Supabase Auth</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 <div class="header">
   <span class="header-icon">🏅</span>
@@ -575,18 +780,143 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Ẩn toàn bộ nội dung cho đến khi xác thực xong
 document.body.style.visibility = 'hidden';
 
-// Helper: redirect đúng context
-// Khi chạy trong iframe (Family Tools Hub): báo parent chuyển về login, giữ nguyên topbar
-// Khi chạy độc lập: redirect sang login.html
+// Hiện login screen inline (không redirect, giữ topbar)
 function redirectToLogin() {
-  if (window.top && window.top !== window) {
-    // Gửi message lên index.html để xử lý navigate về login
-    window.top.postMessage({ type: 'REQUIRE_LOGIN', from: 'goldtracker' }, '*');
-  } else {
-    const loginUrl = new URL('login.html', window.location.href).href;
-    window.location.replace(loginUrl);
-  }
+  showLoginScreen();
 }
+
+function showLoginScreen() {
+  document.body.style.visibility = 'visible';
+  const ls = document.getElementById('login-screen');
+  ls.classList.add('active');
+  lsInitCanvas();
+  // focus email
+  setTimeout(() => {
+    const em = document.getElementById('ls-email');
+    if (em) em.focus();
+  }, 400);
+}
+
+function hideLoginScreen() {
+  const ls = document.getElementById('login-screen');
+  ls.classList.remove('active');
+}
+
+// Login screen helpers
+function lsTogglePw() {
+  const inp = document.getElementById('ls-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function lsShowError(msg) {
+  const el = document.getElementById('ls-error');
+  el.textContent = msg; el.classList.add('show');
+}
+function lsHideError() { document.getElementById('ls-error').classList.remove('show'); }
+function lsSetLoading(on) {
+  const btn = document.getElementById('ls-btn');
+  const txt = document.getElementById('ls-btn-text');
+  btn.disabled = on;
+  txt.innerHTML = on ? '<span class="ls-spinner"></span> Đang xác thực...' : 'Đăng nhập';
+}
+async function lsDoLogin() {
+  lsHideError();
+  const email    = document.getElementById('ls-email').value.trim();
+  const password = document.getElementById('ls-password').value;
+  if (!email)    { lsShowError('Vui lòng nhập email.'); return; }
+  if (!password) { lsShowError('Vui lòng nhập mật khẩu.'); return; }
+  lsSetLoading(true);
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) {
+    lsSetLoading(false);
+    if (error.message.includes('Invalid login')) lsShowError('Email hoặc mật khẩu không đúng.');
+    else if (error.message.includes('Email not confirmed')) lsShowError('Email chưa được xác nhận. Kiểm tra hộp thư.');
+    else lsShowError('Lỗi: ' + error.message);
+    return;
+  }
+  // Login thành công → ẩn login screen, reload app
+  hideLoginScreen();
+  window.location.reload();
+}
+document.addEventListener('keydown', e => {
+  const ls = document.getElementById('login-screen');
+  if (ls && ls.classList.contains('active') && e.key === 'Enter') lsDoLogin();
+});
+
+// Canvas background cho login screen
+function lsInitCanvas() {
+  const canvas = document.getElementById('login-bg-canvas');
+  if (!canvas || canvas._init) return;
+  canvas._init = true;
+  const ctx = canvas.getContext('2d');
+  let W, H, dpr;
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  const GOLDS = ['rgba(201,146,42,','rgba(232,180,80,','rgba(245,215,150,','rgba(158,108,28,','rgba(255,198,88,'];
+  const rand = (a,b) => a+Math.random()*(b-a);
+  let particles = [];
+  class P {
+    constructor(init) {
+      this.x=init?rand(0,W):(Math.random()<.5?-6:W+6);
+      this.y=init?rand(0,H):rand(0,H);
+      this.vx=rand(-0.15,0.15); this.vy=rand(-0.28,-0.08);
+      this.r=rand(0.9,2.5); this.a=rand(0.12,0.52); this.pa=this.a;
+      this.ps=rand(0.005,0.018); this.pp=rand(0,Math.PI*2);
+      this.c=GOLDS[Math.floor(Math.random()*GOLDS.length)];
+      this.flare=Math.random()<0.07;
+      if(this.flare){this.r=rand(3,5.5);this.a=rand(0.07,0.2);}
+    }
+    update(t){
+      this.x+=this.vx;this.y+=this.vy;
+      this.a=this.pa*(0.55+0.45*Math.sin(t*this.ps+this.pp));
+      if(this.x<-12)this.x=W+12;if(this.x>W+12)this.x=-12;
+      if(this.y<-12){this.y=H+12;this.x=rand(0,W);}
+    }
+    draw(){
+      ctx.save();
+      if(this.flare){
+        const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3.5);
+        g.addColorStop(0,this.c+(this.a).toFixed(3)+')');
+        g.addColorStop(.45,this.c+(this.a*.45).toFixed(3)+')');
+        g.addColorStop(1,this.c+'0)');
+        ctx.beginPath();ctx.arc(this.x,this.y,this.r*3.5,0,Math.PI*2);
+        ctx.fillStyle=g;ctx.fill();
+      }else{
+        ctx.globalAlpha=this.a;ctx.fillStyle=this.c+'1)';
+        ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  resize();
+  for(let i=0;i<70;i++) particles.push(new P(true));
+  let t=0;
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0F0E0A';ctx.fillRect(0,0,W,H);
+    // hex grid
+    const sz=42,hx=sz*Math.sqrt(3),hy=sz*1.5;
+    ctx.save();ctx.strokeStyle='rgba(201,146,42,0.026)';ctx.lineWidth=0.55;
+    for(let r=-1;r<Math.ceil(H/hy)+2;r++){
+      for(let c=-1;c<Math.ceil(W/hx)+2;c++){
+        const cx=c*hx+(r%2===0?0:hx/2),cy=r*hy;
+        ctx.beginPath();
+        for(let k=0;k<6;k++){const a=Math.PI/3*k-Math.PI/6;k===0?ctx.moveTo(cx+sz*Math.cos(a),cy+sz*Math.sin(a)):ctx.lineTo(cx+sz*Math.cos(a),cy+sz*Math.sin(a));}
+        ctx.closePath();ctx.stroke();
+      }
+    }
+    ctx.restore();
+    particles.forEach(p=>{p.update(t);p.draw();});
+    t++;requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize',resize);
+  loop();
+}
+
 
 (async () => {
   const { data: { session } } = await db.auth.getSession();
