@@ -1333,14 +1333,7 @@ async function loadApps() {
       .select('*')
       .order('position', { ascending: true });
     if (error) throw error;
-    if (!data || data.length === 0) {
-      // First run: seed default apps into Supabase
-      const seed = DEFAULT_APPS.map((a, i) => ({ ...a, position: i }));
-      const { data: inserted, error: insErr } = await sb.from('apps').insert(seed).select();
-      if (insErr) throw insErr;
-      return inserted.sort((a, b) => a.position - b.position);
-    }
-    return data;
+    return data || [];
   } catch (e) {
     console.error('[Supabase] loadApps failed, fallback to defaults:', e);
     return JSON.parse(JSON.stringify(DEFAULT_APPS));
