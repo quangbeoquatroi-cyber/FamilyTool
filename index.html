@@ -1116,21 +1116,44 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
     <div class="modal-header">
-      <div class="modal-icon">🔐</div>
+      <div class="modal-icon" id="loginModalIcon">🔐</div>
       <div>
-        <div class="modal-title">Admin Access</div>
-        <div class="modal-subtitle">Nhập mật khẩu để vào chế độ quản trị</div>
+        <div class="modal-title" id="loginModalTitle">Admin Access</div>
+        <div class="modal-subtitle" id="loginModalSubtitle">Nhập mật khẩu để vào chế độ quản trị</div>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Mật khẩu</label>
-      <input class="form-input" type="password" id="adminPassword" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter') submitLogin()"/>
+
+    <!-- Chế độ đăng nhập thường -->
+    <div id="loginSection">
+      <div class="form-group">
+        <label class="form-label">Mật khẩu</label>
+        <input class="form-input" type="password" id="adminPassword" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') submitLogin()"/>
+      </div>
+      <div class="login-error" id="loginError">Mật khẩu không đúng. Vui lòng thử lại.</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('loginModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="submitLogin()">Đăng nhập</button>
+      </div>
     </div>
-    <div class="login-error" id="loginError">Mật khẩu không đúng. Vui lòng thử lại.</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('loginModal')">Hủy</button>
-      <button class="btn btn-primary" onclick="submitLogin()">Đăng nhập</button>
+
+    <!-- Chế độ đặt password lần đầu -->
+    <div id="setupSection" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Mật khẩu mới</label>
+        <input class="form-input" type="password" id="setupPassword" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') document.getElementById('setupPassword2').focus()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Xác nhận mật khẩu</label>
+        <input class="form-input" type="password" id="setupPassword2" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') submitSetup()"/>
+      </div>
+      <div class="login-error" id="setupError" style="display:none">Mật khẩu không khớp hoặc quá ngắn (tối thiểu 6 ký tự).</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('loginModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="submitSetup()">🔑 Đặt mật khẩu</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1880,9 +1903,46 @@ function handleAdminBtn() {
     sessionStorage.removeItem('itHub_admin');
     setAdminUI(false);
   } else {
-    openModal('loginModal');
-    setTimeout(() => document.getElementById('adminPassword').focus(), 250);
+    // Chưa có password → chế độ setup lần đầu
+    if (!ADMIN_PASSWORD_HASH) {
+      document.getElementById('loginModalIcon').textContent = '🛠️';
+      document.getElementById('loginModalTitle').textContent = 'Thiết lập Admin';
+      document.getElementById('loginModalSubtitle').textContent = 'Đặt mật khẩu admin lần đầu';
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('setupSection').style.display = '';
+      openModal('loginModal');
+      setTimeout(() => document.getElementById('setupPassword').focus(), 250);
+    } else {
+      document.getElementById('loginModalIcon').textContent = '🔐';
+      document.getElementById('loginModalTitle').textContent = 'Admin Access';
+      document.getElementById('loginModalSubtitle').textContent = 'Nhập mật khẩu để vào chế độ quản trị';
+      document.getElementById('loginSection').style.display = '';
+      document.getElementById('setupSection').style.display = 'none';
+      openModal('loginModal');
+      setTimeout(() => document.getElementById('adminPassword').focus(), 250);
+    }
   }
+}
+
+async function submitSetup() {
+  const pw  = document.getElementById('setupPassword').value;
+  const pw2 = document.getElementById('setupPassword2').value;
+  const errEl = document.getElementById('setupError');
+  if (pw.length < 6 || pw !== pw2) {
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  const hash = await sha256(pw);
+  const { error } = await sb.from('config').upsert({ key: 'admin_password_hash', value: hash }, { onConflict: 'key' });
+  if (error) { alert('Lưu mật khẩu thất bại: ' + error.message); return; }
+  ADMIN_PASSWORD_HASH = hash;
+  sessionStorage.setItem('itHub_admin', '1');
+  setAdminUI(true);
+  closeModal('loginModal');
+  document.getElementById('setupPassword').value = '';
+  document.getElementById('setupPassword2').value = '';
+  showToast({ title: '✅ Đặt mật khẩu thành công', sub: 'Đã vào chế độ quản trị', type: 'success', duration: 3000 });
 }
 
 async function sha256(str) {
@@ -1892,10 +1952,7 @@ async function sha256(str) {
 
 async function submitLogin() {
   const pw = document.getElementById('adminPassword').value;
-  if (!ADMIN_PASSWORD_HASH) {
-    alert('Chưa load được cấu hình từ Supabase. Vui lòng kiểm tra bảng config.');
-    return;
-  }
+  if (!ADMIN_PASSWORD_HASH) return; // shouldn't happen, modal handles this
   const hash = await sha256(pw);
   if (hash === ADMIN_PASSWORD_HASH) {
     sessionStorage.setItem('itHub_admin', '1');
