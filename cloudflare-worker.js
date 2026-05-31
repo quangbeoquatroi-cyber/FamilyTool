@@ -1,19 +1,27 @@
 /**
  * ════════════════════════════════════════════════════════════
- *  CLOUDFLARE WORKER — Gold Price Proxy
- *  Thay thế Netlify Function, dùng cho GitHub Pages
+ *  CLOUDFLARE WORKER — Gold Price Proxy + Cron Upsert
  *
- *  HƯỚNG DẪN DEPLOY (làm 1 lần duy nhất, miễn phí):
- *  1. Vào https://dash.cloudflare.com → đăng ký tài khoản miễn phí
- *  2. Vào "Workers & Pages" → "Create" → "Create Worker"
- *  3. Xóa code mẫu, paste toàn bộ nội dung file này vào
- *  4. Nhấn "Deploy"
- *  5. Copy URL worker (vd: https://gold-proxy.ten-ban.workers.dev)
- *  6. Mở index.html, tìm dòng:
- *       const WORKER_URL = 'https://YOUR-WORKER.workers.dev/prices';
- *     Thay YOUR-WORKER bằng URL thật của bạn
+ *  HƯỚNG DẪN DEPLOY:
+ *  1. Vào https://dash.cloudflare.com → Workers & Pages → Create Worker
+ *  2. Xóa code mẫu, paste toàn bộ file này vào
+ *  3. Nhấn "Deploy"
+ *  4. Vào Settings → Triggers → Cron Triggers → Add:
+ *       0 2,5,8,11,14 * * *   (chạy lúc 9h, 12h, 15h, 18h, 21h giờ VN)
+ *  5. Copy URL worker → dán vào index.html tại PROXY_URL
+ *
+ *  LƯU Ý QUAN TRỌNG:
+ *  - Điền SUPABASE_URL và SUPABASE_KEY bên dưới trước khi deploy
+ *  - Mỗi ngày mỗi brand chỉ có đúng 1 dòng (upsert theo recorded_at + brand)
+ *  - Cron chạy ngay cả khi không ai mở app
+ *  - Cron chỉ upsert khi giá thực sự thay đổi so với lần ghi trước
  * ════════════════════════════════════════════════════════════
  */
+
+// ── CONFIG — điền thông tin của bạn vào đây ──────────────────
+const SUPABASE_URL = 'https://acwlagoieszpydklikqw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd2xhZ29pZXN6cHlka2xpa3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODc5MDYsImV4cCI6MjA5MzE2MzkwNn0.I50smOD2_phj8PSSg4A0KzepYliWQinGXVmZpop9ljI';
+// ─────────────────────────────────────────────────────────────
 
 const SOURCES = [
   { key: 'SJC',     url: 'https://giavang.org/trong-nuoc/sjc/' },
@@ -24,17 +32,12 @@ const SOURCES = [
 
 const BRAND_ROW_LIMIT = { 'SJC': 6, 'DOJI': 3, 'BTMH': 0, 'Mi Hồng': 2 };
 
-const BTMH_FIXED_TOP = [
-  { name: 'Đồng vàng Kim Gia Bảo Hoa Sen', buy: 163000 * 100, sell: 165900 * 100 },
-  { name: 'Tiểu Kim Cát - 0,3 chỉ',        buy: 16300  * 100, sell: 16590  * 100 },
-];
-
-// ── FETCH ─────────────────────────────────────────────────────
+// ── FETCH HTML ────────────────────────────────────────────────
 async function fetchPage(url) {
   const res = await fetch(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept': 'text/html,application/xhtml+xml',
+      'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept':          'text/html,application/xhtml+xml',
       'Accept-Language': 'vi-VN,vi;q=0.9',
     },
     cf: { cacheTtl: 60, cacheEverything: false },
@@ -43,7 +46,7 @@ async function fetchPage(url) {
   return res.text();
 }
 
-// ── PARSE ─────────────────────────────────────────────────────
+// ── PARSE HELPERS ─────────────────────────────────────────────
 function toNum(str) {
   return parseInt(String(str || '').replace(/\./g, '').replace(/,/g, '')) || 0;
 }
@@ -53,14 +56,14 @@ function stripTags(s) {
 }
 
 function parseRows(html, brand) {
-  const rows = [];
+  const rows  = [];
   const tbody = html.match(/<tbody>([\s\S]*?)<\/tbody>/i);
-  const body = tbody ? tbody[1] : html;
+  const body  = tbody ? tbody[1] : html;
   const parts = body.split(/<tr[\s>]/i);
-  const isSJC = brand === 'SJC' || brand === 'DOJI'; // cả 2 dùng 4 cột
+  const isSJC = brand === 'SJC' || brand === 'DOJI';
 
   for (let i = 1; i < parts.length; i++) {
-    const tr = parts[i].split(/<\/tr>/i)[0];
+    const tr    = parts[i].split(/<\/tr>/i)[0];
     const cells = [...tr.matchAll(/<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi)];
     if (cells.length < 3) continue;
     const cols = cells.map(c => stripTags(c[1]));
@@ -81,47 +84,37 @@ function parsePrices(html, brand) {
   const clean = html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '');
-  const items = parseRows(clean, brand);
-  const limit = BRAND_ROW_LIMIT[brand];
+
+  const items     = parseRows(clean, brand);
+  const limit     = BRAND_ROW_LIMIT[brand];
   const liveItems = limit ? items.slice(0, limit) : items;
-  let finalItems = liveItems;
+  let finalItems  = liveItems;
 
-// ── BTMH: chỉ lấy đúng 2 dòng ──
-if (brand === 'BTMH') {
-  const normalize = s =>
-    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // ── BTMH: chỉ lấy đúng 2 dòng ──────────────────────────────
+  if (brand === 'BTMH') {
+    const normalize = s =>
+      s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  let kimGiaBao = null;
-  let kimCat = null;
+    let kimGiaBao = null;
+    let kimCat    = null;
 
-  for (const it of liveItems) {
-    const name = normalize(it.name);
-
-    // Ưu tiên match chính xác hơn
-    if (!kimGiaBao && name.includes('kim gia bao')) {
-      kimGiaBao = {
-        ...it,
-        name: 'Đồng vàng Kim Gia Bảo Hoa Sen'
-      };
+    for (const it of liveItems) {
+      const name = normalize(it.name);
+      if (!kimGiaBao && name.includes('kim gia bao')) {
+        kimGiaBao = { ...it, name: 'Đồng vàng Kim Gia Bảo Hoa Sen' };
+      }
+      if (!kimCat && name.includes('kim cat')) {
+        kimCat = { ...it, name: 'Tiểu Kim Cát - 0,3 chỉ' };
+      }
+      if (kimGiaBao && kimCat) break;
     }
 
-    if (!kimCat && name.includes('kim cat')) {
-      kimCat = {
-        ...it,
-        name: 'Tiểu Kim Cát - 0,3 chỉ'
-      };
-    }
-
-    // Nếu đã đủ 2 thì break sớm
-    if (kimGiaBao && kimCat) break;
+    finalItems = [];
+    if (kimGiaBao) finalItems.push(kimGiaBao);
+    if (kimCat)    finalItems.push(kimCat);
   }
 
-  finalItems = [];
-  if (kimGiaBao) finalItems.push(kimGiaBao);
-  if (kimCat) finalItems.push(kimCat);
-}
-
-  // DOJI: chỉ lấy dòng "Nhẫn tròn 999 Hưng Thịnh Vượng" từ khu vực HN
+  // ── DOJI: chỉ lấy dòng Nhẫn tròn 999 ───────────────────────
   if (brand === 'DOJI') {
     const nhans = finalItems.filter(it =>
       it.name.toLowerCase().includes('nhẫn tròn 999') ||
@@ -133,9 +126,11 @@ if (brand === 'BTMH') {
     return { buy: dojiItems[0]?.buy || 0, sell: dojiItems[0]?.sell || 0, items: dojiItems };
   }
 
-  // Mi Hồng: chỉ lấy dòng "Vàng 99,9%"
+  // ── Mi Hồng: chỉ lấy dòng Vàng 99,9% ───────────────────────
   if (brand === 'Mi Hồng') {
-    const vang999 = finalItems.find(it => it.name.includes('99,9%') || it.name.includes('99.9%'));
+    const vang999 = finalItems.find(it =>
+      it.name.includes('99,9%') || it.name.includes('99.9%')
+    );
     const mhItems = vang999
       ? [{ ...vang999, name: 'Vàng 99,9%' }]
       : finalItems.slice(0, 1);
@@ -145,10 +140,10 @@ if (brand === 'BTMH') {
   return { buy: finalItems[0]?.buy || 0, sell: finalItems[0]?.sell || 0, items: finalItems };
 }
 
-// ── CACHE đơn giản trong Worker memory ───────────────────────
-let cache = null;
+// ── IN-MEMORY CACHE (dùng cho HTTP requests) ──────────────────
+let cache     = null;
 let cacheTime = 0;
-const TTL = 5 * 60 * 1000; // 5 phút
+const TTL     = 5 * 60 * 1000; // 5 phút
 
 async function getPrices(force = false) {
   if (!force && cache && Date.now() - cacheTime < TTL) return cache;
@@ -156,47 +151,176 @@ async function getPrices(force = false) {
   const results = {};
   for (const src of SOURCES) {
     try {
-      const html = await fetchPage(src.url);
+      const html       = await fetchPage(src.url);
       results[src.key] = parsePrices(html, src.key);
     } catch (e) {
       results[src.key] = { buy: 0, sell: 0, items: [] };
     }
   }
-  cache = results;
+  cache     = results;
   cacheTime = Date.now();
   return results;
 }
 
+// ── SUPABASE HELPERS ──────────────────────────────────────────
+const SB_HEADERS = {
+  'Content-Type':  'application/json',
+  'apikey':        SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+};
+
+/**
+ * Lấy giá đang lưu trong DB cho ngày hôm nay.
+ * Trả về map: { SJC: {buy, sell}, DOJI: {buy, sell}, ... }
+ */
+async function fetchTodayPrices(today) {
+  const url = `${SUPABASE_URL}/rest/v1/gold_price_history`
+    + `?recorded_at=eq.${today}&select=brand,buy,sell`;
+
+  const res = await fetch(url, { headers: SB_HEADERS });
+  if (!res.ok) throw new Error(`Supabase fetch thất bại: ${await res.text()}`);
+
+  const rows = await res.json();
+  const map  = {};
+  rows.forEach(r => { map[r.brand] = { buy: r.buy, sell: r.sell }; });
+  return map;
+}
+
+/**
+ * Thực hiện upsert các dòng vào gold_price_history.
+ * Prefer: resolution=merge-duplicates → UPDATE nếu (recorded_at, brand) đã tồn tại.
+ *
+ * Lưu ý: bảng cần có unique constraint (chạy 1 lần trong Supabase SQL Editor):
+ *   ALTER TABLE gold_price_history
+ *     ADD CONSTRAINT gold_price_history_recorded_at_brand_key
+ *     UNIQUE (recorded_at, brand);
+ */
+async function doUpsert(rows) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/gold_price_history`, {
+    method:  'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+    body:    JSON.stringify(rows),
+  });
+  if (!res.ok) throw new Error(`Supabase upsert thất bại: ${await res.text()}`);
+}
+
+/**
+ * So sánh giá mới với giá đang có trong DB hôm nay.
+ * Chỉ upsert những brand nào:
+ *   - Chưa có dữ liệu hôm nay (dòng mới), hoặc
+ *   - Có buy hoặc sell thay đổi so với lần ghi trước
+ * → Đảm bảo mỗi ngày mỗi brand vẫn chỉ có đúng 1 dòng.
+ */
+async function upsertIfChanged(prices) {
+  // Lấy ngày theo giờ Việt Nam (UTC+7)
+  const nowVN = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const today = nowVN.toISOString().split('T')[0]; // "2026-05-31"
+
+  // Lấy giá đang có trong DB hôm nay để so sánh
+  const existing = await fetchTodayPrices(today);
+
+  const toUpsert = [];
+  const skipped  = [];
+
+  for (const [brand, p] of Object.entries(prices)) {
+    if (!p.buy) continue; // bỏ qua nếu scrape lỗi trả về 0
+
+    const prev = existing[brand];
+
+    if (!prev) {
+      // Chưa có dữ liệu hôm nay → ghi mới
+      toUpsert.push({ recorded_at: today, brand, buy: p.buy, sell: p.sell });
+    } else if (prev.buy !== p.buy || prev.sell !== p.sell) {
+      // Giá thay đổi → ghi đè
+      toUpsert.push({ recorded_at: today, brand, buy: p.buy, sell: p.sell });
+    } else {
+      // Giá không đổi → bỏ qua
+      skipped.push(brand);
+    }
+  }
+
+  if (skipped.length) {
+    console.log(`[cron] Giá không đổi, bỏ qua: ${skipped.join(', ')}`);
+  }
+
+  if (!toUpsert.length) {
+    console.log('[cron] Tất cả brand đều không có thay đổi giá, không upsert.');
+    return { upserted: 0, date: today, brands: [] };
+  }
+
+  await doUpsert(toUpsert);
+  return { upserted: toUpsert.length, date: today, brands: toUpsert.map(r => r.brand) };
+}
+
+// ── CORS HEADERS ──────────────────────────────────────────────
+const CORS = {
+  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Max-Age':       '86400',
+};
+
 // ── WORKER HANDLER ────────────────────────────────────────────
 export default {
+
+  // ── HTTP: phục vụ frontend lấy giá realtime ────────────────
   async fetch(request) {
-    // CORS preflight
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Max-Age': '86400',
-        },
-      });
+      return new Response(null, { headers: CORS });
     }
 
     try {
-      const url = new URL(request.url);
-      const force = url.searchParams.get('refresh') === '1';
-      const data = await getPrices(force);
-      return new Response(JSON.stringify(data), {
+      const url    = new URL(request.url);
+      const force  = url.searchParams.get('refresh') === '1';
+      const prices = await getPrices(force);
+      return new Response(JSON.stringify(prices), {
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+          'Content-Type':  'application/json',
           'Cache-Control': 'no-store',
+          ...CORS,
         },
       });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        status:  500,
+        headers: { 'Content-Type': 'application/json', ...CORS },
       });
     }
+  },
+
+  // ── CRON: tự động chạy theo lịch, không cần mở app ────────
+  //
+  //  Cấu hình tại: Workers & Pages → worker → Settings → Triggers → Cron Triggers
+  //
+  //  Thêm cron expression (UTC, giờ VN = UTC+7):
+  //    0 2,5,8,11,14 * * *
+  //    → Chạy vào lúc 9h, 12h, 15h, 18h, 21h giờ Việt Nam mỗi ngày
+  //
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      try {
+        console.log('[cron] Bắt đầu fetch giá...', new Date().toISOString());
+
+        // Force refresh — bỏ qua in-memory cache để lấy giá mới nhất từ nguồn
+        const prices      = await getPrices(true);
+        const validBrands = Object.entries(prices)
+          .filter(([_, p]) => p.buy > 0)
+          .map(([k]) => k);
+
+        console.log(`[cron] Scraped OK: ${validBrands.join(', ')}`);
+
+        // Chỉ upsert khi giá thay đổi so với dữ liệu đang có hôm nay
+        const result = await upsertIfChanged(prices);
+
+        if (result.upserted > 0) {
+          console.log(
+            `[cron] Upsert ${result.upserted} brand có giá thay đổi: ${result.brands.join(', ')}`,
+            `(ngày ${result.date})`
+          );
+        }
+      } catch (e) {
+        // Không throw — chỉ log, tránh Cloudflare retry liên tục
+        console.error('[cron] Lỗi:', e.message);
+      }
+    })());
   },
 };
