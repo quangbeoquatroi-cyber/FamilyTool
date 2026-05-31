@@ -3541,6 +3541,10 @@ function openTxDetail(txId, quyKey) {
   }
   /* Adjust main padding to account for taller bottom nav (safe area) */
   .main {
+    padding-bottom: 0 !important;
+  }
+  /* padding-bottom phải đặt trên .content (overflow-y:auto) thì mới có tác dụng khi scroll */
+  .content {
     padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .nav-item.active::before,
