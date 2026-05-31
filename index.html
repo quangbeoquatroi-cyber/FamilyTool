@@ -2558,6 +2558,13 @@ document.addEventListener('keydown', e => {
     openApp(_restored);
   }
 })();
+
+// Lắng nghe sub-app báo cần login (thay vì để sub-app redirect toàn trang)
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'REQUIRE_LOGIN') {
+    window.location.replace('login.html');
+  }
+});
 </script>
 
 

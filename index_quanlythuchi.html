@@ -2597,11 +2597,6 @@ async function doSignOut() {
 
 function showLogin() {
   stopIdleWatcher();
-  // Nếu đang trong iframe, chuyển parent về home thay vì hiện login screen bên trong iframe
-  if (window.top && window.top !== window) {
-    window.top.location.replace(new URL('index.html', window.location.href).href);
-    return;
-  }
   document.getElementById('screen-login').style.display = 'flex';
   document.getElementById('screen-app').classList.remove('active');
 }

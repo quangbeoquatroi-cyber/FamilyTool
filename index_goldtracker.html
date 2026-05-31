@@ -575,13 +575,15 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Ẩn toàn bộ nội dung cho đến khi xác thực xong
 document.body.style.visibility = 'hidden';
 
-// Helper: redirect đúng context (iframe → điều hướng top-level window)
+// Helper: redirect đúng context
+// Khi chạy trong iframe (Family Tools Hub): báo parent chuyển về login, giữ nguyên topbar
+// Khi chạy độc lập: redirect sang login.html
 function redirectToLogin() {
-  const loginUrl = new URL('login.html', window.location.href).href;
   if (window.top && window.top !== window) {
-    // Đang chạy trong iframe → điều hướng cửa sổ cha
-    window.top.location.replace(loginUrl);
+    // Gửi message lên index.html để xử lý navigate về login
+    window.top.postMessage({ type: 'REQUIRE_LOGIN', from: 'goldtracker' }, '*');
   } else {
+    const loginUrl = new URL('login.html', window.location.href).href;
     window.location.replace(loginUrl);
   }
 }
