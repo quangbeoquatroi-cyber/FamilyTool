@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="https://acwlagoieszpydklikqw.supabase.co/storage/v1/object/public/Logo/Nutrition-Tracker.png">
+<link rel="apple-touch-icon" href="https://acwlagoieszpydklikqw.supabase.co/storage/v1/object/public/Logo/Nutrition-Tracker.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0a0f1e" />
+<meta name="theme-color" content="#1a5c2a" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="NutriAI" />
+<meta name="apple-mobile-web-app-title" content="Nutrition Tracker" />
 <meta name="mobile-web-app-capable" content="yes" />
-<title>AI Nutrition Tracker</title>
+<title>Quản Lý Sức Khỏe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -17,18 +19,18 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
   :root{
-    --bg:#f4f6fa;
-    --bg2:#eceef4;
+    --bg:#f2f7f2;
+    --bg2:#e8f0e8;
     --card:#ffffff;
     --card2:#f9fafb;
     --text:#0d1117;
     --text2:#374151;
     --muted:#8b95a8;
-    --border:#e4e8f0;
-    --border2:#d1d8e6;
-    --primary:#19c25f;
-    --primary-2:#0fa34e;
-    --primary-glow:rgba(25,194,95,.18);
+    --border:#d8e8d8;
+    --border2:#c4d8c4;
+    --primary:#3aab1e;
+    --primary-2:#2d8c16;
+    --primary-glow:rgba(58,171,30,.18);
     --accent:#3b7eff;
     --accent-glow:rgba(59,126,255,.15);
     --warn:#f59e0b;
@@ -37,18 +39,18 @@
     --shadow-sm:0 1px 3px rgba(13,17,23,.06),0 4px 16px rgba(13,17,23,.06);
     --shadow:0 2px 8px rgba(13,17,23,.06),0 12px 40px rgba(13,17,23,.10);
     --shadow-lg:0 4px 16px rgba(13,17,23,.08),0 24px 64px rgba(13,17,23,.14);
-    --shadow-green:0 8px 32px rgba(25,194,95,.22);
+    --shadow-green:0 8px 32px rgba(29,92,42,.28);
     --radius:20px;
     --radius-sm:14px;
     --font:'DM Sans',system-ui,sans-serif;
     --font-display:'DM Serif Display',Georgia,serif;
   }
   .dark{
-    --bg:#080d18; --bg2:#0d1525;
-    --card:#111b2e; --card2:#162035;
-    --text:#f0f4ff; --text2:#c8d3e8;
-    --muted:#5a6882;
-    --border:#1e2d47; --border2:#243350;
+    --bg:#070e08; --bg2:#0c1a0d;
+    --card:#0d1f10; --card2:#122016;
+    --text:#f0f7f0; --text2:#c4d8c4;
+    --muted:#5a7860;
+    --border:#1a3020; --border2:#224030;
     --shadow-sm:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
     --shadow:0 2px 8px rgba(0,0,0,.3),0 12px 40px rgba(0,0,0,.4);
     --shadow-lg:0 4px 16px rgba(0,0,0,.4),0 24px 64px rgba(0,0,0,.5);
@@ -56,7 +58,10 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   html{font-size:16px;touch-action:manipulation}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  body{padding-bottom:calc(84px + env(safe-area-inset-bottom));min-height:100vh;min-height:-webkit-fill-available}
+  html,body{height:100%}
+  body{min-height:100vh;min-height:100dvh} body.app-open{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* Lock viewport on auth screen to avoid extra whitespace below */
+  body:not(.app-open){height:100vh;height:100dvh;overflow:hidden}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;-webkit-appearance:none}
   input,select,textarea{font-family:inherit;font-size:16px;-webkit-appearance:none;appearance:none;border-radius:0}
   a{color:var(--accent);text-decoration:none}
@@ -133,9 +138,9 @@
   .bubble.me{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white;align-self:flex-end;border-bottom-right-radius:6px;box-shadow:0 4px 16px rgba(25,194,95,.25)}
   .bubble.ai{background:var(--card2);color:var(--text);align-self:flex-start;border-bottom-left-radius:6px;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
   .chatwrap{display:flex;flex-direction:column;gap:10px;min-height:50vh}
-  .center-screen{min-height:100vh;min-height:-webkit-fill-available;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(25,194,95,.12),transparent 70%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(59,126,255,.10),transparent 70%),var(--bg)}
+  .center-screen{min-height:100vh;min-height:100dvh;height:100vh;height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(25,194,95,.12),transparent 70%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(59,126,255,.10),transparent 70%),var(--bg)}
   .auth-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow-lg);padding:32px 28px;animation:fadeUp .4s ease both}
-  .auth-logo{width:64px;height:64px;border-radius:20px;margin:0 auto 16px;background:linear-gradient(135deg,var(--primary),#0bb84a);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:var(--shadow-green)}
+  .auth-logo{width:64px;height:64px;border-radius:20px;margin:0 auto 16px;background:linear-gradient(135deg,#4caf1e,#1a5c2a);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:var(--shadow-green)}
   .hidden{display:none!important}
   .icon-box{width:42px;height:42px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);flex-shrink:0}
   .divider{height:1px;background:var(--border);margin:12px 0}
@@ -151,10 +156,11 @@
 <!-- ============ AUTH ============ -->
 <div id="authScreen" class="center-screen">
   <div class="auth-card">
-    <div class="auth-logo">🥗</div>
+    <div class="auth-logo" style="background:white;padding:0;overflow:hidden"><img src="https://acwlagoieszpydklikqw.supabase.co/storage/v1/object/public/Logo/Nutrition-Tracker.png" style="width:100%;height:100%;object-fit:cover;border-radius:20px" alt="Nutrition Tracker"/></div>
     <div style="text-align:center;margin-bottom:24px">
-      <h1 style="font-size:22px;margin-bottom:4px">AI Nutrition Tracker</h1>
-      <div class="muted">Hành trình sức khỏe của hai bạn</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--primary);margin-bottom:4px">Quản Lý Sức Khỏe</div>
+      <h1 style="font-size:22px;margin-bottom:4px;letter-spacing:-.03em">Eat Better. Track Smarter.</h1>
+      <div class="muted">Live Healthier — cùng người thân ❤️</div>
     </div>
     <div style="margin-bottom:10px">
       <label class="muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Email</label>
@@ -523,7 +529,7 @@ async function tryRestore(){
   return false;
 }
 
-function enterApp(){
+function enterApp(){ document.body.classList.add('app-open');
   $('#authScreen').classList.add('hidden');
   $('#app').classList.remove('hidden');
   updateProfileSwitcherUI();
@@ -537,10 +543,10 @@ function updateProfileSwitcherUI(){
   const bH=$('#btnHusband'), bW=$('#btnWife');
   if(bH && bW){
     if(isH){
-      bH.style.background='var(--primary)';bH.style.color='white';bH.style.border='none';
+      bH.style.background='#1a5c2a';bH.style.color='white';bH.style.border='none';
       bW.style.background='transparent';bW.style.color='var(--text)';bW.style.border='1px solid transparent';
     } else {
-      bW.style.background='#f43f5e';bW.style.color='white';bW.style.border='none';
+      bW.style.background='#f04060';bW.style.color='white';bW.style.border='none';
       bH.style.background='transparent';bH.style.color='var(--text)';bH.style.border='1px solid transparent';
     }
   }
@@ -687,7 +693,7 @@ function ringSvg(pct, big, small){
     <circle cx="90" cy="90" r="${r}" stroke="var(--bg)" stroke-width="14" fill="none"/>
     <circle cx="90" cy="90" r="${r}" stroke="url(#g)" stroke-width="14" fill="none" stroke-linecap="round"
       stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
-    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ed321"/><stop offset="1" stop-color="#1a5c2a"/></linearGradient></defs>
   </svg><div class="center"><div class="big">${big}</div><div class="muted">${small}</div></div></div>`;
 }
 
@@ -852,7 +858,7 @@ async function handleScanFile(file){
   const res=await analyzePhoto(dataUrl);
   const tgt2=macroTargets(State.profile), tot2=todayTotals();
   const remainAfter = tgt2.calories - tot2.calories - (res.calories||0);
-  const adviceColor = remainAfter >= 0 ? '#22c55e' : '#ef4444';
+  const adviceColor = remainAfter >= 0 ? '#3aab1e' : '#ef4444';
   const itemsHtml = (res.items||[]).length>1 ? `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
     <div class="muted" style="font-size:11px;margin-bottom:4px">CHI TIẾT CÁC MÓN</div>
     ${(res.items||[]).map(it=>`<div class="row between" style="font-size:13px;padding:3px 0"><span>${it.name}</span><span class="muted">${fmt(it.calories)} kcal · P${fmt(it.protein||0)} C${fmt(it.carbs||0)} F${fmt(it.fat||0)}</span></div>`).join('')}
@@ -1107,7 +1113,7 @@ function viewCouple(){
       const total=Math.abs((p.weight||0)-(p.goalWeight||0));
       const done=Math.abs((p.weight||0)-cur);
       const pct=total?Math.min(100,done/total*100):0;
-      return `<div style="margin-bottom:10px"><div class="row between"><span>${label} ${p.name||''}</span><span class="muted">${cur}kg → ${p.goalWeight||'?'}kg</span></div><div class="progress" style="margin-top:4px"><div style="width:${pct}%;background:${key==='husband'?'#3b82f6':'#f43f5e'}"></div></div></div>`;
+      return `<div style="margin-bottom:10px"><div class="row between"><span>${label} ${p.name||''}</span><span class="muted">${cur}kg → ${p.goalWeight||'?'}kg</span></div><div class="progress" style="margin-top:4px"><div style="width:${pct}%;background:${key==='husband'?'#2d8c16':'#f04060'}"></div></div></div>`;
     }).join('')}
   </div>`;
 }
@@ -1116,7 +1122,7 @@ function coupleCard(key){
   if(!p) return `<div class="card"><div class="muted">Chưa có hồ sơ</div></div>`;
   const t=todayTotals(key);
   const tgt=macroTargets(p);
-  const color=key==='husband'?'#3b82f6':'#f43f5e';
+  const color=key==='husband'?'#2d8c16':'#f04060';
   const label=key==='husband'?'👨 Chồng':'👩 Vợ';
   const curW=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===key).slice(-1)[0]?.value||p.weight;
   const pct=Math.min(100,(t.calories/tgt.calories)*100||0);
@@ -1441,7 +1447,7 @@ function drawWeight(days){
   const arr=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===State.activeProfile).slice(-days);
   const ctx=$('#weightChart');if(!ctx) return;
   if(ctx._c) ctx._c.destroy();
-  ctx._c=new Chart(ctx,{type:'line',data:{labels:arr.map(w=>w.date.slice(5)),datasets:[{label:'kg',data:arr.map(w=>w.value),borderColor:'#22c55e',backgroundColor:'#22c55e22',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
+  ctx._c=new Chart(ctx,{type:'line',data:{labels:arr.map(w=>w.date.slice(5)),datasets:[{label:'kg',data:arr.map(w=>w.value),borderColor:'#3aab1e',backgroundColor:'#3aab1e22',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
 }
 function drawReports(){
   const key=State.activeProfile;
@@ -1453,7 +1459,7 @@ function drawReports(){
     f:m.reduce((a,b)=>a+(+b.fat||0),0)
   }});
   const lab=days.map(d=>d.slice(5));
-  new Chart($('#calChart'),{type:'bar',data:{labels:lab,datasets:[{label:'kcal',data:data.map(x=>x.c),backgroundColor:'#22c55e'}]},options:{plugins:{legend:{display:false}}}});
+  new Chart($('#calChart'),{type:'bar',data:{labels:lab,datasets:[{label:'kcal',data:data.map(x=>x.c),backgroundColor:'#3aab1e'}]},options:{plugins:{legend:{display:false}}}});
   new Chart($('#macroChart'),{type:'line',data:{labels:lab,datasets:[
     {label:'P',data:data.map(x=>x.p),borderColor:'#f43f5e',tension:.3},
     {label:'C',data:data.map(x=>x.a),borderColor:'#f59e0b',tension:.3},
