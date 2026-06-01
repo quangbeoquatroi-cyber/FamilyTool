@@ -218,7 +218,7 @@ const CONFIG = {
   // AI provider settings — loaded from Supabase ai_settings after auth
   AI_PROVIDER: 'gemini',         // 'gemini' | 'groq' | 'openrouter'
   GEMINI_API_KEY: '',
-  GEMINI_MODEL: 'gemini-2.5-flash',
+  GEMINI_MODEL: 'gemini-2.0-flash',
   GROQ_API_KEY: '',
   GROQ_MODEL: 'meta-llama/llama-4-scout-17b-16e-instruct',
   OPENROUTER_API_KEY: '',
@@ -274,18 +274,110 @@ async function saveAiSettings(cfg){
    AI CALL — unified wrapper với auto-rotation khi hết quota
    Thứ tự fallback: provider hiện tại → provider 2 → provider 3
 ============================================================ */
+function isRetryableAIError(err){
+  const msg = String(err?.message || err || '');
+  return /QUOTA|429|402|500|502|503|504|RESOURCE_EXHAUSTED|UNAVAILABLE|overload|overloaded|high demand|temporar|try again later|rate.?limit|quota|credits|exceeded/i.test(msg);
+}
+
+function friendlyAIError(err){
+  const msg = String(err?.message || err || '');
+  if(isRetryableAIError(msg)){
+    return 'AI đang quá tải hoặc hết lượt tạm thời. App đã tự thử model/provider dự phòng nhưng chưa có phản hồi ổn định. Vui lòng bấm quét lại sau vài giây, hoặc vào Cài đặt AI thêm OpenRouter key để có fallback tốt hơn.';
+  }
+  if(/api key|key|permission|unauthorized|forbidden|401|403/i.test(msg)){
+    return 'API key AI chưa đúng hoặc chưa có quyền dùng model nhận diện ảnh. Vui lòng kiểm tra lại trong Cài đặt AI.';
+  }
+  return 'Chưa phân tích được ảnh. Hãy thử ảnh rõ hơn, đủ sáng hơn hoặc chụp gần phần thức ăn.';
+}
+
+function parseAIJson(text){
+  const clean = String(text || '').replace(/```json|```/gi,'').trim();
+  const start = clean.indexOf('{');
+  if(start < 0) throw new Error('AI không trả về JSON');
+  let depth = 0, inString = false, escaped = false;
+  for(let i=start;i<clean.length;i++){
+    const ch = clean[i];
+    if(inString){
+      if(escaped){ escaped = false; continue; }
+      if(ch === '\\'){ escaped = true; continue; }
+      if(ch === '"') inString = false;
+      continue;
+    }
+    if(ch === '"'){ inString = true; continue; }
+    if(ch === '{') depth++;
+    if(ch === '}'){
+      depth--;
+      if(depth === 0) return JSON.parse(clean.slice(start, i + 1));
+    }
+  }
+  throw new Error('JSON từ AI bị thiếu dấu đóng');
+}
+
+function normalizeNutritionResult(raw){
+  raw = raw || {};
+  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+  const items = Array.isArray(raw.items) ? raw.items.map(it=>({
+    name: it?.name || 'Thành phần',
+    calories: num(it?.calories), protein: num(it?.protein), carbs: num(it?.carbs), fat: num(it?.fat)
+  })) : [];
+  let confidence = num(raw.confidence);
+  if(confidence > 1) confidence = confidence / 100;
+  confidence = Math.max(0, Math.min(1, confidence));
+  const dishName = raw.dish_name || raw.food_name || raw.name || items[0]?.name || 'Món ăn';
+  return {
+    dish_name: dishName,
+    calories: Math.max(0, Math.round(num(raw.calories))),
+    protein: Math.max(0, Math.round(num(raw.protein))),
+    carbs: Math.max(0, Math.round(num(raw.carbs))),
+    fat: Math.max(0, Math.round(num(raw.fat))),
+    fiber: Math.max(0, Math.round(num(raw.fiber))),
+    sugar: Math.max(0, Math.round(num(raw.sugar))),
+    sodium: Math.max(0, Math.round(num(raw.sodium))),
+    confidence,
+    items,
+    advice: raw.advice || ''
+  };
+}
+
+async function readJsonSafe(response){
+  const txt = await response.text();
+  try{ return txt ? JSON.parse(txt) : {}; }
+  catch{ return { error: { message: txt || `HTTP ${response.status}` } }; }
+}
+
 async function callAIWithProvider(provider, {prompt, imageBase64=null}){
   // --- GEMINI ---
   if(provider==='gemini'){
     if(!CONFIG.GEMINI_API_KEY) return null;
-    const parts=[{text:prompt}];
-    if(imageBase64) parts.push({inline_data:{mime_type:'image/jpeg',data:imageBase64}});
-    const url=`https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
-    const body={contents:[{parts}], generationConfig: imageBase64?{responseMimeType:'application/json'}:{}};
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const j=await r.json();
-    if(j.error){ const c=j.error.code||j.error.status||''; if(String(c).match(/429|RESOURCE_EXHAUSTED|quota/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'Gemini error'); }
-    return j.candidates?.[0]?.content?.parts?.[0]?.text||null;
+    const modelList = [...new Set([CONFIG.GEMINI_MODEL, 'gemini-2.0-flash', 'gemini-2.5-flash-lite'].filter(Boolean))];
+    let lastTransient = null;
+    for(const model of modelList){
+      const parts=[{text:prompt}];
+      if(imageBase64) parts.push({inline_data:{mime_type:'image/jpeg',data:imageBase64}});
+      const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+      const body={contents:[{parts}], generationConfig: imageBase64?{responseMimeType:'application/json', temperature:0.2}: {temperature:0.4}};
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await readJsonSafe(r);
+      if(!r.ok || j.error){
+        const errText = `${r.status} ${j.error?.code||''} ${j.error?.status||''} ${j.error?.message||''}`;
+        if(isRetryableAIError(errText)){
+          lastTransient = new Error(errText || 'QUOTA');
+          console.warn(`[AI] Gemini model ${model} quá tải, thử model khác...`);
+          continue;
+        }
+        throw new Error(j.error?.message || `Gemini HTTP ${r.status}`);
+      }
+      const text = j.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      if(text){
+        if(model !== CONFIG.GEMINI_MODEL){
+          CONFIG.GEMINI_MODEL = model;
+          toast(`⚠️ Đổi sang ${model} do model cũ quá tải`);
+        }
+        return text;
+      }
+    }
+    if(lastTransient) throw new Error('QUOTA');
+    return null;
   }
   // --- GROQ ---
   if(provider==='groq'){
@@ -294,11 +386,10 @@ async function callAIWithProvider(provider, {prompt, imageBase64=null}){
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+CONFIG.GROQ_API_KEY},
-      body:JSON.stringify({model:CONFIG.GROQ_MODEL,messages:[{role:'user',content:prompt}],max_tokens:1024})
+      body:JSON.stringify({model:CONFIG.GROQ_MODEL,messages:[{role:'user',content:prompt}],max_tokens:1024,temperature:0.3})
     });
-    const j=await r.json();
-    if(j.error){ const c=j.error?.code||j.error?.type||''; if(String(c).match(/rate_limit|quota|429/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'Groq error'); }
-    if(r.status===429) throw new Error('QUOTA');
+    const j=await readJsonSafe(r);
+    if(!r.ok || j.error){ const errText = `${r.status} ${j.error?.code||''} ${j.error?.type||''} ${j.error?.message||''}`; if(isRetryableAIError(errText)) throw new Error('QUOTA'); throw new Error(j.error?.message||`Groq HTTP ${r.status}`); }
     return j.choices?.[0]?.message?.content||null;
   }
   // --- OPENROUTER ---
@@ -314,43 +405,43 @@ async function callAIWithProvider(provider, {prompt, imageBase64=null}){
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+CONFIG.OPENROUTER_API_KEY,
         'HTTP-Referer':'https://nutrition-tracker.app','X-Title':'AI Nutrition Tracker'},
-      body:JSON.stringify({model:CONFIG.OPENROUTER_MODEL,messages,max_tokens:1024})
+      body:JSON.stringify({model:CONFIG.OPENROUTER_MODEL,messages,max_tokens:1024,temperature:0.2})
     });
-    const j=await r.json();
-    if(j.error){ const c=j.error?.code||j.error?.type||''; if(String(c).match(/rate_limit|quota|429|credits/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'OpenRouter error'); }
-    if(r.status===429||r.status===402) throw new Error('QUOTA');
+    const j=await readJsonSafe(r);
+    if(!r.ok || j.error){ const errText = `${r.status} ${j.error?.code||''} ${j.error?.type||''} ${j.error?.message||''}`; if(isRetryableAIError(errText)) throw new Error('QUOTA'); throw new Error(j.error?.message||`OpenRouter HTTP ${r.status}`); }
     return j.choices?.[0]?.message?.content||null;
   }
   return null;
 }
 
 async function callAI({prompt, imageBase64=null}){
-  const allProviders = ['gemini','groq','openrouter'];
-  // Build rotation order: current provider first, then the rest
+  const allProviders = imageBase64 ? ['gemini','openrouter'] : ['gemini','groq','openrouter'];
   const primary = CONFIG.AI_PROVIDER;
-  const order = [primary, ...allProviders.filter(p=>p!==primary)];
+  const order = [primary, ...allProviders.filter(p=>p!==primary)].filter((p,i,a)=>allProviders.includes(p) && a.indexOf(p)===i);
+  let lastError = null;
 
   for(const provider of order){
     const key = provider==='gemini'?CONFIG.GEMINI_API_KEY:provider==='groq'?CONFIG.GROQ_API_KEY:CONFIG.OPENROUTER_API_KEY;
-    if(!key) continue; // skip providers without a key
+    if(!key) continue;
     try{
       const result = await callAIWithProvider(provider, {prompt, imageBase64});
       if(result){
-        // If we fell back to a different provider, update active and notify
         if(provider!==primary){
           CONFIG.AI_PROVIDER=provider;
-          toast(`⚠️ Đổi sang ${provider} do hết quota`);
+          toast(`⚠️ Đổi sang ${provider} do AI hiện tại quá tải`);
         }
         return result;
       }
     }catch(e){
-      if(e.message==='QUOTA'){
-        console.warn(`[AI] ${provider} hết quota, thử provider tiếp theo...`);
-        continue; // try next provider
+      lastError = e;
+      if(e.message==='QUOTA' || isRetryableAIError(e)){
+        console.warn(`[AI] ${provider} quá tải/hết quota, thử provider tiếp theo...`);
+        continue;
       }
-      throw e; // other errors bubble up
+      throw e;
     }
   }
+  if(lastError) throw lastError;
   return null;
 }
 
@@ -798,7 +889,8 @@ DỮ LIỆU NGƯỜI DÙNG (${profileLabel}):
 
 YÊU CẦU NHẬN DIỆN:
 - Nhận diện TẤT CẢ các món trong ảnh (kể cả nhiều món cùng lúc)
-- Ưu tiên nhận diện món Việt: Phở, Bún bò Huế, Cơm tấm, Bánh mì, Hủ tiếu, Bún chả, Bún riêu, Mì Quảng, Cháo, Xôi, Bánh cuốn, Bánh xèo, Gỏi cuốn, Cơm gà, Bún thịt nướng, v.v.
+- Ưu tiên nhận diện món Việt: Phở, Bún bò Huế, Cơm tấm, Bánh mì, Hủ tiếu, Bún chả, Bún riêu, Mì Quảng, Cháo, Xôi, Bánh cuốn, Bánh xèo, Gỏi cuốn, Cơm gà, Bún thịt nướng, Cơm tôm thịt trứng, v.v.
+- Nếu ảnh rõ là đồ ăn nhưng không chắc tên, hãy đưa ra tên có khả năng nhất và giảm confidence; KHÔNG trả về "Không xác định" trừ khi ảnh không phải thức ăn
 - Ước tính khẩu phần dựa trên kích thước nhìn thấy trong ảnh
 - Tính toán dinh dưỡng CHÍNH XÁC cho tổng toàn bộ phần ăn nhìn thấy
 
@@ -832,12 +924,10 @@ Trả về JSON duy nhất (không markdown, không backtick):
     const txt = await callAI({prompt, imageBase64: base64});
     CONFIG.AI_PROVIDER = origProvider;
     if(!txt) throw new Error('Không có phản hồi từ AI');
-    const clean = txt.replace(/```json|```/g,'').trim();
-    const idx = clean.indexOf('{');
-    return JSON.parse(idx>=0 ? clean.slice(idx) : clean);
+    return normalizeNutritionResult(parseAIJson(txt));
   }catch(e){
     CONFIG.AI_PROVIDER = origProvider;
-    return {dish_name:'Không xác định',calories:0,protein:0,carbs:0,fat:0,confidence:0,advice:'Lỗi phân tích ảnh: '+e.message};
+    return {dish_name:'Chưa nhận diện được',calories:0,protein:0,carbs:0,fat:0,fiber:0,sugar:0,sodium:0,confidence:0,items:[],advice:friendlyAIError(e)};
   }
 }
 
