@@ -858,49 +858,206 @@ function mealItem(m){
 function showMealDetail(id){
   const m = State.meals.find(x=>x.id===id);
   if(!m) return;
+
+  // Work on a deep copy of items so edits are local until saved
+  let editItems = (m.items||[]).map(it=>({...it}));
+  // If no items, create one from the meal itself
+  if(!editItems.length){
+    editItems = [{
+      name: m.name, quantity: 1, unit: 'phần',
+      base_calories: +m.calories||0, base_protein: +m.protein||0,
+      base_carbs: +m.carbs||0, base_fat: +m.fat||0,
+    }];
+  }
+
   const mealLabel = {'breakfast':'🌅 Bữa sáng','lunch':'☀️ Bữa trưa','dinner':'🌙 Bữa tối','snack':'🍎 Ăn vặt'}[m.meal_type]||m.meal_type||'—';
   const hasPhoto = m.photo && !m.photo.startsWith('data:image/svg');
+
   const modal = document.createElement('div');
   modal.className='modal';
   modal.id='mealDetailModal';
-  modal.innerHTML=`<div class="sheet" style="padding:24px">
-    <div class="row between" style="margin-bottom:16px">
-      <h2 style="margin:0">${m.name||'Món ăn'}</h2>
-      <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
-    </div>
-    ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:200px;object-fit:cover;border-radius:16px;margin-bottom:16px"/>` :''}
-    <div class="grid4" style="margin-bottom:14px">
-      <div class="stat"><div class="l">Calo</div><div class="v" style="color:var(--primary)">${fmt(m.calories)}</div><div class="muted" style="font-size:10px">kcal</div></div>
-      <div class="stat"><div class="l">Protein</div><div class="v" style="color:var(--p)">${fmt(m.protein)}</div><div class="muted" style="font-size:10px">g</div></div>
-      <div class="stat"><div class="l">Carbs</div><div class="v" style="color:var(--c)">${fmt(m.carbs)}</div><div class="muted" style="font-size:10px">g</div></div>
-      <div class="stat"><div class="l">Chất béo</div><div class="v" style="color:var(--f)">${fmt(m.fat)}</div><div class="muted" style="font-size:10px">g</div></div>
-    </div>
-    ${(m.fiber||m.sugar||m.sodium)?`<div class="row" style="gap:12px;margin-bottom:14px">
-      ${m.fiber?`<span class="pill">Xơ: ${fmt(m.fiber)}g</span>`:''}
-      ${m.sugar?`<span class="pill">Đường: ${fmt(m.sugar)}g</span>`:''}
-      ${m.sodium?`<span class="pill">Natri: ${fmt(m.sodium)}mg</span>`:''}
-    </div>`:''}
-    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
-      <span class="muted" style="font-size:13px">Bữa ăn</span>
-      <b style="font-size:13px">${mealLabel}</b>
-    </div>
-    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
-      <span class="muted" style="font-size:13px">Ngày</span>
-      <b style="font-size:13px">${m.date||''}</b>
-    </div>
-    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
-      <span class="muted" style="font-size:13px">Người dùng</span>
-      <b style="font-size:13px">${State.activeProfile==='husband'?'👨 Chồng':'👩 Vợ'}</b>
-    </div>
-    <button class="btn danger" id="mealDetailDel" style="margin-top:16px"><i data-lucide="trash-2"></i> Xoá bữa ăn này</button>
-  </div>`;
+
+  function recalcTotals(){
+    return editItems.reduce((acc,it)=>{
+      const q = +it.quantity||1;
+      acc.calories += (it.base_calories||0)*q;
+      acc.protein  += (it.base_protein||0)*q;
+      acc.carbs    += (it.base_carbs||0)*q;
+      acc.fat      += (it.base_fat||0)*q;
+      return acc;
+    },{calories:0,protein:0,carbs:0,fat:0});
+  }
+
+  function itemRow(it, idx){
+    const q = +it.quantity||1;
+    return `<tr data-iidx="${idx}" style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 4px">
+        <input class="input ii-name" style="min-width:90px;font-size:13px;padding:6px 8px" value="${escHtml(it.name||'')}">
+      </td>
+      <td style="padding:8px 4px;width:72px">
+        <input class="input ii-qty" type="number" min="0.1" step="0.1" style="font-size:13px;padding:6px 8px;text-align:center" value="${q}">
+      </td>
+      <td style="padding:8px 4px;width:56px">
+        <input class="input ii-unit" style="font-size:12px;padding:6px 6px;text-align:center" value="${escHtml(it.unit||'phần')}">
+      </td>
+      <td style="padding:8px 4px;width:68px">
+        <input class="input ii-cal" type="number" min="0" style="font-size:13px;padding:6px 8px;text-align:center" value="${fmt(it.base_calories||0)}">
+        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_calories||0)*q)} kcal</div>
+      </td>
+      <td style="padding:8px 4px;width:52px">
+        <input class="input ii-p" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--p)" value="${fmt(it.base_protein||0)}">
+        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_protein||0)*q)}g</div>
+      </td>
+      <td style="padding:8px 4px;width:52px">
+        <input class="input ii-c" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--c)" value="${fmt(it.base_carbs||0)}">
+        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_carbs||0)*q)}g</div>
+      </td>
+      <td style="padding:8px 4px;width:52px">
+        <input class="input ii-f" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--f)" value="${fmt(it.base_fat||0)}">
+        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_fat||0)*q)}g</div>
+      </td>
+      <td style="padding:8px 4px;width:32px;text-align:center">
+        <button class="btn small ghost ii-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button>
+      </td>
+    </tr>`;
+  }
+
+  function escHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function renderModal(){
+    const tot = recalcTotals();
+    modal.innerHTML=`<div class="sheet" style="padding:20px;max-height:90dvh;overflow-y:auto">
+      <div class="row between" style="margin-bottom:12px">
+        <h2 style="margin:0;font-size:17px">${escHtml(m.name||'Món ăn')}</h2>
+        <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
+      </div>
+      ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:14px;margin-bottom:12px"/>` :''}
+
+      <!-- Totals summary -->
+      <div class="grid4" style="margin-bottom:12px" id="detailTotals">
+        <div class="stat"><div class="l">Calo</div><div class="v" style="color:var(--primary)">${fmt(tot.calories)}</div><div class="muted" style="font-size:10px">kcal</div></div>
+        <div class="stat"><div class="l">Protein</div><div class="v" style="color:var(--p)">${fmt(tot.protein)}</div><div class="muted" style="font-size:10px">g</div></div>
+        <div class="stat"><div class="l">Carbs</div><div class="v" style="color:var(--c)">${fmt(tot.carbs)}</div><div class="muted" style="font-size:10px">g</div></div>
+        <div class="stat"><div class="l">Chất béo</div><div class="v" style="color:var(--f)">${fmt(tot.fat)}</div><div class="muted" style="font-size:10px">g</div></div>
+      </div>
+
+      <!-- Ingredient table -->
+      <div style="margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)">CHI TIẾT THÀNH PHẦN</div>
+      <div style="overflow-x:auto;margin-bottom:8px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="font-size:10px;color:var(--muted);font-weight:600">
+              <th style="padding:4px 4px;text-align:left">Món</th>
+              <th style="padding:4px 4px;text-align:center">SL</th>
+              <th style="padding:4px 4px;text-align:center">Đơn vị</th>
+              <th style="padding:4px 4px;text-align:center">kcal/đv</th>
+              <th style="padding:4px 4px;text-align:center">P(g)</th>
+              <th style="padding:4px 4px;text-align:center">C(g)</th>
+              <th style="padding:4px 4px;text-align:center">F(g)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="itemsTbody">
+            ${editItems.map((it,i)=>itemRow(it,i)).join('')}
+          </tbody>
+        </table>
+      </div>
+      <button class="btn secondary small" id="addItemRow" style="margin-bottom:12px;width:auto;padding:8px 14px"><i data-lucide="plus"></i> Thêm thành phần</button>
+
+      <!-- Meta rows -->
+      <div class="row between" style="padding:8px 0;border-top:1px solid var(--border)">
+        <span class="muted" style="font-size:13px">Bữa ăn</span>
+        <b style="font-size:13px">${mealLabel}</b>
+      </div>
+      <div class="row between" style="padding:8px 0;border-top:1px solid var(--border)">
+        <span class="muted" style="font-size:13px">Ngày</span>
+        <b style="font-size:13px">${m.date||''}</b>
+      </div>
+      <div class="row between" style="padding:8px 0;border-top:1px solid var(--border)">
+        <span class="muted" style="font-size:13px">Người dùng</span>
+        <b style="font-size:13px">${State.activeProfile==='husband'?'👨 Chồng':'👩 Vợ'}</b>
+      </div>
+
+      <button class="btn" id="mealDetailSave" style="margin-top:12px"><i data-lucide="check"></i> Lưu thay đổi</button>
+      <button class="btn danger" id="mealDetailDel" style="margin-top:8px"><i data-lucide="trash-2"></i> Xoá bữa ăn này</button>
+    </div>`;
+    lucide.createIcons();
+    attachModalHandlers();
+  }
+
+  function attachModalHandlers(){
+    modal.querySelector('#closeMealDetail').onclick = ()=>modal.remove();
+    modal.onclick = e=>{ if(e.target===modal) modal.remove(); };
+
+    // Delete meal
+    modal.querySelector('#mealDetailDel').onclick = async ()=>{
+      await delMeal(id); modal.remove(); render(); toast('Đã xoá!');
+    };
+
+    // Save changes
+    modal.querySelector('#mealDetailSave').onclick = async ()=>{
+      const tot = recalcTotals();
+      m.items = editItems.map(it=>({...it}));
+      m.calories = Math.round(tot.calories);
+      m.protein  = Math.round(tot.protein);
+      m.carbs    = Math.round(tot.carbs);
+      m.fat      = Math.round(tot.fat);
+      if(sb && !State.demo){
+        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items}).eq('id',m.id); }catch(e){console.warn(e)}
+      }
+      saveLocal();
+      modal.remove(); render(); toast('✅ Đã cập nhật!');
+    };
+
+    // Add item row
+    modal.querySelector('#addItemRow').onclick = ()=>{
+      editItems.push({name:'Món mới',quantity:1,unit:'phần',base_calories:0,base_protein:0,base_carbs:0,base_fat:0});
+      renderModal();
+    };
+
+    // Delete item row
+    modal.querySelectorAll('.ii-del').forEach(btn=>{
+      btn.onclick = ()=>{
+        const idx = +btn.closest('tr').dataset.iidx;
+        editItems.splice(idx,1);
+        renderModal();
+      };
+    });
+
+    // Live-update editItems and totals on input change
+    function syncRow(tr){
+      const idx = +tr.dataset.iidx;
+      editItems[idx].name          = tr.querySelector('.ii-name').value;
+      editItems[idx].quantity       = +tr.querySelector('.ii-qty').value||1;
+      editItems[idx].unit           = tr.querySelector('.ii-unit').value;
+      editItems[idx].base_calories  = +tr.querySelector('.ii-cal').value||0;
+      editItems[idx].base_protein   = +tr.querySelector('.ii-p').value||0;
+      editItems[idx].base_carbs     = +tr.querySelector('.ii-c').value||0;
+      editItems[idx].base_fat       = +tr.querySelector('.ii-f').value||0;
+      // Update the per-row total cells without full re-render
+      const it = editItems[idx];
+      const q  = it.quantity;
+      tr.querySelector('.ii-cal').nextElementSibling.textContent = `${fmt(it.base_calories*q)} kcal`;
+      tr.querySelector('.ii-p').nextElementSibling.textContent   = `${fmt(it.base_protein*q)}g`;
+      tr.querySelector('.ii-c').nextElementSibling.textContent   = `${fmt(it.base_carbs*q)}g`;
+      tr.querySelector('.ii-f').nextElementSibling.textContent   = `${fmt(it.base_fat*q)}g`;
+      // Update summary totals
+      const tot = recalcTotals();
+      const d = modal.querySelector('#detailTotals');
+      if(d){
+        d.querySelectorAll('.v')[0].textContent = fmt(tot.calories);
+        d.querySelectorAll('.v')[1].textContent = fmt(tot.protein);
+        d.querySelectorAll('.v')[2].textContent = fmt(tot.carbs);
+        d.querySelectorAll('.v')[3].textContent = fmt(tot.fat);
+      }
+    }
+    modal.querySelectorAll('#itemsTbody tr').forEach(tr=>{
+      tr.querySelectorAll('input').forEach(inp=>inp.oninput=()=>syncRow(tr));
+    });
+  }
+
   document.body.appendChild(modal);
-  lucide.createIcons();
-  modal.querySelector('#closeMealDetail').onclick = ()=>modal.remove();
-  modal.onclick = e=>{ if(e.target===modal) modal.remove(); };
-  modal.querySelector('#mealDetailDel').onclick = async ()=>{
-    await delMeal(id); modal.remove(); render(); toast('Đã xoá!');
-  };
+  renderModal();
 }
 
 /* ============================================================
@@ -1072,11 +1229,21 @@ async function handleScanFile(file){
     </div>`;
   icons();
   $('#resSave').onclick=async ()=>{
+    // Build items with quantity=1 by default, base_* stores per-unit nutrition
+    const savedItems = (res.items||[]).map(it=>({
+      name: it.name,
+      quantity: 1,
+      unit: 'phần',
+      base_calories: +it.calories||0,
+      base_protein:  +it.protein||0,
+      base_carbs:    +it.carbs||0,
+      base_fat:      +it.fat||0,
+    }));
     await addMeal({
       id:uid(), name:res.dish_name||'Food', calories:+res.calories||0, protein:+res.protein||0,
       carbs:+res.carbs||0, fat:+res.fat||0, fiber:+res.fiber||0, sugar:+res.sugar||0,
       sodium:+res.sodium||0, photo:photoUrl, meal_type:$('#resMeal').value, date:today(),
-      created_at:new Date().toISOString()
+      created_at:new Date().toISOString(), items: savedItems
     });
     toast('✅ Đã lưu vào nhật ký!'); State.view='diary'; render();
   };
@@ -1404,7 +1571,14 @@ function viewAdmin(){
     </div>
   </div>
   <div class="card">
-    <h3>Database Schema</h3>
+    <h3>🔧 Migration cần chạy</h3>
+    <div class="muted" style="font-size:12px;margin-bottom:10px">Nếu bảng <code>meals</code> đã tồn tại trước phiên bản này, hãy chạy lệnh SQL sau trong <b>Supabase → SQL Editor</b> để thêm cột lưu chi tiết thành phần món ăn:</div>
+    <pre style="white-space:pre-wrap;font-size:12px;background:var(--bg);padding:12px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;user-select:all">alter table meals add column if not exists items jsonb default '[]'::jsonb;</pre>
+    <button class="btn secondary small" id="copyMigration" style="width:auto;padding:8px 16px"><i data-lucide="copy"></i> Copy SQL</button>
+    <div id="copyMigrationMsg" class="muted" style="font-size:11px;margin-top:6px;display:none">✅ Đã copy! Dán vào Supabase SQL Editor rồi bấm Run.</div>
+  </div>
+  <div class="card">
+    <h3>Database Schema đầy đủ</h3>
     <button class="btn secondary small" id="showSql">Hiển thị SQL</button>
     <pre id="sqlOut" class="hidden" style="white-space:pre-wrap;font-size:11px;background:var(--bg);padding:10px;border-radius:10px;margin-top:8px"></pre>
   </div>`;
@@ -1625,6 +1799,12 @@ function attachHandlers(){
     }catch(e){ msg.textContent='❌ Lỗi: '+e.message; }
   };
   if($('#showSql')) $('#showSql').onclick=()=>{$('#sqlOut').textContent=SQL_SCHEMA;$('#sqlOut').classList.toggle('hidden')};
+  if($('#copyMigration')) $('#copyMigration').onclick=()=>{
+    const sql = "alter table meals add column if not exists items jsonb default '[]'::jsonb;";
+    navigator.clipboard.writeText(sql).then(()=>{
+      const msg=$('#copyMigrationMsg'); if(msg){msg.style.display='block'; setTimeout(()=>{msg.style.display='none'},4000);}
+    }).catch(()=>toast('Copy: ' + sql));
+  };
 
   // Config — Supabase hardcoded, không cần save
 }
@@ -1720,11 +1900,14 @@ create table if not exists meals (
   meal_type text,
   date date,
   notes text,
+  items jsonb default '[]'::jsonb,
   created_at timestamptz default now()
 );
 alter table meals enable row level security;
 create policy "own_meals" on meals
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+-- Migration neu bang da ton tai:
+-- alter table meals add column if not exists items jsonb default '[]'::jsonb;
 
 -- ================================================
 -- WATER
