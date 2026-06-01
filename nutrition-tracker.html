@@ -361,15 +361,17 @@ function targetCalories(p){
   const t = calcTDEE(p);
   if(p.goal==='loss') return Math.round(t-500);
   if(p.goal==='bulk') return Math.round(t+300);
+  if(p.goal==='recomp') return Math.round(t);
   return Math.round(t);
 }
 function macroTargets(p){
   const cals = targetCalories(p);
-  // protein 30%, carbs 40%, fat 30%
+  // recomp: higher protein (40%), lower carbs (30%), fat 30%
+  const isRecomp = p.goal==='recomp';
   return {
     calories: cals,
-    protein: Math.round(cals*0.30/4),
-    carbs: Math.round(cals*0.40/4),
+    protein: Math.round(cals*(isRecomp?0.40:0.30)/4),
+    carbs: Math.round(cals*(isRecomp?0.30:0.40)/4),
     fat: Math.round(cals*0.30/9),
     fiber: 30,
     water: 2500
@@ -394,35 +396,39 @@ async function afterAuth(){
   const {data}=await sb.auth.getUser();
   if(!data.user) return;
   State.user=data.user;
-  // Load both profiles (husband & wife) from Supabase using profile_key column
-  const {data:profs}=await sb.from('profiles').select('*').eq('user_id',data.user.id);
-  const hProf = profs?.find(p=>p.profile_key==='husband');
-  const wProf = profs?.find(p=>p.profile_key==='wife');
-  // Fallback: legacy single profile (old schema uses id = user.id)
-  const {data:legacyProf}=await sb.from('profiles').select('*').eq('id',data.user.id).maybeSingle();
+  const uid=data.user.id;
 
-  if(hProf){
-    State.profiles.husband=mapProfile(hProf);
+  // Load profiles: thử theo id (chuẩn mới: user_id+'_husband' / user_id+'_wife')
+  const [{data:hRow},{data:wRow}] = await Promise.all([
+    sb.from('profiles').select('*').eq('id',uid+'_husband').maybeSingle(),
+    sb.from('profiles').select('*').eq('id',uid+'_wife').maybeSingle(),
+  ]);
+
+  // Fallback: schema cũ dùng id = auth.uid
+  const {data:legacyProf}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
+
+  if(hRow){
+    State.profiles.husband=mapProfile(hRow);
   } else if(legacyProf && (legacyProf.role==='husband'||!legacyProf.role)){
-    State.profiles.husband={...mapProfile(legacyProf), profileKey:'husband'};
+    State.profiles.husband={...mapProfile(legacyProf), profileKey:'husband', profile_key:'husband'};
   } else {
     State.profiles.husband={
-      name: data.user.email.split('@')[0], profileKey:'husband',
+      name: data.user.email.split('@')[0], profileKey:'husband', profile_key:'husband',
       gender:'male', age:30, height:170, weight:70, goalWeight:65, activity:'moderate', goal:'maintain'
     };
-    await sb.from('profiles').upsert({id:data.user.id+'_husband', user_id:data.user.id, profile_key:'husband', ...State.profiles.husband});
+    try{ await sb.from('profiles').upsert({id:uid+'_husband', user_id:uid, profile_key:'husband', name:State.profiles.husband.name, gender:State.profiles.husband.gender, age:State.profiles.husband.age, height:State.profiles.husband.height, weight:State.profiles.husband.weight, goal_weight:State.profiles.husband.goalWeight, activity:State.profiles.husband.activity, goal:State.profiles.husband.goal}); }catch(e){console.warn(e)}
   }
 
-  if(wProf){
-    State.profiles.wife=mapProfile(wProf);
+  if(wRow){
+    State.profiles.wife=mapProfile(wRow);
   } else if(legacyProf && legacyProf.role==='wife'){
-    State.profiles.wife={...mapProfile(legacyProf), profileKey:'wife'};
+    State.profiles.wife={...mapProfile(legacyProf), profileKey:'wife', profile_key:'wife'};
   } else {
     State.profiles.wife={
-      name: 'Vợ', profileKey:'wife',
+      name: 'Vợ', profileKey:'wife', profile_key:'wife',
       gender:'female', age:28, height:160, weight:55, goalWeight:52, activity:'light', goal:'maintain'
     };
-    await sb.from('profiles').upsert({id:data.user.id+'_wife', user_id:data.user.id, profile_key:'wife', ...State.profiles.wife});
+    try{ await sb.from('profiles').upsert({id:uid+'_wife', user_id:uid, profile_key:'wife', name:State.profiles.wife.name, gender:State.profiles.wife.gender, age:State.profiles.wife.age, height:State.profiles.wife.height, weight:State.profiles.wife.weight, goal_weight:State.profiles.wife.goalWeight, activity:State.profiles.wife.activity, goal:State.profiles.wife.goal}); }catch(e){console.warn(e)}
   }
 
   State.activeProfile='husband';
@@ -431,7 +437,12 @@ async function afterAuth(){
   await loadAiSettings();
   enterApp();
 }
-function mapProfile(p){return {...p}}
+function mapProfile(p){
+  return {
+    ...p,
+    goalWeight: p.goalWeight ?? p.goal_weight ?? null,
+  };
+}
 
 async function loadCloud(){
   if(!sb||State.demo) return;
@@ -569,7 +580,7 @@ function viewDashboard(){
   <div class="card" style="text-align:center">
     ${ring}
     <div style="margin-top:8px"><b>${remain>=0?fmt(remain)+' kcal còn lại':fmt(-remain)+' kcal vượt'}</b></div>
-    <div class="muted">Mục tiêu: ${({loss:'Giảm cân',maintain:'Duy trì',bulk:'Tăng cơ'})[p.goal]||'-'}</div>
+    <div class="muted">Mục tiêu: ${({loss:'Giảm cân',maintain:'Duy trì',recomp:'Giảm mỡ tăng cơ',bulk:'Tăng cơ'})[p.goal]||'-'}</div>
   </div>
 
   <div class="grid2">
@@ -653,13 +664,13 @@ function mealItem(m){
 function viewScan(){
   return `
   <div class="card">
-    <h3>AI Food Scanner</h3>
-    <div class="muted">Take or upload a photo. Supports Vietnamese dishes (Pho, Bun Bo Hue, Com Tam, Banh Mi, Hu Tieu, Bun Cha, Bun Rieu, Mi Quang, Chao, Xoi, Banh Cuon, Banh Xeo) and multiple dishes per photo.</div>
+    <h3>📷 Quét món ăn bằng AI</h3>
+    <div class="muted">Chụp ảnh hoặc tải lên. AI nhận diện các món Việt Nam và quốc tế, tính toán dinh dưỡng chính xác, đưa lời khuyên theo mục tiêu của bạn.</div>
     <div class="grid2" style="margin-top:10px">
-      <label class="btn"><i data-lucide="camera"></i> Camera
+      <label class="btn" style="cursor:pointer"><i data-lucide="camera"></i> Mở Camera
         <input id="camIn" type="file" accept="image/*" capture="environment" style="display:none">
       </label>
-      <label class="btn secondary"><i data-lucide="upload"></i> Upload
+      <label class="btn secondary" style="cursor:pointer"><i data-lucide="upload"></i> Tải ảnh lên
         <input id="upIn" type="file" accept="image/*" style="display:none">
       </label>
     </div>
@@ -667,19 +678,21 @@ function viewScan(){
     <div id="scanResult" style="margin-top:12px"></div>
   </div>
   <div class="card">
-    <h3>Manual Entry</h3>
-    <input id="mName" class="input" placeholder="Food name"/>
+    <h3>✏️ Nhập thủ công</h3>
+    <input id="mName" class="input" placeholder="Tên món ăn"/>
     <div class="grid4" style="margin-top:8px">
       <input id="mCal" class="input" placeholder="kcal" type="number"/>
-      <input id="mP" class="input" placeholder="P g" type="number"/>
-      <input id="mC" class="input" placeholder="C g" type="number"/>
-      <input id="mF" class="input" placeholder="F g" type="number"/>
+      <input id="mP" class="input" placeholder="Protein (g)" type="number"/>
+      <input id="mC" class="input" placeholder="Carbs (g)" type="number"/>
+      <input id="mF" class="input" placeholder="Fat (g)" type="number"/>
     </div>
     <select id="mMeal" class="select" style="margin-top:8px">
-      <option value="breakfast">Breakfast</option><option value="lunch">Lunch</option>
-      <option value="dinner">Dinner</option><option value="snack">Snack</option>
+      <option value="breakfast">🌅 Bữa sáng</option>
+      <option value="lunch">☀️ Bữa trưa</option>
+      <option value="dinner">🌙 Bữa tối</option>
+      <option value="snack">🍎 Ăn vặt</option>
     </select>
-    <button class="btn" id="mSave" style="margin-top:8px"><i data-lucide="plus"></i> Add to Diary</button>
+    <button class="btn" id="mSave" style="margin-top:8px"><i data-lucide="plus"></i> Thêm vào Nhật ký</button>
   </div>`;
 }
 
@@ -698,61 +711,120 @@ async function compressImage(file, max=1024, q=0.8){
 
 async function analyzePhoto(dataUrl){
   const base64 = dataUrl.split(',')[1];
-  const prompt = `You are a nutrition expert specializing in Vietnamese and international cuisine. Analyze this food photo. Identify all dishes (including Vietnamese ones like Pho, Bun Bo Hue, Com Tam, Banh Mi, Hu Tieu, Bun Cha, Bun Rieu, Mi Quang, Chao, Xoi, Banh Cuon, Banh Xeo). Return ONLY JSON (no markdown, no backticks): {"dish_name":"","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"sugar":0,"sodium":0,"confidence":0.0,"items":[{"name":"","calories":0}]}`;
+  const p = State.profile;
+  const tgt = macroTargets(p);
+  const tot = todayTotals();
+  const remainCal = tgt.calories - tot.calories;
+  const profileLabel = State.activeProfile==='husband'?'Chồng':'Vợ';
+  const goalLabel = p.goal==='loss'?'giảm cân':p.goal==='bulk'?'tăng cơ':p.goal==='recomp'?'giảm mỡ tăng cơ':'duy trì cân nặng';
 
-  // Groq không hỗ trợ vision → dùng Gemini làm fallback nếu có key
-  const useVision = CONFIG.AI_PROVIDER !== 'groq';
-  const hasKey = CONFIG.AI_PROVIDER==='gemini'?CONFIG.GEMINI_API_KEY
-               : CONFIG.AI_PROVIDER==='groq'?CONFIG.GROQ_API_KEY
-               : CONFIG.OPENROUTER_API_KEY;
+  const prompt = `Bạn là chuyên gia dinh dưỡng chuyên về ẩm thực Việt Nam và quốc tế.
 
-  if(!hasKey){
-    return {dish_name:'Pho Bo',calories:450,protein:30,carbs:55,fat:12,fiber:3,sugar:5,sodium:1200,confidence:0.72,note:'Demo — chưa có AI API key.'};
+NHIỆM VỤ: Phân tích ảnh thức ăn và trả về JSON chính xác. KHÔNG trả về gì ngoài JSON.
+
+DỮ LIỆU NGƯỜI DÙNG (${profileLabel}):
+- Mục tiêu: ${goalLabel}
+- Calo mục tiêu/ngày: ${tgt.calories} kcal
+- Đã nạp hôm nay: ${tot.calories} kcal
+- Còn lại: ${remainCal} kcal
+- Protein mục tiêu: ${tgt.protein}g (đã nạp: ${tot.protein}g)
+
+YÊU CẦU NHẬN DIỆN:
+- Nhận diện TẤT CẢ các món trong ảnh (kể cả nhiều món cùng lúc)
+- Ưu tiên nhận diện món Việt: Phở, Bún bò Huế, Cơm tấm, Bánh mì, Hủ tiếu, Bún chả, Bún riêu, Mì Quảng, Cháo, Xôi, Bánh cuốn, Bánh xèo, Gỏi cuốn, Cơm gà, Bún thịt nướng, v.v.
+- Ước tính khẩu phần dựa trên kích thước nhìn thấy trong ảnh
+- Tính toán dinh dưỡng CHÍNH XÁC cho tổng toàn bộ phần ăn nhìn thấy
+
+LỜI KHUYÊN (advice): Dựa vào dữ liệu người dùng ở trên, cho lời khuyên NGẮN GỌN 1-2 câu bằng tiếng Việt: có nên ăn không, có phù hợp với mục tiêu không, cần điều chỉnh gì.
+
+Trả về JSON duy nhất (không markdown, không backtick):
+{"dish_name":"tên món tiếng Việt","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"sugar":0,"sodium":0,"confidence":0.0,"items":[{"name":"tên món","calories":0,"protein":0,"carbs":0,"fat":0}],"advice":"lời khuyên tiếng Việt"}`;
+
+  // Groq không hỗ trợ vision
+  const hasVisionKey = (CONFIG.AI_PROVIDER==='gemini' && CONFIG.GEMINI_API_KEY)
+                    || (CONFIG.AI_PROVIDER==='openrouter' && CONFIG.OPENROUTER_API_KEY)
+                    || (CONFIG.GEMINI_API_KEY) // fallback to gemini for vision
+                    || (CONFIG.OPENROUTER_API_KEY);
+
+  if(!CONFIG.GEMINI_API_KEY && !CONFIG.OPENROUTER_API_KEY){
+    const demo={dish_name:'Phở Bò',calories:450,protein:30,carbs:55,fat:12,fiber:3,sugar:5,sodium:1200,confidence:0.72,
+      items:[{name:'Phở Bò tái',calories:450,protein:30,carbs:55,fat:12}],
+      advice:`(Demo) Phở bò cung cấp ${450} kcal, bạn còn ${remainCal} kcal hôm nay. Phù hợp cho mục tiêu ${goalLabel}.`};
+    return demo;
   }
-  if(!useVision){
-    return {dish_name:'N/A',calories:0,protein:0,carbs:0,fat:0,confidence:0,note:'Groq không hỗ trợ nhận diện ảnh. Vui lòng chọn Gemini hoặc OpenRouter.'};
+
+  // Force vision-capable provider
+  const origProvider = CONFIG.AI_PROVIDER;
+  if(CONFIG.AI_PROVIDER==='groq'){
+    if(CONFIG.GEMINI_API_KEY) CONFIG.AI_PROVIDER='gemini';
+    else if(CONFIG.OPENROUTER_API_KEY) CONFIG.AI_PROVIDER='openrouter';
+    else return {dish_name:'N/A',calories:0,protein:0,carbs:0,fat:0,confidence:0,advice:'Groq không hỗ trợ nhận diện ảnh. Vui lòng thêm Gemini hoặc OpenRouter key trong Cài đặt AI.'};
   }
 
   try{
     const txt = await callAI({prompt, imageBase64: base64});
-    if(!txt) throw new Error('No response');
+    CONFIG.AI_PROVIDER = origProvider;
+    if(!txt) throw new Error('Không có phản hồi từ AI');
     const clean = txt.replace(/```json|```/g,'').trim();
-    return JSON.parse(clean);
+    const idx = clean.indexOf('{');
+    return JSON.parse(idx>=0 ? clean.slice(idx) : clean);
   }catch(e){
-    return {dish_name:'Unknown',calories:0,protein:0,carbs:0,fat:0,confidence:0,note:'Lỗi phân tích: '+e.message};
+    CONFIG.AI_PROVIDER = origProvider;
+    return {dish_name:'Không xác định',calories:0,protein:0,carbs:0,fat:0,confidence:0,advice:'Lỗi phân tích ảnh: '+e.message};
   }
 }
 
 async function handleScanFile(file){
   if(!file) return;
-  toast('Compressing...');
+  toast('⏳ Đang xử lý ảnh...');
   const {blob,dataUrl}=await compressImage(file);
   $('#scanPreview').innerHTML=`<img src="${dataUrl}" style="width:100%;border-radius:14px"/>`;
   let photoUrl=dataUrl;
   if(sb && !State.demo){
     try{
       const path=`${State.user.id}/${State.activeProfile}/${Date.now()}.jpg`;
-      const up=await sb.storage.from('Image').upload(path,blob,{contentType:'image/jpeg',upsert:true});
-      if(!up.error){ photoUrl=sb.storage.from('Image').getPublicUrl(path).data.publicUrl; }
+      const up=await sb.storage.from('food-photos').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+      if(!up.error){ photoUrl=sb.storage.from('food-photos').getPublicUrl(path).data.publicUrl; }
     }catch(e){console.warn(e)}
   }
-  $('#scanResult').innerHTML=`<div class="muted">🤖 Analyzing with AI...</div>`;
+  $('#scanResult').innerHTML=`<div class="muted" style="text-align:center;padding:20px">🤖 AI đang phân tích món ăn...</div>`;
   const res=await analyzePhoto(dataUrl);
+  const tgt2=macroTargets(State.profile), tot2=todayTotals();
+  const remainAfter = tgt2.calories - tot2.calories - (res.calories||0);
+  const adviceColor = remainAfter >= 0 ? '#22c55e' : '#ef4444';
+  const itemsHtml = (res.items||[]).length>1 ? `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+    <div class="muted" style="font-size:11px;margin-bottom:4px">CHI TIẾT CÁC MÓN</div>
+    ${(res.items||[]).map(it=>`<div class="row between" style="font-size:13px;padding:3px 0"><span>${it.name}</span><span class="muted">${fmt(it.calories)} kcal · P${fmt(it.protein||0)} C${fmt(it.carbs||0)} F${fmt(it.fat||0)}</span></div>`).join('')}
+  </div>`:''  ;
   $('#scanResult').innerHTML=`
     <div class="card" style="margin:0">
-      <h3>${res.dish_name||'Detected'}</h3>
-      <div class="muted">Confidence: ${Math.round((res.confidence||0)*100)}% ${res.note?'· '+res.note:''}</div>
-      <div class="grid4" style="margin-top:8px">
-        <div class="stat"><div class="l">kcal</div><div class="v">${fmt(res.calories)}</div></div>
-        <div class="stat"><div class="l">P</div><div class="v">${fmt(res.protein)}</div></div>
-        <div class="stat"><div class="l">C</div><div class="v">${fmt(res.carbs)}</div></div>
-        <div class="stat"><div class="l">F</div><div class="v">${fmt(res.fat)}</div></div>
+      <div class="row between" style="margin-bottom:4px">
+        <h3 style="margin:0">${res.dish_name||'Món ăn'}</h3>
+        <span class="pill">Độ chính xác: ${Math.round((res.confidence||0)*100)}%</span>
       </div>
-      <select id="resMeal" class="select" style="margin-top:8px">
-        <option value="breakfast">Breakfast</option><option value="lunch" selected>Lunch</option>
-        <option value="dinner">Dinner</option><option value="snack">Snack</option>
+      <div class="grid4" style="margin-top:8px">
+        <div class="stat"><div class="l">Calo</div><div class="v" style="color:var(--primary)">${fmt(res.calories)}</div></div>
+        <div class="stat"><div class="l">Protein</div><div class="v" style="color:var(--p)">${fmt(res.protein)}g</div></div>
+        <div class="stat"><div class="l">Carbs</div><div class="v" style="color:var(--c)">${fmt(res.carbs)}g</div></div>
+        <div class="stat"><div class="l">Chất béo</div><div class="v" style="color:var(--f)">${fmt(res.fat)}g</div></div>
+      </div>
+      <div class="row between" style="margin-top:6px;font-size:12px">
+        <span class="muted">Xơ: ${fmt(res.fiber||0)}g</span>
+        <span class="muted">Đường: ${fmt(res.sugar||0)}g</span>
+        <span class="muted">Natri: ${fmt(res.sodium||0)}mg</span>
+      </div>
+      ${itemsHtml}
+      ${res.advice?`<div style="margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:12px;border-left:3px solid ${adviceColor};font-size:13px;line-height:1.5">
+        💡 <b>Lời khuyên:</b> ${res.advice}
+        <div style="margin-top:4px;font-size:12px;color:var(--muted)">Sau bữa này còn: <b style="color:${adviceColor}">${Math.abs(remainAfter)} kcal ${remainAfter>=0?'':'(đã vượt mục tiêu)'}</b></div>
+      </div>`:''}
+      <select id="resMeal" class="select" style="margin-top:10px">
+        <option value="breakfast">🌅 Bữa sáng</option>
+        <option value="lunch" selected>☀️ Bữa trưa</option>
+        <option value="dinner">🌙 Bữa tối</option>
+        <option value="snack">🍎 Ăn vặt</option>
       </select>
-      <button class="btn" id="resSave" style="margin-top:8px"><i data-lucide="check"></i> Confirm &amp; Save</button>
+      <button class="btn" id="resSave" style="margin-top:8px"><i data-lucide="check"></i> Xác nhận &amp; Lưu vào Nhật ký</button>
     </div>`;
   icons();
   $('#resSave').onclick=async ()=>{
@@ -762,7 +834,7 @@ async function handleScanFile(file){
       sodium:+res.sodium||0, photo:photoUrl, meal_type:$('#resMeal').value, date:today(),
       created_at:new Date().toISOString()
     });
-    toast('Saved'); State.view='diary'; render();
+    toast('✅ Đã lưu vào nhật ký!'); State.view='diary'; render();
   };
 }
 
@@ -881,6 +953,7 @@ function viewProfile(){
     <select id="pGoal" class="select" style="margin-bottom:10px">
       <option value="loss" ${p.goal==='loss'?'selected':''}>Giảm cân (−500 kcal/ngày)</option>
       <option value="maintain" ${p.goal==='maintain'?'selected':''}>Duy trì cân nặng hiện tại</option>
+      <option value="recomp" ${p.goal==='recomp'?'selected':''}>Giảm mỡ tăng cơ (0 kcal)</option>
       <option value="bulk" ${p.goal==='bulk'?'selected':''}>Tăng cơ (+300 kcal/ngày)</option>
     </select>
     <button class="btn" id="pSave" style="margin-top:4px">Lưu hồ sơ</button>
@@ -892,7 +965,7 @@ function viewProfile(){
       <div class="stat"><div class="l">TDEE</div><div class="v">${fmt(calcTDEE(p))}</div></div>
       <div class="stat"><div class="l">Mục tiêu</div><div class="v">${fmt(targetCalories(p))}</div></div>
     </div>
-    <div class="muted" style="margin-top:8px">Giảm ${fmt(calcTDEE(p)-500)} · Duy trì ${fmt(calcTDEE(p))} · Tăng ${fmt(calcTDEE(p)+300)}</div>
+    <div class="muted" style="margin-top:8px">Giảm ${fmt(calcTDEE(p)-500)} · Duy trì/Recomp ${fmt(calcTDEE(p))} · Tăng ${fmt(calcTDEE(p)+300)}</div>
   </div>`;
 }
 
@@ -1170,18 +1243,40 @@ function attachHandlers(){
 
   // Profile
   if($('#pSave')) $('#pSave').onclick=async ()=>{
-    const updated={...State.profile,
-      name:$('#pName').value, gender:$('#pGender').value, age:+$('#pAge').value,
-      height:+$('#pHeight').value, weight:+$('#pWeight').value,
-      goalWeight:+$('#pGoalW').value, activity:$('#pActivity').value, goal:$('#pGoal').value,
-      profileKey:State.activeProfile, profile_key:State.activeProfile
+    const btn=$('#pSave');
+    btn.textContent='⏳ Đang lưu...'; btn.disabled=true;
+    const updated={
+      id: State.user.id+'_'+State.activeProfile,
+      user_id: State.user.id,
+      profile_key: State.activeProfile,
+      profileKey: State.activeProfile,
+      name:$('#pName').value.trim(),
+      gender:$('#pGender').value,
+      age:+$('#pAge').value,
+      height:+$('#pHeight').value,
+      weight:+$('#pWeight').value,
+      goalWeight:+$('#pGoalW').value,
+      activity:$('#pActivity').value,
+      goal:$('#pGoal').value,
     };
     State.profiles[State.activeProfile]=updated;
     State.profile=updated;
     if(sb && !State.demo){
-      await sb.from('profiles').upsert({id:State.user.id+'_'+State.activeProfile, user_id:State.user.id, profile_key:State.activeProfile, ...updated});
+      const dbRow={
+        id: updated.id, user_id: updated.user_id, profile_key: updated.profile_key,
+        name: updated.name, gender: updated.gender, age: updated.age,
+        height: updated.height, weight: updated.weight,
+        goal_weight: updated.goalWeight,
+        activity: updated.activity, goal: updated.goal,
+      };
+      const {error}=await sb.from('profiles').upsert(dbRow);
+      if(error){ toast('❌ Lỗi lưu: '+error.message); btn.textContent='Lưu hồ sơ'; btn.disabled=false; return; }
     }
-    saveLocal();toast('Đã lưu');updateProfileSwitcherUI();render();
+    saveLocal();
+    toast('✅ Đã lưu hồ sơ thành công!');
+    updateProfileSwitcherUI();
+    btn.textContent='✅ Đã lưu'; btn.disabled=false;
+    setTimeout(()=>render(),800);
   };
 
   // Weight
@@ -1327,55 +1422,99 @@ async function delMeal(id){
    SQL SCHEMA (for admin display & manual Supabase setup)
 ============================================================ */
 const SQL_SCHEMA = `
--- PROFILES
+-- ================================================
+-- PROFILES (mỗi user có 2 rows: _husband và _wife)
+-- ================================================
 create table if not exists profiles (
-  id uuid primary key references auth.users on delete cascade,
-  name text, role text check (role in ('admin','husband','wife')) default 'husband',
-  gender text, age int, height numeric, weight numeric, "goalWeight" numeric,
-  activity text, goal text, created_at timestamptz default now()
+  id text primary key,              -- = user_id + '_husband' hoặc '_wife'
+  user_id uuid references auth.users on delete cascade,
+  profile_key text not null,        -- 'husband' | 'wife'
+  name text,
+  gender text,
+  age int,
+  height numeric,
+  weight numeric,
+  goal_weight numeric,              -- snake_case (không phải "goalWeight")
+  activity text,
+  goal text,
+  role text default 'member',
+  created_at timestamptz default now()
 );
 alter table profiles enable row level security;
-create policy "own_profile_rw" on profiles for all using (auth.uid()=id) with check (auth.uid()=id);
-create policy "couple_read" on profiles for select using (true);
+-- RLS: user chỉ đọc/ghi profile của chính mình (dựa vào user_id)
+create policy "own_profile_rw" on profiles
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- ================================================
 -- MEALS
+-- ================================================
 create table if not exists meals (
-  id text primary key, user_id uuid references auth.users on delete cascade,
-  name text, calories numeric, protein numeric, carbs numeric, fat numeric,
-  fiber numeric, sugar numeric, sodium numeric, photo text,
-  meal_type text, date date, notes text, created_at timestamptz default now()
+  id text primary key,
+  user_id uuid references auth.users on delete cascade,
+  profile_key text,                 -- 'husband' | 'wife'
+  name text,
+  calories numeric,
+  protein numeric,
+  carbs numeric,
+  fat numeric,
+  fiber numeric,
+  sugar numeric,
+  sodium numeric,
+  photo text,
+  meal_type text,
+  date date,
+  notes text,
+  created_at timestamptz default now()
 );
 alter table meals enable row level security;
-create policy "own_meals" on meals for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_meals" on meals
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- ================================================
 -- WATER
+-- ================================================
 create table if not exists water (
-  id text primary key, user_id uuid references auth.users on delete cascade,
-  ml int, date date, created_at timestamptz default now()
+  id text primary key,
+  user_id uuid references auth.users on delete cascade,
+  profile_key text,                 -- 'husband' | 'wife'
+  ml int,
+  date date,
+  created_at timestamptz default now()
 );
 alter table water enable row level security;
-create policy "own_water" on water for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_water" on water
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- ================================================
 -- WEIGHTS
+-- ================================================
 create table if not exists weights (
-  id text primary key, user_id uuid references auth.users on delete cascade,
-  value numeric, body_fat numeric, waist numeric, date date,
+  id text primary key,
+  user_id uuid references auth.users on delete cascade,
+  profile_key text,                 -- 'husband' | 'wife'
+  value numeric,
+  body_fat numeric,
+  waist numeric,
+  date date,
   created_at timestamptz default now()
 );
 alter table weights enable row level security;
-create policy "own_weights" on weights for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_weights" on weights
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- AI SETTINGS / RULES
+-- ================================================
+-- AI SETTINGS
+-- ================================================
 create table if not exists ai_settings ( key text primary key, value jsonb );
 alter table ai_settings enable row level security;
--- Mọi user đã đăng nhập đều đọc được (để load Gemini key)
 create policy "ai_settings_read" on ai_settings
   for select to authenticated using (true);
--- Chỉ admin (role = 'admin' trong profiles) mới ghi được
--- Tạm thời cho phép tất cả authenticated write; chỉnh lại nếu cần strict admin-only
 create policy "ai_settings_write" on ai_settings
   for all to authenticated using (true) with check (true);
 
+-- ================================================
+-- MISC
+-- ================================================
 create table if not exists nutrition_rules ( key text primary key, value jsonb );
 create table if not exists food_database (
   id bigserial primary key, name text, calories numeric, protein numeric,
@@ -1383,13 +1522,24 @@ create table if not exists food_database (
 );
 
 -- INDEXES
-create index if not exists meals_user_date on meals(user_id, date);
-create index if not exists water_user_date on water(user_id, date);
-create index if not exists weights_user_date on weights(user_id, date);
+create index if not exists meals_user_date    on meals(user_id, date);
+create index if not exists meals_profile      on meals(user_id, profile_key);
+create index if not exists water_user_date    on water(user_id, date);
+create index if not exists water_profile      on water(user_id, profile_key);
+create index if not exists weights_user_date  on weights(user_id, date);
+create index if not exists weights_profile    on weights(user_id, profile_key);
+create index if not exists profiles_user      on profiles(user_id);
 
--- STORAGE BUCKET
-insert into storage.buckets (id,name,public) values ('food-photos','food-photos',true)
-on conflict do nothing;
+-- STORAGE BUCKET (tên phải khớp với code: 'food-photos')
+insert into storage.buckets (id, name, public)
+  values ('food-photos', 'food-photos', true)
+  on conflict do nothing;
+
+-- Storage RLS
+create policy "food_photos_upload" on storage.objects
+  for insert to authenticated with check (bucket_id = 'food-photos');
+create policy "food_photos_read" on storage.objects
+  for select using (bucket_id = 'food-photos');
 `;
 
 /* ============================================================
