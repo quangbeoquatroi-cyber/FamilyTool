@@ -1081,20 +1081,70 @@ function viewScan(){
   </div>
   <div class="card">
     <h3>✏️ Nhập thủ công</h3>
-    <input id="mName" class="input" placeholder="Tên món ăn"/>
-    <div class="grid4" style="margin-top:8px">
-      <input id="mCal" class="input" placeholder="kcal" type="number"/>
-      <input id="mP" class="input" placeholder="Protein (g)" type="number"/>
-      <input id="mC" class="input" placeholder="Carbs (g)" type="number"/>
-      <input id="mF" class="input" placeholder="Fat (g)" type="number"/>
+
+    <!-- Photo upload for manual entry -->
+    <div style="margin-bottom:10px">
+      <label class="muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Ảnh món ăn (tuỳ chọn)</label>
+      <div class="grid2" style="gap:8px">
+        <label class="btn secondary" style="cursor:pointer;min-height:42px;font-size:13px"><i data-lucide="camera"></i> Chụp ảnh
+          <input id="mCamIn" type="file" accept="image/*" capture="environment" style="display:none">
+        </label>
+        <label class="btn secondary" style="cursor:pointer;min-height:42px;font-size:13px"><i data-lucide="upload"></i> Tải ảnh lên
+          <input id="mUpIn" type="file" accept="image/*" style="display:none">
+        </label>
+      </div>
+      <div id="mPhotoPreview" style="margin-top:8px"></div>
     </div>
-    <select id="mMeal" class="select" style="margin-top:8px">
+
+    <input id="mName" class="input" placeholder="Tên món ăn" style="margin-bottom:8px"/>
+
+    <!-- Summary totals (auto-calculated from items) -->
+    <div class="grid4" id="mTotalsGrid" style="margin-bottom:8px">
+      <div class="stat" style="margin:0"><div class="l">Calo</div><div class="v" style="font-size:18px;color:var(--primary)" id="mTotCal">0</div><div class="muted" style="font-size:10px">kcal</div></div>
+      <div class="stat" style="margin:0"><div class="l">Protein</div><div class="v" style="font-size:18px;color:var(--p)" id="mTotP">0</div><div class="muted" style="font-size:10px">g</div></div>
+      <div class="stat" style="margin:0"><div class="l">Carbs</div><div class="v" style="font-size:18px;color:var(--c)" id="mTotC">0</div><div class="muted" style="font-size:10px">g</div></div>
+      <div class="stat" style="margin:0"><div class="l">Chất béo</div><div class="v" style="font-size:18px;color:var(--f)" id="mTotF">0</div><div class="muted" style="font-size:10px">g</div></div>
+    </div>
+
+    <!-- Ingredient detail table -->
+    <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)">CHI TIẾT THÀNH PHẦN</div>
+    <div style="overflow-x:auto;margin-bottom:8px">
+      <table style="width:100%;border-collapse:collapse" id="mItemsTable">
+        <thead>
+          <tr style="font-size:10px;color:var(--muted);font-weight:600">
+            <th style="padding:4px 4px;text-align:left">Món</th>
+            <th style="padding:4px 4px;text-align:center;width:44px">SL</th>
+            <th style="padding:4px 4px;text-align:center;width:62px">Đơn vị</th>
+            <th style="padding:4px 4px;text-align:center;width:64px">kcal/đv</th>
+            <th style="padding:4px 4px;text-align:center;width:50px">P(g)</th>
+            <th style="padding:4px 4px;text-align:center;width:50px">C(g)</th>
+            <th style="padding:4px 4px;text-align:center;width:50px">F(g)</th>
+            <th style="width:28px"></th>
+          </tr>
+        </thead>
+        <tbody id="mItemsTbody">
+          <tr data-midx="0">
+            <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px"></td>
+            <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+            <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+            <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+            <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--p)"></td>
+            <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--c)"></td>
+            <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--f)"></td>
+            <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="btn secondary small" id="mAddItem" style="margin-bottom:10px;width:auto;padding:8px 14px"><i data-lucide="plus"></i> Thêm thành phần</button>
+
+    <select id="mMeal" class="select" style="margin-top:2px;margin-bottom:8px">
       <option value="breakfast">🌅 Bữa sáng</option>
       <option value="lunch">☀️ Bữa trưa</option>
       <option value="dinner">🌙 Bữa tối</option>
       <option value="snack">🍎 Ăn vặt</option>
     </select>
-    <button class="btn" id="mSave" style="margin-top:8px"><i data-lucide="plus"></i> Thêm vào Nhật ký</button>
+    <button class="btn" id="mSave" style="margin-top:2px"><i data-lucide="plus"></i> Thêm vào Nhật ký</button>
   </div>`;
 }
 
@@ -1658,9 +1708,102 @@ function attachHandlers(){
   // Scan
   if($('#camIn')) $('#camIn').onchange=e=>handleScanFile(e.target.files[0]);
   if($('#upIn')) $('#upIn').onchange=e=>handleScanFile(e.target.files[0]);
+  // Manual entry — photo upload handlers
+  function mRecalcTotals(){
+    let tc=0,tp=0,tca=0,tf=0;
+    $$('#mItemsTbody tr').forEach(tr=>{
+      const q=+tr.querySelector('.mi-qty')?.value||1;
+      tc  += (+tr.querySelector('.mi-cal')?.value||0)*q;
+      tp  += (+tr.querySelector('.mi-p')?.value||0)*q;
+      tca += (+tr.querySelector('.mi-c')?.value||0)*q;
+      tf  += (+tr.querySelector('.mi-f')?.value||0)*q;
+    });
+    if($('#mTotCal')) $('#mTotCal').textContent=fmt(tc);
+    if($('#mTotP'))   $('#mTotP').textContent=fmt(tp);
+    if($('#mTotC'))   $('#mTotC').textContent=fmt(tca);
+    if($('#mTotF'))   $('#mTotF').textContent=fmt(tf);
+    return {calories:tc,protein:tp,carbs:tca,fat:tf};
+  }
+  function mAttachRowHandlers(){
+    $$('#mItemsTbody tr').forEach(tr=>{
+      tr.querySelectorAll('input').forEach(inp=>inp.oninput=()=>mRecalcTotals());
+      const delBtn=tr.querySelector('.mi-del');
+      if(delBtn) delBtn.onclick=()=>{ tr.remove(); mRecalcTotals(); };
+    });
+  }
+  mAttachRowHandlers();
+
+  if($('#mAddItem')) $('#mAddItem').onclick=()=>{
+    const tbody=$('#mItemsTbody');
+    const idx=tbody.querySelectorAll('tr').length;
+    const tr=document.createElement('tr');
+    tr.dataset.midx=idx;
+    tr.innerHTML=`
+      <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px"></td>
+      <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+      <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+      <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center"></td>
+      <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--p)"></td>
+      <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--c)"></td>
+      <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--f)"></td>
+      <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>`;
+    tbody.appendChild(tr);
+    lucide.createIcons();
+    mAttachRowHandlers();
+  };
+
+  // Manual photo upload handlers
+  async function handleManualPhoto(file){
+    if(!file) return;
+    const {blob,dataUrl}=await compressImage(file);
+    $('#mPhotoPreview').innerHTML=`<img src="${dataUrl}" style="width:100%;max-height:160px;object-fit:cover;border-radius:14px"/>`;
+    window._mPhotoBlob=blob; window._mPhotoDataUrl=dataUrl;
+  }
+  if($('#mCamIn')) $('#mCamIn').onchange=e=>handleManualPhoto(e.target.files[0]);
+  if($('#mUpIn'))  $('#mUpIn').onchange=e=>handleManualPhoto(e.target.files[0]);
+
   if($('#mSave')) $('#mSave').onclick=async ()=>{
-    const m={id:uid(),name:$('#mName').value||'Food',calories:+$('#mCal').value||0,protein:+$('#mP').value||0,carbs:+$('#mC').value||0,fat:+$('#mF').value||0,meal_type:$('#mMeal').value,date:today(),created_at:new Date().toISOString()};
-    await addMeal(m);toast('Added');State.view='diary';render();
+    const tot=mRecalcTotals();
+    // Build items array from rows
+    const items=[]; let hasItems=false;
+    $$('#mItemsTbody tr').forEach(tr=>{
+      const name=tr.querySelector('.mi-name')?.value||'';
+      const qty=+tr.querySelector('.mi-qty')?.value||1;
+      const unit=tr.querySelector('.mi-unit')?.value||'phần';
+      const cal=+tr.querySelector('.mi-cal')?.value||0;
+      const p=+tr.querySelector('.mi-p')?.value||0;
+      const c=+tr.querySelector('.mi-c')?.value||0;
+      const f=+tr.querySelector('.mi-f')?.value||0;
+      if(name||cal) hasItems=true;
+      items.push({name:name||'Thành phần',quantity:qty,unit,base_calories:cal,base_protein:p,base_carbs:c,base_fat:f});
+    });
+
+    // Upload photo if any
+    let photoUrl='';
+    if(window._mPhotoBlob){
+      if(sb && !State.demo){
+        try{
+          const path=`${State.user.id}/${State.activeProfile}/${Date.now()}_manual.jpg`;
+          const up=await sb.storage.from('food-photos').upload(path,window._mPhotoBlob,{contentType:'image/jpeg',upsert:true});
+          if(!up.error) photoUrl=sb.storage.from('food-photos').getPublicUrl(path).data.publicUrl;
+        }catch(e){console.warn(e)}
+      }
+      if(!photoUrl && window._mPhotoDataUrl) photoUrl=window._mPhotoDataUrl;
+    }
+
+    const name=$('#mName').value||'Food';
+    const m={
+      id:uid(), name,
+      calories:Math.round(tot.calories), protein:Math.round(tot.protein),
+      carbs:Math.round(tot.carbs), fat:Math.round(tot.fat),
+      meal_type:$('#mMeal').value, date:today(),
+      created_at:new Date().toISOString(),
+      photo:photoUrl||'',
+      items: hasItems ? items : []
+    };
+    await addMeal(m);
+    window._mPhotoBlob=null; window._mPhotoDataUrl=null;
+    toast('✅ Đã thêm vào nhật ký!'); State.view='diary'; render();
   };
 
   // Coach
