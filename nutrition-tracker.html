@@ -879,11 +879,10 @@ function showMealDetail(id){
 
   function recalcTotals(){
     return editItems.reduce((acc,it)=>{
-      const q = +it.quantity||1;
-      acc.calories += (it.base_calories||0)*q;
-      acc.protein  += (it.base_protein||0)*q;
-      acc.carbs    += (it.base_carbs||0)*q;
-      acc.fat      += (it.base_fat||0)*q;
+      acc.calories += (+it.base_calories||0);
+      acc.protein  += (+it.base_protein||0);
+      acc.carbs    += (+it.base_carbs||0);
+      acc.fat      += (+it.base_fat||0);
       return acc;
     },{calories:0,protein:0,carbs:0,fat:0});
   }
@@ -902,19 +901,19 @@ function showMealDetail(id){
       </td>
       <td style="padding:8px 4px;width:68px">
         <input class="input ii-cal" type="number" min="0" style="font-size:13px;padding:6px 8px;text-align:center" value="${fmt(it.base_calories||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_calories||0)*q)} kcal</div>
+        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_calories||0)} kcal</div>
       </td>
       <td style="padding:8px 4px;width:52px">
         <input class="input ii-p" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--p)" value="${fmt(it.base_protein||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_protein||0)*q)}g</div>
+        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_protein||0)}g</div>
       </td>
       <td style="padding:8px 4px;width:52px">
         <input class="input ii-c" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--c)" value="${fmt(it.base_carbs||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_carbs||0)*q)}g</div>
+        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_carbs||0)}g</div>
       </td>
       <td style="padding:8px 4px;width:52px">
         <input class="input ii-f" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--f)" value="${fmt(it.base_fat||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt((it.base_fat||0)*q)}g</div>
+        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_fat||0)}g</div>
       </td>
       <td style="padding:8px 4px;width:32px;text-align:center">
         <button class="btn small ghost ii-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button>
@@ -1036,11 +1035,10 @@ function showMealDetail(id){
       editItems[idx].base_fat       = +tr.querySelector('.ii-f').value||0;
       // Update the per-row total cells without full re-render
       const it = editItems[idx];
-      const q  = it.quantity;
-      tr.querySelector('.ii-cal').nextElementSibling.textContent = `${fmt(it.base_calories*q)} kcal`;
-      tr.querySelector('.ii-p').nextElementSibling.textContent   = `${fmt(it.base_protein*q)}g`;
-      tr.querySelector('.ii-c').nextElementSibling.textContent   = `${fmt(it.base_carbs*q)}g`;
-      tr.querySelector('.ii-f').nextElementSibling.textContent   = `${fmt(it.base_fat*q)}g`;
+      tr.querySelector('.ii-cal').nextElementSibling.textContent = `${fmt(it.base_calories)} kcal`;
+      tr.querySelector('.ii-p').nextElementSibling.textContent   = `${fmt(it.base_protein)}g`;
+      tr.querySelector('.ii-c').nextElementSibling.textContent   = `${fmt(it.base_carbs)}g`;
+      tr.querySelector('.ii-f').nextElementSibling.textContent   = `${fmt(it.base_fat)}g`;
       // Update summary totals
       const tot = recalcTotals();
       const d = modal.querySelector('#detailTotals');
@@ -1712,11 +1710,10 @@ function attachHandlers(){
   function mRecalcTotals(){
     let tc=0,tp=0,tca=0,tf=0;
     $$('#mItemsTbody tr').forEach(tr=>{
-      const q=+tr.querySelector('.mi-qty')?.value||1;
-      tc  += (+tr.querySelector('.mi-cal')?.value||0)*q;
-      tp  += (+tr.querySelector('.mi-p')?.value||0)*q;
-      tca += (+tr.querySelector('.mi-c')?.value||0)*q;
-      tf  += (+tr.querySelector('.mi-f')?.value||0)*q;
+      tc  += (+tr.querySelector('.mi-cal')?.value||0);
+      tp  += (+tr.querySelector('.mi-p')?.value||0);
+      tca += (+tr.querySelector('.mi-c')?.value||0);
+      tf  += (+tr.querySelector('.mi-f')?.value||0);
     });
     if($('#mTotCal')) $('#mTotCal').textContent=fmt(tc);
     if($('#mTotP'))   $('#mTotP').textContent=fmt(tp);
@@ -2167,7 +2164,7 @@ create policy "food_photos_read" on storage.objects
     loading = waitForSb(10000).then(function(sbClient){
       if(!sbClient){ console.warn('[foods] Supabase chưa khởi tạo sau 10s'); loading=null; return []; }
       return sbClient.from('foods')
-        .select('id,name,unit,kcal_per_unit,protein_g,carbs_g,fat_g')
+        .select('id,name,unit,quantity,kcal_per_unit,protein_g,carbs_g,fat_g')
         .order('name',{ascending:true}).limit(1000)
         .then(function(res){
           if(res.error){ console.error('[foods]',res.error); loading=null; return []; }
@@ -2180,8 +2177,8 @@ create policy "food_photos_read" on storage.objects
   }
 
   var SCHEMAS = [
-    { name:'.ii-name', row:'tr', map:{ unit:'.ii-unit', cal:'.ii-cal', p:'.ii-p', c:'.ii-c', f:'.ii-f' } },
-    { name:'.mi-name', row:'tr', map:{ unit:'.mi-unit', cal:'.mi-cal', p:'.mi-p', c:'.mi-c', f:'.mi-f' } }
+    { name:'.ii-name', row:'tr', map:{ qty:'.ii-qty', unit:'.ii-unit', cal:'.ii-cal', p:'.ii-p', c:'.ii-c', f:'.ii-f' } },
+    { name:'.mi-name', row:'tr', map:{ qty:'.mi-qty', unit:'.mi-unit', cal:'.mi-cal', p:'.mi-p', c:'.mi-c', f:'.mi-f' } }
   ];
   function findSchema(input){ for(var i=0;i<SCHEMAS.length;i++){ if(input.matches(SCHEMAS[i].name)) return SCHEMAS[i]; } return null; }
 
@@ -2225,6 +2222,7 @@ create policy "food_photos_read" on storage.objects
       el.dispatchEvent(new Event('change',{bubbles:true}));
     }
     input.value = food.name;
+    set(schema.map.qty,  (food.quantity!=null && +food.quantity>0) ? food.quantity : 1);
     set(schema.map.unit, food.unit);
     set(schema.map.cal,  food.kcal_per_unit);
     set(schema.map.p,    food.protein_g);
