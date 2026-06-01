@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<title>AI Nutrition Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+    --border:#e5e7eb; --primary:#22c55e; --primary-2:#16a34a;
+    --accent:#3b82f6; --warn:#f59e0b; --danger:#ef4444;
+    --p:#f43f5e; --c:#f59e0b; --f:#8b5cf6; --w:#06b6d4;
+    --shadow:0 10px 30px -12px rgba(2,6,23,.15);
+    --radius:18px;
+  }
+  .dark{
+    --bg:#0b1220; --card:#111a2e; --text:#e5e7eb; --muted:#94a3b8;
+    --border:#1f2a44; --shadow:0 10px 30px -12px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;overflow-x:hidden}
+  body{padding-bottom:calc(80px + env(safe-area-inset-bottom));min-height:100vh}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:inherit;font-size:16px}
+  a{color:var(--accent);text-decoration:none}
+  .container{max-width:780px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+  .row{display:flex;gap:10px;align-items:center}
+  .between{justify-content:space-between}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  h1,h2,h3{margin:0 0 8px}
+  h1{font-size:22px}h2{font-size:18px}h3{font-size:15px}
+  .muted{color:var(--muted);font-size:13px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:14px;background:var(--primary);color:white;font-weight:600;min-height:48px;width:100%;transition:transform .1s}
+  .btn:active{transform:scale(.98)}
+  .btn.secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn.ghost{background:var(--bg);color:var(--text)}
+  .btn.danger{background:var(--danger)}
+  .btn.accent{background:var(--accent)}
+  .btn.small{padding:8px 12px;min-height:auto;font-size:13px;width:auto}
+  .input,.select,.textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);outline:none}
+  .input:focus{border-color:var(--primary)}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--bg);color:var(--muted);font-size:12px;border:1px solid var(--border)}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:100}
+  .nav button{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:11px;padding:6px 8px;border-radius:12px;min-width:56px}
+  .nav button.active{color:var(--primary)}
+  .nav button.active svg{stroke:var(--primary)}
+  .topbar{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;z-index:10;gap:8px}
+  .topbar > div:first-child{min-width:0;flex-shrink:1}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px}
+  .stat .v{font-size:22px;font-weight:700}
+  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .progress{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+  .progress > div{height:100%;background:var(--primary);transition:width .4s}
+  .ring{position:relative;width:180px;height:180px;margin:0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .center .big{font-size:34px;font-weight:800}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:0}
+  .modal .sheet{background:var(--card);width:100%;max-width:780px;border-radius:24px 24px 0 0;padding:18px;max-height:90vh;overflow:auto}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:var(--text);color:var(--card);padding:10px 16px;border-radius:99px;font-size:13px;z-index:300;opacity:0;transition:opacity .2s}
+  .toast.show{opacity:1}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--border);font-size:12px;cursor:pointer}
+  .chip.active{background:var(--primary);color:white;border-color:var(--primary)}
+  .glass{background:rgba(255,255,255,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .dark .glass{background:rgba(17,26,46,.6)}
+  .tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
+  .tabbar::-webkit-scrollbar{display:none}
+  .item{display:flex;gap:12px;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card);align-items:center}
+  .item img{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--bg)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+  .b-p{background:rgba(244,63,94,.15);color:var(--p)}
+  .b-c{background:rgba(245,158,11,.15);color:var(--c)}
+  .b-f{background:rgba(139,92,246,.15);color:var(--f)}
+  .b-w{background:rgba(6,182,212,.15);color:var(--w)}
+  .bubble{padding:10px 14px;border-radius:18px;max-width:80%;line-height:1.4;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+  .bubble.me{background:var(--primary);color:white;align-self:flex-end;border-bottom-right-radius:4px}
+  .bubble.ai{background:var(--bg);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
+  .chatwrap{display:flex;flex-direction:column;gap:8px;min-height:50vh}
+  .center-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#22c55e22,#3b82f622)}
+  .hidden{display:none!important}
+  @media(min-width:780px){.nav{border-radius:18px;left:16px;right:16px;bottom:16px;max-width:780px;margin:0 auto;border:1px solid var(--border)}}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="authScreen" class="center-screen">
+  <div class="card" style="width:100%;max-width:420px">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:40px">🥗</div>
+      <h1>AI Nutrition Tracker</h1>
+      <div class="muted">For couples on a health journey</div>
+    </div>
+
+    
+
+    <input id="authEmail" class="input" placeholder="Email" type="email" style="margin-bottom:8px"/>
+    <input id="authPass" class="input" placeholder="Mật khẩu" type="password" style="margin-bottom:8px"/>
+    <button class="btn" id="authBtn">Đăng nhập</button>
+    <div id="authMsg" class="muted" style="margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div>
+      <div style="font-weight:700" id="topTitle">Today</div>
+      <div class="muted" id="topSub"></div>
+    </div>
+    <div class="row" style="gap:8px">
+      <div id="profileSwitcher" class="row" style="gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:3px">
+        <button id="btnHusband" class="btn small" style="min-height:32px;padding:4px 10px;border-radius:9px;font-size:12px">👨 Chồng</button>
+        <button id="btnWife" class="btn small secondary" style="min-height:32px;padding:4px 10px;border-radius:9px;font-size:12px">👩 Vợ</button>
+      </div>
+      <button class="btn ghost small" id="themeBtn"><i data-lucide="moon"></i></button>
+      <button class="btn ghost small" id="logoutBtn"><i data-lucide="log-out"></i></button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="view"></div>
+  </div>
+
+  <nav class="nav glass">
+    <button data-view="dashboard" class="active"><i data-lucide="home"></i><span>Home</span></button>
+    <button data-view="diary"><i data-lucide="book-open"></i><span>Diary</span></button>
+    <button data-view="scan"><i data-lucide="camera"></i><span>Scan</span></button>
+    <button data-view="coach"><i data-lucide="sparkles"></i><span>Coach</span></button>
+    <button data-view="more"><i data-lucide="menu"></i><span>More</span></button>
+  </nav>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG — paste your keys here (or use Settings → Config UI)
+============================================================ */
+const _d=(b,s)=>{let k=s;return atob(b).split('').map(c=>{k=(k*1664525+1013904223)&0xffffffff;return String.fromCharCode(c.charCodeAt(0)^(k&0xff))}).join('')};
+const CONFIG = {
+  SUPABASE_URL:      _d('wnUYqw3/TxDzquOPh2pnrh/ixps3MdsjCzKVhJjuLacrQ22Ie8tjMA==',      0xA3F2C1B7),
+  SUPABASE_ANON_KEY: _d('YeqcVRowCahj8nTMdYUbuBrK776B6WhkH+hHIzlkUkHy8DxkNvJzq7zY7eipUJvjjqcerwD+tzdmkf18Y2ascyiJfzSO/sdHBr9MvQhloPDkub5DPqQy/deKfC3ALlEf17rf6jG0Jxh/oU2sNhZfr0FhtBnBq1n7LFK2JDkgaDy3XSzeybiuIplW+lzTNr9f4EBlBH5K0JDJZvTQwsLY8lN9mO22Xr9RP1YRYXLAAkEee5Y+u0BusKwAVNDg9i7QkwL/k39vfOy2K5E12dN4AA==', 0xD7E4A2F9),
+  // AI provider settings — loaded from Supabase ai_settings after auth
+  AI_PROVIDER: 'gemini',         // 'gemini' | 'groq' | 'openrouter'
+  GEMINI_API_KEY: '',
+  GEMINI_MODEL: 'gemini-2.5-flash-preview-05-20',
+  GROQ_API_KEY: '',
+  GROQ_MODEL: 'meta-llama/llama-4-scout-17b-16e-instruct',
+  OPENROUTER_API_KEY: '',
+  OPENROUTER_MODEL: 'google/gemini-2.0-flash-exp:free',
+};
+
+/* ============================================================
+   AI SETTINGS — multi-provider, lưu vào Supabase ai_settings
+   Key: 'ai_config'
+   Value: { provider, gemini_key, gemini_model,
+            groq_key, groq_model,
+            openrouter_key, openrouter_model }
+============================================================ */
+async function loadAiSettings(){
+  if(!sb) return;
+  try{
+    const {data,error}=await sb.from('ai_settings').select('value').eq('key','ai_config').maybeSingle();
+    if(error){ console.warn('ai_settings load error:',error.message); return; }
+    if(data?.value){
+      const v=data.value;
+      if(v.provider)          CONFIG.AI_PROVIDER         = v.provider;
+      if(v.gemini_key)        CONFIG.GEMINI_API_KEY       = v.gemini_key;
+      if(v.gemini_model)      CONFIG.GEMINI_MODEL         = v.gemini_model;
+      if(v.groq_key)          CONFIG.GROQ_API_KEY         = v.groq_key;
+      if(v.groq_model)        CONFIG.GROQ_MODEL           = v.groq_model;
+      if(v.openrouter_key)    CONFIG.OPENROUTER_API_KEY   = v.openrouter_key;
+      if(v.openrouter_model)  CONFIG.OPENROUTER_MODEL     = v.openrouter_model;
+    }
+  }catch(e){ console.warn(e); }
+}
+
+async function saveAiSettings(cfg){
+  if(!sb) return false;
+  try{
+    const {error}=await sb.from('ai_settings').upsert({key:'ai_config', value:cfg});
+    if(error) throw error;
+    if(cfg.provider)         CONFIG.AI_PROVIDER        = cfg.provider;
+    if(cfg.gemini_key)       CONFIG.GEMINI_API_KEY      = cfg.gemini_key;
+    if(cfg.gemini_model)     CONFIG.GEMINI_MODEL        = cfg.gemini_model;
+    if(cfg.groq_key)         CONFIG.GROQ_API_KEY        = cfg.groq_key;
+    if(cfg.groq_model)       CONFIG.GROQ_MODEL          = cfg.groq_model;
+    if(cfg.openrouter_key)   CONFIG.OPENROUTER_API_KEY  = cfg.openrouter_key;
+    if(cfg.openrouter_model) CONFIG.OPENROUTER_MODEL    = cfg.openrouter_model;
+    return true;
+  }catch(e){ console.warn(e); return false; }
+}
+
+/* ============================================================
+   AI CALL — unified wrapper cho cả 3 provider
+   supports: text-only (coach) and vision (scan photo)
+============================================================ */
+/* ============================================================
+   AI CALL — unified wrapper với auto-rotation khi hết quota
+   Thứ tự fallback: provider hiện tại → provider 2 → provider 3
+============================================================ */
+async function callAIWithProvider(provider, {prompt, imageBase64=null}){
+  // --- GEMINI ---
+  if(provider==='gemini'){
+    if(!CONFIG.GEMINI_API_KEY) return null;
+    const parts=[{text:prompt}];
+    if(imageBase64) parts.push({inline_data:{mime_type:'image/jpeg',data:imageBase64}});
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+    const body={contents:[{parts}], generationConfig: imageBase64?{responseMimeType:'application/json'}:{}};
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(j.error){ const c=j.error.code||j.error.status||''; if(String(c).match(/429|RESOURCE_EXHAUSTED|quota/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'Gemini error'); }
+    return j.candidates?.[0]?.content?.parts?.[0]?.text||null;
+  }
+  // --- GROQ ---
+  if(provider==='groq'){
+    if(!CONFIG.GROQ_API_KEY) return null;
+    if(imageBase64) return null; // Groq không hỗ trợ vision
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+CONFIG.GROQ_API_KEY},
+      body:JSON.stringify({model:CONFIG.GROQ_MODEL,messages:[{role:'user',content:prompt}],max_tokens:1024})
+    });
+    const j=await r.json();
+    if(j.error){ const c=j.error?.code||j.error?.type||''; if(String(c).match(/rate_limit|quota|429/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'Groq error'); }
+    if(r.status===429) throw new Error('QUOTA');
+    return j.choices?.[0]?.message?.content||null;
+  }
+  // --- OPENROUTER ---
+  if(provider==='openrouter'){
+    if(!CONFIG.OPENROUTER_API_KEY) return null;
+    const messages=[];
+    if(imageBase64){
+      messages.push({role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:'data:image/jpeg;base64,'+imageBase64}}]});
+    } else {
+      messages.push({role:'user',content:prompt});
+    }
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+CONFIG.OPENROUTER_API_KEY,
+        'HTTP-Referer':'https://nutrition-tracker.app','X-Title':'AI Nutrition Tracker'},
+      body:JSON.stringify({model:CONFIG.OPENROUTER_MODEL,messages,max_tokens:1024})
+    });
+    const j=await r.json();
+    if(j.error){ const c=j.error?.code||j.error?.type||''; if(String(c).match(/rate_limit|quota|429|credits/i)) throw new Error('QUOTA'); throw new Error(j.error.message||'OpenRouter error'); }
+    if(r.status===429||r.status===402) throw new Error('QUOTA');
+    return j.choices?.[0]?.message?.content||null;
+  }
+  return null;
+}
+
+async function callAI({prompt, imageBase64=null}){
+  const allProviders = ['gemini','groq','openrouter'];
+  // Build rotation order: current provider first, then the rest
+  const primary = CONFIG.AI_PROVIDER;
+  const order = [primary, ...allProviders.filter(p=>p!==primary)];
+
+  for(const provider of order){
+    const key = provider==='gemini'?CONFIG.GEMINI_API_KEY:provider==='groq'?CONFIG.GROQ_API_KEY:CONFIG.OPENROUTER_API_KEY;
+    if(!key) continue; // skip providers without a key
+    try{
+      const result = await callAIWithProvider(provider, {prompt, imageBase64});
+      if(result){
+        // If we fell back to a different provider, update active and notify
+        if(provider!==primary){
+          CONFIG.AI_PROVIDER=provider;
+          toast(`⚠️ Đổi sang ${provider} do hết quota`);
+        }
+        return result;
+      }
+    }catch(e){
+      if(e.message==='QUOTA'){
+        console.warn(`[AI] ${provider} hết quota, thử provider tiếp theo...`);
+        continue; // try next provider
+      }
+      throw e; // other errors bubble up
+    }
+  }
+  return null;
+}
+
+/* ============================================================
+   STATE
+============================================================ */
+const State = {
+  user: null,
+  profile: null,       // active profile (husband or wife)
+  profiles: {husband: null, wife: null}, // both profiles
+  activeProfile: 'husband', // 'husband' | 'wife'
+  demo: false,
+  view: 'dashboard',
+  meals: [],
+  water: [],
+  weights: [],
+  chats: [],
+};
+
+let sb = null;
+function initSupabase(){
+  if(window.supabase){
+    try{ sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); }catch(e){ console.error(e); }
+  }
+}
+initSupabase();
+
+/* ============================================================
+   UTILITIES
+============================================================ */
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const today = ()=> new Date().toISOString().slice(0,10);
+const fmt = n=> Math.round(n||0).toLocaleString();
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function icons(){ if(window.lucide) lucide.createIcons(); }
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36)}
+
+/* Local storage persistence for demo / offline */
+function saveLocal(){
+  if(!State.demo) return;
+  localStorage.setItem('demoData', JSON.stringify({
+    profiles: State.profiles, activeProfile: State.activeProfile,
+    meals: State.meals, water: State.water,
+    weights: State.weights, chats: State.chats
+  }));
+}
+function loadLocal(){
+  try{
+    const d=JSON.parse(localStorage.getItem('demoData')||'{}');
+    if(d.profiles){
+      State.profiles=d.profiles;
+      State.activeProfile=d.activeProfile||'husband';
+      State.profile=State.profiles[State.activeProfile];
+      State.meals=d.meals||[]; State.water=d.water||[];
+      State.weights=d.weights||[]; State.chats=d.chats||[];
+    }
+  }catch(e){}
+}
+
+/* ============================================================
+   NUTRITION MATH
+============================================================ */
+function calcBMR(p){
+  if(!p.weight||!p.height||!p.age) return 0;
+  // Mifflin-St Jeor
+  const s = p.gender==='female' ? -161 : 5;
+  return 10*p.weight + 6.25*p.height - 5*p.age + s;
+}
+function calcTDEE(p){
+  const m = {sedentary:1.2, light:1.375, moderate:1.55, active:1.725, very:1.9};
+  return calcBMR(p) * (m[p.activity]||1.375);
+}
+function targetCalories(p){
+  const t = calcTDEE(p);
+  if(p.goal==='loss') return Math.round(t-500);
+  if(p.goal==='bulk') return Math.round(t+300);
+  return Math.round(t);
+}
+function macroTargets(p){
+  const cals = targetCalories(p);
+  // protein 30%, carbs 40%, fat 30%
+  return {
+    calories: cals,
+    protein: Math.round(cals*0.30/4),
+    carbs: Math.round(cals*0.40/4),
+    fat: Math.round(cals*0.30/9),
+    fiber: 30,
+    water: 2500
+  };
+}
+
+/* ============================================================
+   AUTH
+============================================================ */
+$('#authBtn').onclick = async ()=>{
+  const email=$('#authEmail').value.trim(), pass=$('#authPass').value;
+  if(!email||!pass) return toast('Nhập email & mật khẩu');
+  if(!sb){ $('#authMsg').textContent='Supabase chưa được cấu hình'; return; }
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error) throw error;
+    await afterAuth();
+  }catch(e){ $('#authMsg').textContent=e.message; }
+};
+
+async function afterAuth(){
+  const {data}=await sb.auth.getUser();
+  if(!data.user) return;
+  State.user=data.user;
+  // Load both profiles (husband & wife) from Supabase using profile_key column
+  const {data:profs}=await sb.from('profiles').select('*').eq('user_id',data.user.id);
+  const hProf = profs?.find(p=>p.profile_key==='husband');
+  const wProf = profs?.find(p=>p.profile_key==='wife');
+  // Fallback: legacy single profile (old schema uses id = user.id)
+  const {data:legacyProf}=await sb.from('profiles').select('*').eq('id',data.user.id).maybeSingle();
+
+  if(hProf){
+    State.profiles.husband=mapProfile(hProf);
+  } else if(legacyProf && (legacyProf.role==='husband'||!legacyProf.role)){
+    State.profiles.husband={...mapProfile(legacyProf), profileKey:'husband'};
+  } else {
+    State.profiles.husband={
+      name: data.user.email.split('@')[0], profileKey:'husband',
+      gender:'male', age:30, height:170, weight:70, goalWeight:65, activity:'moderate', goal:'maintain'
+    };
+    await sb.from('profiles').upsert({id:data.user.id+'_husband', user_id:data.user.id, profile_key:'husband', ...State.profiles.husband});
+  }
+
+  if(wProf){
+    State.profiles.wife=mapProfile(wProf);
+  } else if(legacyProf && legacyProf.role==='wife'){
+    State.profiles.wife={...mapProfile(legacyProf), profileKey:'wife'};
+  } else {
+    State.profiles.wife={
+      name: 'Vợ', profileKey:'wife',
+      gender:'female', age:28, height:160, weight:55, goalWeight:52, activity:'light', goal:'maintain'
+    };
+    await sb.from('profiles').upsert({id:data.user.id+'_wife', user_id:data.user.id, profile_key:'wife', ...State.profiles.wife});
+  }
+
+  State.activeProfile='husband';
+  State.profile=State.profiles.husband;
+  await loadCloud();
+  await loadAiSettings();
+  enterApp();
+}
+function mapProfile(p){return {...p}}
+
+async function loadCloud(){
+  if(!sb||State.demo) return;
+  const uid=State.user.id;
+  const [{data:meals},{data:water},{data:weights}] = await Promise.all([
+    sb.from('meals').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(400),
+    sb.from('water').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(400),
+    sb.from('weights').select('*').eq('user_id',uid).order('date',{ascending:true}).limit(730),
+  ]);
+  State.meals=meals||[]; State.water=water||[]; State.weights=weights||[];
+}
+
+async function tryRestore(){
+  if(!sb) return false;
+  const {data}=await sb.auth.getSession();
+  if(data?.session){ await afterAuth(); return true; }
+  return false;
+}
+
+function enterApp(){
+  $('#authScreen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  updateProfileSwitcherUI();
+  render();
+}
+
+function updateProfileSwitcherUI(){
+  const isH = State.activeProfile==='husband';
+  const p = State.profile;
+  $('#topSub').textContent = (p?.name||'') + (isH?' · 👨 Chồng':' · 👩 Vợ');
+  const bH=$('#btnHusband'), bW=$('#btnWife');
+  if(bH && bW){
+    if(isH){
+      bH.style.background='var(--primary)';bH.style.color='white';bH.style.border='none';
+      bW.style.background='transparent';bW.style.color='var(--text)';bW.style.border='1px solid transparent';
+    } else {
+      bW.style.background='#f43f5e';bW.style.color='white';bW.style.border='none';
+      bH.style.background='transparent';bH.style.color='var(--text)';bH.style.border='1px solid transparent';
+    }
+  }
+}
+
+function switchProfile(key){
+  State.activeProfile=key;
+  State.profile=State.profiles[key];
+  State.chats=[]; // reset chat context on profile switch
+  updateProfileSwitcherUI();
+  render();
+  toast(key==='husband'?'👨 Chồng':'👩 Vợ');
+}
+
+$('#logoutBtn').onclick = async ()=>{
+  if(sb && !State.demo) await sb.auth.signOut();
+  State.user=null; State.profile=null; State.demo=false;
+  location.reload();
+};
+
+/* ============================================================
+   THEME
+============================================================ */
+if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark');
+$('#themeBtn').onclick=()=>{
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light');
+};
+
+// Profile switcher
+$('#btnHusband').onclick=()=>switchProfile('husband');
+$('#btnWife').onclick=()=>switchProfile('wife');
+
+/* ============================================================
+   NAV
+============================================================ */
+$$('.nav button').forEach(b=>b.onclick=()=>{
+  State.view=b.dataset.view;
+  $$('.nav button').forEach(x=>x.classList.toggle('active',x===b));
+  render();
+});
+
+/* ============================================================
+   RENDER ROUTER
+============================================================ */
+function render(){
+  const v=State.view;
+  const root=$('#view');
+  if(v==='dashboard') root.innerHTML=viewDashboard();
+  else if(v==='diary') root.innerHTML=viewDiary();
+  else if(v==='scan') root.innerHTML=viewScan();
+  else if(v==='coach') root.innerHTML=viewCoach();
+  else if(v==='more') root.innerHTML=viewMore();
+  else if(v==='profile') root.innerHTML=viewProfile();
+  else if(v==='weight') root.innerHTML=viewWeight();
+  else if(v==='water') root.innerHTML=viewWater();
+  else if(v==='reports') root.innerHTML=viewReports();
+  else if(v==='couple') root.innerHTML=viewCouple();
+  else if(v==='admin') root.innerHTML=viewAdmin();
+  else if(v==='config') root.innerHTML=viewConfig();
+  $('#topTitle').textContent = {
+    dashboard:'Hôm nay', diary:'Nhật ký ăn uống', scan:'AI Scanner', coach:'AI Coach',
+    more:'Thêm', profile:'Hồ sơ', weight:'Cân nặng', water:'Nước uống',
+    reports:'Báo cáo', couple:'Couple', admin:'Cài đặt', config:'Cấu hình'
+  }[v]||'';
+  icons();
+  attachHandlers();
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function todayTotals(profileKey){
+  const key = profileKey || State.activeProfile;
+  const t={calories:0,protein:0,carbs:0,fat:0,fiber:0,sugar:0,sodium:0};
+  const d=today();
+  State.meals.filter(m=>(m.date||m.created_at||'').slice(0,10)===d && (m.profile_key||m.profileKey||'husband')===key).forEach(m=>{
+    t.calories+=+m.calories||0; t.protein+=+m.protein||0; t.carbs+=+m.carbs||0;
+    t.fat+=+m.fat||0; t.fiber+=+m.fiber||0; t.sugar+=+m.sugar||0; t.sodium+=+m.sodium||0;
+  });
+  const w = State.water.filter(x=>(x.date||x.created_at||'').slice(0,10)===d && (x.profile_key||x.profileKey||'husband')===key).reduce((a,b)=>a+(+b.ml||0),0);
+  return {...t, water:w};
+}
+
+function viewDashboard(){
+  const p=State.profile, tgt=macroTargets(p), tot=todayTotals();
+  const remain=tgt.calories-tot.calories;
+  const pct=Math.min(100,(tot.calories/tgt.calories)*100||0);
+  const ring = ringSvg(pct, fmt(tot.calories), 'of '+fmt(tgt.calories));
+  const curW = State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===State.activeProfile).slice(-1)[0]?.value || p.weight;
+  const profileLabel = State.activeProfile==='husband'?'👨 Chồng':'👩 Vợ';
+  return `
+  <div class="card">
+    <div class="row between"><div><h2>Xin chào ${p.name||''} 👋</h2><div class="muted">${new Date().toLocaleDateString('vi-VN',{weekday:'long',month:'long',day:'numeric'})}</div></div>
+    <span class="pill">${profileLabel}</span></div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    ${ring}
+    <div style="margin-top:8px"><b>${remain>=0?fmt(remain)+' kcal còn lại':fmt(-remain)+' kcal vượt'}</b></div>
+    <div class="muted">Mục tiêu: ${({loss:'Giảm cân',maintain:'Duy trì',bulk:'Tăng cơ'})[p.goal]||'-'}</div>
+  </div>
+
+  <div class="grid2">
+    ${statCard('Protein', tot.protein, tgt.protein, 'g', 'b-p')}
+    ${statCard('Carbs', tot.carbs, tgt.carbs, 'g', 'b-c')}
+    ${statCard('Fat', tot.fat, tgt.fat, 'g', 'b-f')}
+    ${statCard('Water', tot.water, tgt.water, 'ml', 'b-w')}
+  </div>
+
+  <div class="grid3" style="margin-top:10px">
+    <div class="stat"><div class="l">Cân nặng</div><div class="v">${curW}<span style="font-size:13px;color:var(--muted)"> kg</span></div></div>
+    <div class="stat"><div class="l">BMR</div><div class="v">${fmt(calcBMR(p))}</div></div>
+    <div class="stat"><div class="l">TDEE</div><div class="v">${fmt(calcTDEE(p))}</div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="row between"><h3>Macro Breakdown</h3></div>
+    <canvas id="macroPie" height="180"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="row between"><h3>Thêm nhanh</h3></div>
+    <div class="grid3">
+      <button class="btn accent" data-quick="water"><i data-lucide="droplet"></i> Nước</button>
+      <button class="btn" data-quick="meal"><i data-lucide="utensils"></i> Bữa ăn</button>
+      <button class="btn secondary" data-quick="weight"><i data-lucide="scale"></i> Cân</button>
+    </div>
+  </div>
+  `;
+}
+function statCard(label, cur, max, unit, klass){
+  const pct=Math.min(100,(cur/max)*100||0);
+  return `<div class="card" style="margin:0">
+    <div class="row between"><span class="badge ${klass}">${label}</span><span class="muted">${fmt(cur)}/${fmt(max)} ${unit}</span></div>
+    <div class="progress" style="margin-top:8px"><div style="width:${pct}%;background:${pieColor(klass)}"></div></div>
+  </div>`;
+}
+function pieColor(k){return ({'b-p':'var(--p)','b-c':'var(--c)','b-f':'var(--f)','b-w':'var(--w)'})[k]||'var(--primary)'}
+
+function ringSvg(pct, big, small){
+  const r=78, c=2*Math.PI*r, off=c*(1-pct/100);
+  return `<div class="ring"><svg width="180" height="180">
+    <circle cx="90" cy="90" r="${r}" stroke="var(--bg)" stroke-width="14" fill="none"/>
+    <circle cx="90" cy="90" r="${r}" stroke="url(#g)" stroke-width="14" fill="none" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+  </svg><div class="center"><div class="big">${big}</div><div class="muted">${small}</div></div></div>`;
+}
+
+/* ============================================================
+   DIARY
+============================================================ */
+function viewDiary(){
+  const d=today();
+  const day = State.meals.filter(m=>(m.date||m.created_at||'').slice(0,10)===d && (m.profile_key||m.profileKey||'husband')===State.activeProfile);
+  const by = {breakfast:[],lunch:[],dinner:[],snack:[]};
+  day.forEach(m=>{ (by[m.meal_type||'snack']||by.snack).push(m); });
+  const sec = (k,t)=>`
+    <div class="card">
+      <div class="row between"><h3>${t}</h3>
+        <button class="btn small" data-add-meal="${k}"><i data-lucide="plus"></i></button>
+      </div>
+      ${by[k].length?by[k].map(mealItem).join(''):'<div class="muted">Chưa có dữ liệu</div>'}
+    </div>`;
+  return sec('breakfast','🌅 Bữa sáng')+sec('lunch','☀️ Bữa trưa')+sec('dinner','🌙 Bữa tối')+sec('snack','🍎 Ăn vặt');
+}
+function mealItem(m){
+  return `<div class="item" style="margin-top:8px" data-meal="${m.id}">
+    <img src="${m.photo||'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22><rect width=%2256%22 height=%2256%22 fill=%22%23eee%22/></svg>'}"/>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:600">${m.name||'Food'}</div>
+      <div class="muted" style="font-size:12px">${fmt(m.calories)} kcal · P${fmt(m.protein)} C${fmt(m.carbs)} F${fmt(m.fat)}</div>
+    </div>
+    <button class="btn small ghost" data-del-meal="${m.id}"><i data-lucide="trash-2"></i></button>
+  </div>`;
+}
+
+/* ============================================================
+   SCAN
+============================================================ */
+function viewScan(){
+  return `
+  <div class="card">
+    <h3>AI Food Scanner</h3>
+    <div class="muted">Take or upload a photo. Supports Vietnamese dishes (Pho, Bun Bo Hue, Com Tam, Banh Mi, Hu Tieu, Bun Cha, Bun Rieu, Mi Quang, Chao, Xoi, Banh Cuon, Banh Xeo) and multiple dishes per photo.</div>
+    <div class="grid2" style="margin-top:10px">
+      <label class="btn"><i data-lucide="camera"></i> Camera
+        <input id="camIn" type="file" accept="image/*" capture="environment" style="display:none">
+      </label>
+      <label class="btn secondary"><i data-lucide="upload"></i> Upload
+        <input id="upIn" type="file" accept="image/*" style="display:none">
+      </label>
+    </div>
+    <div id="scanPreview" style="margin-top:12px"></div>
+    <div id="scanResult" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <h3>Manual Entry</h3>
+    <input id="mName" class="input" placeholder="Food name"/>
+    <div class="grid4" style="margin-top:8px">
+      <input id="mCal" class="input" placeholder="kcal" type="number"/>
+      <input id="mP" class="input" placeholder="P g" type="number"/>
+      <input id="mC" class="input" placeholder="C g" type="number"/>
+      <input id="mF" class="input" placeholder="F g" type="number"/>
+    </div>
+    <select id="mMeal" class="select" style="margin-top:8px">
+      <option value="breakfast">Breakfast</option><option value="lunch">Lunch</option>
+      <option value="dinner">Dinner</option><option value="snack">Snack</option>
+    </select>
+    <button class="btn" id="mSave" style="margin-top:8px"><i data-lucide="plus"></i> Add to Diary</button>
+  </div>`;
+}
+
+async function compressImage(file, max=1024, q=0.8){
+  return new Promise((res,rej)=>{
+    const img=new Image(); const r=new FileReader();
+    r.onload=()=>{img.onload=()=>{
+      let {width:w,height:h}=img;
+      if(w>h&&w>max){h=h*max/w;w=max} else if(h>max){w=w*max/h;h=max}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(b=>res({blob:b,dataUrl:c.toDataURL('image/jpeg',q)}),'image/jpeg',q);
+    };img.src=r.result};r.readAsDataURL(file);
+  });
+}
+
+async function analyzePhoto(dataUrl){
+  const base64 = dataUrl.split(',')[1];
+  const prompt = `You are a nutrition expert specializing in Vietnamese and international cuisine. Analyze this food photo. Identify all dishes (including Vietnamese ones like Pho, Bun Bo Hue, Com Tam, Banh Mi, Hu Tieu, Bun Cha, Bun Rieu, Mi Quang, Chao, Xoi, Banh Cuon, Banh Xeo). Return ONLY JSON (no markdown, no backticks): {"dish_name":"","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"sugar":0,"sodium":0,"confidence":0.0,"items":[{"name":"","calories":0}]}`;
+
+  // Groq không hỗ trợ vision → dùng Gemini làm fallback nếu có key
+  const useVision = CONFIG.AI_PROVIDER !== 'groq';
+  const hasKey = CONFIG.AI_PROVIDER==='gemini'?CONFIG.GEMINI_API_KEY
+               : CONFIG.AI_PROVIDER==='groq'?CONFIG.GROQ_API_KEY
+               : CONFIG.OPENROUTER_API_KEY;
+
+  if(!hasKey){
+    return {dish_name:'Pho Bo',calories:450,protein:30,carbs:55,fat:12,fiber:3,sugar:5,sodium:1200,confidence:0.72,note:'Demo — chưa có AI API key.'};
+  }
+  if(!useVision){
+    return {dish_name:'N/A',calories:0,protein:0,carbs:0,fat:0,confidence:0,note:'Groq không hỗ trợ nhận diện ảnh. Vui lòng chọn Gemini hoặc OpenRouter.'};
+  }
+
+  try{
+    const txt = await callAI({prompt, imageBase64: base64});
+    if(!txt) throw new Error('No response');
+    const clean = txt.replace(/```json|```/g,'').trim();
+    return JSON.parse(clean);
+  }catch(e){
+    return {dish_name:'Unknown',calories:0,protein:0,carbs:0,fat:0,confidence:0,note:'Lỗi phân tích: '+e.message};
+  }
+}
+
+async function handleScanFile(file){
+  if(!file) return;
+  toast('Compressing...');
+  const {blob,dataUrl}=await compressImage(file);
+  $('#scanPreview').innerHTML=`<img src="${dataUrl}" style="width:100%;border-radius:14px"/>`;
+  let photoUrl=dataUrl;
+  if(sb && !State.demo){
+    try{
+      const path=`${State.user.id}/${State.activeProfile}/${Date.now()}.jpg`;
+      const up=await sb.storage.from('Image').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+      if(!up.error){ photoUrl=sb.storage.from('Image').getPublicUrl(path).data.publicUrl; }
+    }catch(e){console.warn(e)}
+  }
+  $('#scanResult').innerHTML=`<div class="muted">🤖 Analyzing with AI...</div>`;
+  const res=await analyzePhoto(dataUrl);
+  $('#scanResult').innerHTML=`
+    <div class="card" style="margin:0">
+      <h3>${res.dish_name||'Detected'}</h3>
+      <div class="muted">Confidence: ${Math.round((res.confidence||0)*100)}% ${res.note?'· '+res.note:''}</div>
+      <div class="grid4" style="margin-top:8px">
+        <div class="stat"><div class="l">kcal</div><div class="v">${fmt(res.calories)}</div></div>
+        <div class="stat"><div class="l">P</div><div class="v">${fmt(res.protein)}</div></div>
+        <div class="stat"><div class="l">C</div><div class="v">${fmt(res.carbs)}</div></div>
+        <div class="stat"><div class="l">F</div><div class="v">${fmt(res.fat)}</div></div>
+      </div>
+      <select id="resMeal" class="select" style="margin-top:8px">
+        <option value="breakfast">Breakfast</option><option value="lunch" selected>Lunch</option>
+        <option value="dinner">Dinner</option><option value="snack">Snack</option>
+      </select>
+      <button class="btn" id="resSave" style="margin-top:8px"><i data-lucide="check"></i> Confirm &amp; Save</button>
+    </div>`;
+  icons();
+  $('#resSave').onclick=async ()=>{
+    await addMeal({
+      id:uid(), name:res.dish_name||'Food', calories:+res.calories||0, protein:+res.protein||0,
+      carbs:+res.carbs||0, fat:+res.fat||0, fiber:+res.fiber||0, sugar:+res.sugar||0,
+      sodium:+res.sodium||0, photo:photoUrl, meal_type:$('#resMeal').value, date:today(),
+      created_at:new Date().toISOString()
+    });
+    toast('Saved'); State.view='diary'; render();
+  };
+}
+
+/* ============================================================
+   COACH (Gemini chat)
+============================================================ */
+function viewCoach(){
+  const history = State.chats.map(c=>`<div class="bubble ${c.role==='user'?'me':'ai'}">${escapeHtml(c.text)}</div>`).join('');
+  return `
+  <div class="card">
+    <h3>AI Nutrition Coach</h3>
+    <div class="muted">Personalized using your profile, calories, macros, weight & food history.</div>
+  </div>
+  <div class="card chatwrap" id="chatBox">${history||'<div class="muted">Hỏi tôi bất cứ điều gì — "Tôi nên ăn gì tối nay?", "Tôi có đang đúng hướng không?", "Gợi ý bữa trưa 500 kcal."</div>'}</div>
+  <div class="card row" style="gap:8px">
+    <input id="chatIn" class="input" placeholder="Hỏi chuyên gia dinh dưỡng..."/>
+    <button class="btn small" id="chatSend"><i data-lucide="send"></i></button>
+  </div>`;
+}
+function escapeHtml(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+
+async function coachAsk(q){
+  State.chats.push({role:'user',text:q});
+  render();
+  const p=State.profile, tgt=macroTargets(p), tot=todayTotals();
+  const profileLabel=State.activeProfile==='husband'?'Chồng':'Vợ';
+  const ctx=`Hồ sơ người dùng (${profileLabel}): ${JSON.stringify(p)}. Mục tiêu hôm nay: ${JSON.stringify(tgt)}. Đã nạp hôm nay: ${JSON.stringify(tot)}. Bữa ăn gần đây: ${JSON.stringify(State.meals.filter(m=>(m.profile_key||m.profileKey||'husband')===State.activeProfile).slice(0,10).map(m=>({n:m.name,k:m.calories})))}. Cân nặng gần đây: ${JSON.stringify(State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===State.activeProfile).slice(-5))}.`;
+  const prompt=`Bạn là chuyên gia dinh dưỡng cá nhân của hai vợ chồng người dùng. Chỉ trả lời bằng tiếng Việt, KHÔNG dùng tiếng Anh dù chỉ một từ.
+
+QUY TẮC TRẢ LỜI BẮT BUỘC:
+- Đi thẳng vào câu trả lời, KHÔNG mở đầu bằng "Tất nhiên!", "Chào bạn!", hay bất kỳ lời dẫn vòng vo nào.
+- Trả lời NGẮN GỌN, tối đa 6-8 dòng trừ khi cần liệt kê thực đơn cụ thể.
+- Luôn dùng số liệu cụ thể từ dữ liệu người dùng (kcal, gram, %).
+- Nếu đề xuất món ăn: ghi rõ tên món (tiếng Việt) + kcal + protein/carb/fat.
+- Nếu đánh giá tiến độ: so sánh đã nạp vs mục tiêu, nêu còn thiếu/thừa bao nhiêu.
+- Kết thúc bằng 1 hành động cụ thể duy nhất nếu cần.
+
+DỮ LIỆU NGƯỜI DÙNG (${profileLabel}): ${ctx}
+
+Câu hỏi: ${q}`;
+
+  const hasKey = CONFIG.AI_PROVIDER==='gemini'?CONFIG.GEMINI_API_KEY
+               : CONFIG.AI_PROVIDER==='groq'?CONFIG.GROQ_API_KEY
+               : CONFIG.OPENROUTER_API_KEY;
+
+  let reply='';
+  if(!hasKey){
+    const remain=tgt.calories-tot.calories;
+    reply=`(Demo) Bạn còn ${fmt(remain)} kcal. Cần thêm ${fmt(tgt.protein-tot.protein)}g protein nữa. Thử gà nướng + cơm + rau nhé!`;
+  } else {
+    try{
+      const txt = await callAI({prompt});
+      reply = txt || 'Không có phản hồi.';
+    }catch(e){ reply='Lỗi: '+e.message; }
+  }
+  State.chats.push({role:'ai',text:reply});
+  saveLocal(); render();
+  setTimeout(()=>{const b=$('#chatBox');if(b) b.scrollTop=b.scrollHeight},50);
+}
+
+/* ============================================================
+   MORE / PROFILE / WEIGHT / WATER / REPORTS / COUPLE / ADMIN
+============================================================ */
+function viewMore(){
+  const items=[
+    ['profile','user','Hồ sơ & Mục tiêu'],
+    ['weight','scale','Theo dõi cân nặng'],
+    ['water','droplet','Lượng nước uống'],
+    ['reports','bar-chart-3','Báo cáo'],
+    ['couple','heart','Couple Dashboard'],
+    ['config','settings','Cấu hình / API Keys'],
+  ];
+  return `<div class="card">${items.map(([v,i,t])=>`
+    <button class="item" style="width:100%;margin-bottom:8px" data-go="${v}">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center"><i data-lucide="${i}"></i></div>
+      <div style="flex:1;text-align:left"><b>${t}</b></div>
+      <i data-lucide="chevron-right"></i>
+    </button>`).join('')}
+    <div class="muted" style="text-align:center;margin-top:8px">Đăng nhập: ${State.user?.email||'demo'}</div>
+  </div>`;
+}
+
+function backBtn(){ return `<button class="btn secondary small" id="backBtn" style="margin-bottom:12px;width:auto"><i data-lucide="arrow-left"></i> Quay lại</button>`; }
+
+function viewProfile(){
+  const p=State.profile;
+  const profileLabel = State.activeProfile==='husband'?'👨 Chồng':'👩 Vợ';
+  return `${backBtn()}<div class="card">
+    <div class="row between" style="margin-bottom:12px"><h3>Hồ sơ</h3><span class="pill">${profileLabel}</span></div>
+    <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Tên hiển thị</label>
+    <input id="pName" class="input" placeholder="Nhập tên của bạn" value="${p.name||''}" style="margin-bottom:10px"/>
+    <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Giới tính</label>
+    <select id="pGender" class="select" style="margin-bottom:10px">
+      <option value="male" ${p.gender==='male'?'selected':''}>Nam</option>
+      <option value="female" ${p.gender==='female'?'selected':''}>Nữ</option>
+    </select>
+    <div class="grid3" style="margin-bottom:10px">
+      <div><label class="muted" style="font-size:12px;display:block;margin-bottom:2px">Tuổi</label>
+        <input id="pAge" class="input" type="number" placeholder="VD: 28" value="${p.age||''}"/></div>
+      <div><label class="muted" style="font-size:12px;display:block;margin-bottom:2px">Chiều cao (cm)</label>
+        <input id="pHeight" class="input" type="number" placeholder="VD: 165" value="${p.height||''}"/></div>
+      <div><label class="muted" style="font-size:12px;display:block;margin-bottom:2px">Cân nặng (kg)</label>
+        <input id="pWeight" class="input" type="number" step="0.1" placeholder="VD: 60" value="${p.weight||''}"/></div>
+    </div>
+    <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Mục tiêu cân nặng (kg)</label>
+    <input id="pGoalW" class="input" type="number" step="0.1" placeholder="VD: 55" value="${p.goalWeight||''}" style="margin-bottom:10px"/>
+    <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Mức độ vận động</label>
+    <select id="pActivity" class="select" style="margin-bottom:10px">
+      <option value="sedentary" ${p.activity==='sedentary'?'selected':''}>Ít vận động (ngồi nhiều)</option>
+      <option value="light" ${p.activity==='light'?'selected':''}>Nhẹ (1–3 buổi/tuần)</option>
+      <option value="moderate" ${p.activity==='moderate'?'selected':''}>Vừa phải (3–5 buổi/tuần)</option>
+      <option value="active" ${p.activity==='active'?'selected':''}>Năng động (6–7 buổi/tuần)</option>
+      <option value="very" ${p.activity==='very'?'selected':''}>Rất năng động (lao động nặng)</option>
+    </select>
+    <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Mục tiêu</label>
+    <select id="pGoal" class="select" style="margin-bottom:10px">
+      <option value="loss" ${p.goal==='loss'?'selected':''}>Giảm cân (−500 kcal/ngày)</option>
+      <option value="maintain" ${p.goal==='maintain'?'selected':''}>Duy trì cân nặng hiện tại</option>
+      <option value="bulk" ${p.goal==='bulk'?'selected':''}>Tăng cơ (+300 kcal/ngày)</option>
+    </select>
+    <button class="btn" id="pSave" style="margin-top:4px">Lưu hồ sơ</button>
+  </div>
+  <div class="card">
+    <h3>Chỉ số</h3>
+    <div class="grid3">
+      <div class="stat"><div class="l">BMR</div><div class="v">${fmt(calcBMR(p))}</div></div>
+      <div class="stat"><div class="l">TDEE</div><div class="v">${fmt(calcTDEE(p))}</div></div>
+      <div class="stat"><div class="l">Mục tiêu</div><div class="v">${fmt(targetCalories(p))}</div></div>
+    </div>
+    <div class="muted" style="margin-top:8px">Giảm ${fmt(calcTDEE(p)-500)} · Duy trì ${fmt(calcTDEE(p))} · Tăng ${fmt(calcTDEE(p)+300)}</div>
+  </div>`;
+}
+
+function viewWeight(){
+  const profileWeights = State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===State.activeProfile);
+  return `${backBtn()}<div class="card">
+    <h3>Ghi cân nặng</h3>
+    <div class="row" style="gap:8px">
+      <input id="wVal" class="input" type="number" step="0.1" placeholder="Cân nặng (kg)"/>
+      <button class="btn small" id="wSave"><i data-lucide="plus"></i></button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tabbar">
+      ${['7','30','90','365'].map(d=>`<button class="chip" data-wrange="${d}">${d==='365'?'1Y':d+'D'}</button>`).join('')}
+    </div>
+    <canvas id="weightChart" height="180"></canvas>
+  </div>
+  <div class="card">
+    <h3>Lịch sử</h3>
+    ${profileWeights.slice().reverse().slice(0,30).map(w=>`<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span>${w.date}</span><b>${w.value} kg</b></div>`).join('')||'<div class="muted">Chưa có dữ liệu</div>'}
+  </div>`;
+}
+
+function viewWater(){
+  const d=today();
+  const profileWater = State.water.filter(x=>(x.profile_key||x.profileKey||'husband')===State.activeProfile);
+  const ml = profileWater.filter(x=>(x.date||x.created_at||'').slice(0,10)===d).reduce((a,b)=>a+(+b.ml||0),0);
+  const tgt=2500;
+  return `${backBtn()}<div class="card" style="text-align:center">
+    ${ringSvg(Math.min(100,ml/tgt*100), ml+'ml', 'of '+tgt+'ml')}
+  </div>
+  <div class="card">
+    <h3>Thêm nhanh</h3>
+    <div class="grid4">
+      ${[250,500,750,1000].map(v=>`<button class="btn accent" data-water="${v}">+${v}</button>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <h3>Hôm nay</h3>
+    ${profileWater.filter(x=>(x.date||x.created_at||'').slice(0,10)===d).map(x=>`
+      <div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+        <span>${new Date(x.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><b>+${x.ml}ml</b>
+      </div>`).join('')||'<div class="muted">Chưa uống nước</div>'}
+  </div>`;
+}
+
+function viewReports(){
+  return `${backBtn()}<div class="card">
+    <h3>Calories — Last 7 Days</h3>
+    <canvas id="calChart" height="180"></canvas>
+  </div>
+  <div class="card">
+    <h3>Macros — Last 7 Days</h3>
+    <canvas id="macroChart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <h3>Weight Trend</h3>
+    <canvas id="wTrend" height="180"></canvas>
+  </div>`;
+}
+
+function viewCouple(){
+  return `${backBtn()}<div class="card">
+    <h3>Couple Dashboard</h3>
+    <div class="muted">So sánh tiến độ của Chồng &amp; Vợ trong ngày hôm nay.</div>
+  </div>
+  <div class="grid2">
+    ${coupleCard('husband')}
+    ${coupleCard('wife')}
+  </div>
+  <div class="card">
+    <h3>Tiến độ mục tiêu</h3>
+    ${['husband','wife'].map(key=>{
+      const p=State.profiles[key]; if(!p) return '';
+      const label=key==='husband'?'👨 Chồng':'👩 Vợ';
+      const cur=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===key).slice(-1)[0]?.value||p.weight;
+      const total=Math.abs((p.weight||0)-(p.goalWeight||0));
+      const done=Math.abs((p.weight||0)-cur);
+      const pct=total?Math.min(100,done/total*100):0;
+      return `<div style="margin-bottom:10px"><div class="row between"><span>${label} ${p.name||''}</span><span class="muted">${cur}kg → ${p.goalWeight||'?'}kg</span></div><div class="progress" style="margin-top:4px"><div style="width:${pct}%;background:${key==='husband'?'#3b82f6':'#f43f5e'}"></div></div></div>`;
+    }).join('')}
+  </div>`;
+}
+function coupleCard(key){
+  const p=State.profiles[key];
+  if(!p) return `<div class="card"><div class="muted">Chưa có hồ sơ</div></div>`;
+  const t=todayTotals(key);
+  const tgt=macroTargets(p);
+  const color=key==='husband'?'#3b82f6':'#f43f5e';
+  const label=key==='husband'?'👨 Chồng':'👩 Vợ';
+  const curW=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===key).slice(-1)[0]?.value||p.weight;
+  const pct=Math.min(100,(t.calories/tgt.calories)*100||0);
+  return `<div class="card" style="border-top:3px solid ${color}">
+    <h3>${label} ${p.name||''}</h3>
+    <div class="muted" style="font-size:11px">Calories hôm nay</div>
+    <div style="font-size:22px;font-weight:700">${fmt(t.calories)}</div>
+    <div class="progress" style="margin:4px 0"><div style="width:${pct}%;background:${color}"></div></div>
+    <div class="muted" style="font-size:11px">/${fmt(tgt.calories)} kcal</div>
+    <div class="row between" style="margin-top:6px"><span class="muted" style="font-size:12px">Protein</span><b>${fmt(t.protein)}g</b></div>
+    <div class="row between"><span class="muted" style="font-size:12px">Nước</span><b>${fmt(t.water)}ml</b></div>
+    <div class="row between"><span class="muted" style="font-size:12px">Cân nặng</span><b>${curW} kg</b></div>
+  </div>`;
+}
+
+function viewAdmin(){
+  const prov = CONFIG.AI_PROVIDER;
+  const provLabel = prov==='gemini'?'⚡ Gemini':prov==='groq'?'⚡ Groq':'🔀 OpenRouter';
+  return `${backBtn()}<div class="card" style="border-top:3px solid var(--primary)">
+    <div class="row between" style="margin-bottom:10px">
+      <h3>🤖 Cài đặt AI & API Key</h3>
+      <span class="pill">${provLabel}</span>
+    </div>
+    <div class="muted" style="margin-bottom:14px;font-size:12px">Keys lưu bảo mật trong Supabase <code>ai_settings</code>. Chỉ Admin mới nên thay đổi.</div>
+
+    <label class="muted" style="display:block;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px">AI Provider</label>
+    <div class="row" style="gap:6px;margin-bottom:16px">
+      <button class="btn small ${prov==='groq'?'':'secondary'}" id="provGroq" style="flex:1">⚡ Groq</button>
+      <button class="btn small ${prov==='gemini'?'':'secondary'}" id="provGemini" style="flex:1">⚡ Gemini</button>
+      <button class="btn small ${prov==='openrouter'?'accent':'secondary'}" id="provOpenRouter" style="flex:1">🔀 OpenRouter</button>
+    </div>
+    <div id="provStatus" class="muted" style="font-size:12px;margin-bottom:14px;padding:8px;background:var(--bg);border-radius:10px">
+      ${prov==='groq'?'Đang dùng <b>Groq</b> · '+CONFIG.GROQ_MODEL
+        :prov==='gemini'?'Đang dùng <b>Gemini</b> · '+CONFIG.GEMINI_MODEL
+        :'Đang dùng <b>OpenRouter</b> · '+CONFIG.OPENROUTER_MODEL}
+    </div>
+
+    <!-- GROQ -->
+    <div id="sectionGroq" style="${prov!=='groq'?'display:none':''}">
+      <label class="muted" style="display:block;margin-bottom:4px">GROQ API KEY
+        <a href="https://console.groq.com/keys" target="_blank" style="margin-left:8px;font-size:11px">Lấy key miễn phí →</a>
+      </label>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <input id="aGroqKey" class="input" type="password" placeholder="gsk_..." value="${CONFIG.GROQ_API_KEY}" style="flex:1" autocomplete="off"/>
+        <button class="btn small ghost" onclick="togglePwd('#aGroqKey')">👁</button>
+      </div>
+      <label class="muted" style="display:block;margin-bottom:4px">Model</label>
+      <select id="aGroqModel" class="select" style="margin-bottom:10px">
+        ${[['meta-llama/llama-4-scout-17b-16e-instruct','Llama 4 Scout (Free)'],['meta-llama/llama-4-maverick-17b-128e-instruct','Llama 4 Maverick (Free)'],['llama-3.3-70b-versatile','Llama 3.3 70B (Free)'],['llama-3.1-8b-instant','Llama 3.1 8B Instant (Free)'],['deepseek-r1-distill-llama-70b','DeepSeek R1 Distill 70B (Free)'],['gemma2-9b-it','Gemma 2 9B (Free)'],['mixtral-8x7b-32768','Mixtral 8x7B (Free)']].map(([v,l])=>`<option value="${v}" ${CONFIG.GROQ_MODEL===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <div class="muted" style="font-size:11px;margin-bottom:10px">⚠️ Groq không hỗ trợ nhận diện ảnh (AI Scan). Dùng Gemini/OpenRouter nếu cần tính năng này.</div>
+    </div>
+
+    <!-- GEMINI -->
+    <div id="sectionGemini" style="${prov!=='gemini'?'display:none':''}">
+      <label class="muted" style="display:block;margin-bottom:4px">GEMINI API KEY
+        <a href="https://aistudio.google.com/apikey" target="_blank" style="margin-left:8px;font-size:11px">Lấy key miễn phí →</a>
+      </label>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <input id="aGeminiKey" class="input" type="password" placeholder="AIza..." value="${CONFIG.GEMINI_API_KEY}" style="flex:1" autocomplete="off"/>
+        <button class="btn small ghost" onclick="togglePwd('#aGeminiKey')">👁</button>
+      </div>
+      <label class="muted" style="display:block;margin-bottom:4px">Model</label>
+      <select id="aGeminiModel" class="select" style="margin-bottom:10px">
+        ${[['gemini-2.5-flash-preview-05-20','Gemini 2.5 Flash (Free)'],['gemini-2.5-pro-preview-06-05','Gemini 2.5 Pro (Free)'],['gemini-2.0-flash-exp','Gemini 2.0 Flash Exp (Free)'],['gemini-2.0-pro-exp','Gemini 2.0 Pro Exp'],['gemini-1.5-flash','Gemini 1.5 Flash'],['gemini-1.5-pro','Gemini 1.5 Pro']].map(([v,l])=>`<option value="${v}" ${CONFIG.GEMINI_MODEL===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- OPENROUTER -->
+    <div id="sectionOpenRouter" style="${prov!=='openrouter'?'display:none':''}">
+      <label class="muted" style="display:block;margin-bottom:4px">OPENROUTER API KEY
+        <a href="https://openrouter.ai/keys" target="_blank" style="margin-left:8px;font-size:11px">Lấy key →</a>
+      </label>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <input id="aORKey" class="input" type="password" placeholder="sk-or-..." value="${CONFIG.OPENROUTER_API_KEY}" style="flex:1" autocomplete="off"/>
+        <button class="btn small ghost" onclick="togglePwd('#aORKey')">👁</button>
+      </div>
+      <label class="muted" style="display:block;margin-bottom:4px">Model OpenRouter</label>
+      <select id="aORModel" class="select" style="margin-bottom:10px">
+        ${[['google/gemini-2.0-flash-exp:free','Gemini 2.0 Flash Exp (Free)'],['meta-llama/llama-4-scout:free','Llama 4 Scout (Free)'],['meta-llama/llama-4-maverick:free','Llama 4 Maverick (Free)'],['deepseek/deepseek-r1:free','DeepSeek R1 (Free)'],['deepseek/deepseek-chat-v3-0324:free','DeepSeek V3 (Free)'],['qwen/qwen3-235b-a22b:free','Qwen3 235B (Free)'],['microsoft/mai-ds-r1:free','Microsoft MAI DS R1 (Free)'],['openai/gpt-4o-mini','GPT-4o Mini'],['openai/gpt-4.1-nano','GPT-4.1 Nano'],['openai/gpt-4o','GPT-4o'],['anthropic/claude-sonnet-4-5','Claude Sonnet 4.5'],['anthropic/claude-haiku-4-5','Claude Haiku 4.5'],['google/gemini-2.5-flash-preview','Gemini 2.5 Flash'],['google/gemini-2.5-pro-exp-03-25:free','Gemini 2.5 Pro'],['deepseek/deepseek-r1','DeepSeek R1'],['x-ai/grok-3-mini-beta','Grok 3 Mini']].map(([v,l])=>`<option value="${v}" ${CONFIG.OPENROUTER_MODEL===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="row" style="gap:8px;margin-top:4px">
+      <button class="btn" id="aSave" style="flex:1"><i data-lucide="cloud-upload"></i> Lưu lên Supabase</button>
+      <button class="btn secondary small" id="aTest">Test</button>
+    </div>
+    <div id="aiSaveMsg" class="muted" style="margin-top:8px;font-size:12px;text-align:center"></div>
+  </div>
+
+  <div class="card">
+    <h3>Quy tắc dinh dưỡng</h3>
+    <div class="muted">Mặc định: P 30% / C 40% / F 30%. Có thể chỉnh trong bảng <code>nutrition_rules</code>.</div>
+  </div>
+  <div class="card">
+    <h3>Thống kê hệ thống</h3>
+    <div class="grid2">
+      <div class="stat"><div class="l">Bữa ăn</div><div class="v">${State.meals.length}</div></div>
+      <div class="stat"><div class="l">Cân nặng</div><div class="v">${State.weights.length}</div></div>
+      <div class="stat"><div class="l">Nước</div><div class="v">${State.water.length}</div></div>
+      <div class="stat"><div class="l">Chat</div><div class="v">${State.chats.length}</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Database Schema</h3>
+    <button class="btn secondary small" id="showSql">Hiển thị SQL</button>
+    <pre id="sqlOut" class="hidden" style="white-space:pre-wrap;font-size:11px;background:var(--bg);padding:10px;border-radius:10px;margin-top:8px"></pre>
+  </div>`;
+}
+
+function viewConfig(){
+  const provLabel = CONFIG.AI_PROVIDER==='gemini'?'⚡ Gemini':CONFIG.AI_PROVIDER==='groq'?'⚡ Groq':'🔀 OpenRouter';
+  return `${backBtn()}<div class="card" style="background:var(--bg)">
+    <div class="row" style="gap:10px">
+      <span style="font-size:28px">🔒</span>
+      <div>
+        <div style="font-weight:600">Supabase đã được cấu hình</div>
+        <div class="muted" style="font-size:12px">URL &amp; Anon Key được nhúng sẵn trong ứng dụng.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="background:var(--bg)">
+    <div class="row between" style="gap:10px">
+      <div class="row" style="gap:10px">
+        <span style="font-size:28px">🤖</span>
+        <div>
+          <div style="font-weight:600">AI Provider: ${provLabel}</div>
+          <div class="muted" style="font-size:12px">Keys lưu bảo mật trong Supabase.<br>Admin quản lý trong <b>Cài đặt → Cài đặt AI</b>.</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn secondary small" style="margin-top:10px" data-go="admin">Quản lý AI →</button>
+  </div>`;
+}
+
+/* ============================================================
+   HANDLERS (re-attached after each render)
+============================================================ */
+function attachHandlers(){
+  // nav-to-subview
+  $$('[data-go]').forEach(b=>b.onclick=()=>{State.view=b.dataset.go;render()});
+
+  // back button (subviews → more)
+  if($('#backBtn')) $('#backBtn').onclick=()=>{
+    const fromView=State.view;
+    // subviews that come from "More" menu
+    const moreSubviews=['profile','weight','water','reports','couple','admin','config'];
+    State.view = moreSubviews.includes(fromView)?'more':'dashboard';
+    render();
+  };
+
+  // dashboard quick adds
+  $$('[data-quick]').forEach(b=>b.onclick=()=>{
+    const q=b.dataset.quick;
+    if(q==='water'){State.view='water';render()}
+    if(q==='meal'){State.view='scan';render()}
+    if(q==='weight'){State.view='weight';render()}
+  });
+
+  // Macro pie
+  if($('#macroPie')){
+    const t=todayTotals();
+    new Chart($('#macroPie'),{type:'doughnut',data:{labels:['Protein','Carbs','Fat'],datasets:[{data:[t.protein*4,t.carbs*4,t.fat*9],backgroundColor:['#f43f5e','#f59e0b','#8b5cf6'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'}},cutout:'65%'}});
+  }
+
+  // Diary
+  $$('[data-add-meal]').forEach(b=>b.onclick=()=>{State.view='scan';render()});
+  $$('[data-del-meal]').forEach(b=>b.onclick=async ()=>{await delMeal(b.dataset.delMeal);toast('Deleted');render()});
+
+  // Scan
+  if($('#camIn')) $('#camIn').onchange=e=>handleScanFile(e.target.files[0]);
+  if($('#upIn')) $('#upIn').onchange=e=>handleScanFile(e.target.files[0]);
+  if($('#mSave')) $('#mSave').onclick=async ()=>{
+    const m={id:uid(),name:$('#mName').value||'Food',calories:+$('#mCal').value||0,protein:+$('#mP').value||0,carbs:+$('#mC').value||0,fat:+$('#mF').value||0,meal_type:$('#mMeal').value,date:today(),created_at:new Date().toISOString()};
+    await addMeal(m);toast('Added');State.view='diary';render();
+  };
+
+  // Coach
+  if($('#chatSend')){
+    const send=()=>{const v=$('#chatIn').value.trim();if(!v) return; $('#chatIn').value='';coachAsk(v)};
+    $('#chatSend').onclick=send;
+    $('#chatIn').onkeydown=e=>{if(e.key==='Enter') send()};
+    const b=$('#chatBox');if(b) b.scrollTop=b.scrollHeight;
+  }
+
+  // Profile
+  if($('#pSave')) $('#pSave').onclick=async ()=>{
+    const updated={...State.profile,
+      name:$('#pName').value, gender:$('#pGender').value, age:+$('#pAge').value,
+      height:+$('#pHeight').value, weight:+$('#pWeight').value,
+      goalWeight:+$('#pGoalW').value, activity:$('#pActivity').value, goal:$('#pGoal').value,
+      profileKey:State.activeProfile, profile_key:State.activeProfile
+    };
+    State.profiles[State.activeProfile]=updated;
+    State.profile=updated;
+    if(sb && !State.demo){
+      await sb.from('profiles').upsert({id:State.user.id+'_'+State.activeProfile, user_id:State.user.id, profile_key:State.activeProfile, ...updated});
+    }
+    saveLocal();toast('Đã lưu');updateProfileSwitcherUI();render();
+  };
+
+  // Weight
+  if($('#wSave')) $('#wSave').onclick=async ()=>{
+    const v=+$('#wVal').value;if(!v) return;
+    const w={id:uid(),date:today(),value:v,user_id:State.user.id,profile_key:State.activeProfile};
+    State.weights.push(w);
+    if(sb && !State.demo) await sb.from('weights').insert(w);
+    saveLocal();toast('Đã ghi');render();
+  };
+  let wRange=30;
+  $$('[data-wrange]').forEach(b=>b.onclick=()=>{wRange=+b.dataset.wrange;drawWeight(wRange)});
+  if($('#weightChart')) drawWeight(30);
+
+  // Water
+  $$('[data-water]').forEach(b=>b.onclick=async ()=>{
+    const ml=+b.dataset.water;
+    const w={id:uid(),ml,date:today(),created_at:new Date().toISOString(),user_id:State.user?.id,profile_key:State.activeProfile};
+    State.water.push(w);
+    if(sb && !State.demo) await sb.from('water').insert(w);
+    saveLocal();toast('+'+ml+'ml');render();
+  });
+
+  // Reports
+  if($('#calChart')) drawReports();
+
+  // Admin — multi-provider
+  function togglePwd(sel){const i=$(sel);i.type=i.type==='password'?'text':'password';}
+  window.togglePwd=togglePwd;
+
+  function switchProvider(prov){
+    CONFIG.AI_PROVIDER=prov;
+    ['Groq','Gemini','OpenRouter'].forEach(p=>{
+      const s=$('#section'+p); if(s) s.style.display='none';
+      const b=$('#prov'+p); if(b){ b.classList.remove('btn','accent'); b.classList.add('secondary'); }
+    });
+    const sec=$('#section'+prov[0].toUpperCase()+prov.slice(1).replace('router','Router'));
+    const btn=$('#prov'+prov[0].toUpperCase()+prov.slice(1).replace('router','Router'));
+    if(sec) sec.style.display='';
+    if(btn){ btn.classList.remove('secondary'); if(prov==='openrouter') btn.classList.add('accent'); else btn.classList.add('btn'); }
+    const label=prov==='gemini'?'⚡ Gemini · '+CONFIG.GEMINI_MODEL:prov==='groq'?'⚡ Groq · '+CONFIG.GROQ_MODEL:'🔀 OpenRouter · '+CONFIG.OPENROUTER_MODEL;
+    if($('#provStatus')) $('#provStatus').innerHTML='Đang dùng '+label;
+  }
+  if($('#provGroq'))       $('#provGroq').onclick=()=>switchProvider('groq');
+  if($('#provGemini'))     $('#provGemini').onclick=()=>switchProvider('gemini');
+  if($('#provOpenRouter')) $('#provOpenRouter').onclick=()=>switchProvider('openrouter');
+
+  if($('#aSave')) $('#aSave').onclick=async ()=>{
+    const msg=$('#aiSaveMsg');
+    msg.textContent='⏳ Đang lưu...';
+    const cfg={
+      provider: CONFIG.AI_PROVIDER,
+      gemini_key:   ($('#aGeminiKey')||{}).value||CONFIG.GEMINI_API_KEY,
+      gemini_model: ($('#aGeminiModel')||{}).value||CONFIG.GEMINI_MODEL,
+      groq_key:     ($('#aGroqKey')||{}).value||CONFIG.GROQ_API_KEY,
+      groq_model:   ($('#aGroqModel')||{}).value||CONFIG.GROQ_MODEL,
+      openrouter_key:   ($('#aORKey')||{}).value||CONFIG.OPENROUTER_API_KEY,
+      openrouter_model: ($('#aORModel')||{}).value||CONFIG.OPENROUTER_MODEL,
+    };
+    const activeKey = cfg.provider==='gemini'?cfg.gemini_key:cfg.provider==='groq'?cfg.groq_key:cfg.openrouter_key;
+    if(!activeKey){ msg.textContent='⚠️ Nhập API key cho provider đang chọn'; return; }
+    const ok = await saveAiSettings(cfg);
+    msg.textContent = ok ? '✅ Đã lưu vào Supabase!' : '❌ Lỗi — kiểm tra RLS hoặc quyền truy cập.';
+    if(ok) toast('AI settings saved');
+  };
+
+  if($('#aTest')) $('#aTest').onclick=async ()=>{
+    const msg=$('#aiSaveMsg');
+    msg.textContent='⏳ Đang test...';
+    const prov=CONFIG.AI_PROVIDER;
+    const key=prov==='gemini'?($('#aGeminiKey')||{}).value||CONFIG.GEMINI_API_KEY
+              :prov==='groq'?($('#aGroqKey')||{}).value||CONFIG.GROQ_API_KEY
+              :($('#aORKey')||{}).value||CONFIG.OPENROUTER_API_KEY;
+    const model=prov==='gemini'?($('#aGeminiModel')||{}).value||CONFIG.GEMINI_MODEL
+               :prov==='groq'?($('#aGroqModel')||{}).value||CONFIG.GROQ_MODEL
+               :($('#aORModel')||{}).value||CONFIG.OPENROUTER_MODEL;
+    if(!key){ msg.textContent='⚠️ Nhập API key để test'; return; }
+    try{
+      let r,j;
+      if(prov==='gemini'){
+        r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Reply with only: OK'}]}]})});
+        j=await r.json(); msg.textContent=j.candidates?.[0]?'✅ Gemini hoạt động!':'⚠️ '+JSON.stringify(j).slice(0,80);
+      } else if(prov==='groq'){
+        r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content:'Reply OK'}],max_tokens:5})});
+        j=await r.json(); msg.textContent=j.choices?.[0]?'✅ Groq hoạt động!':'⚠️ '+JSON.stringify(j).slice(0,80);
+      } else {
+        r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content:'Reply OK'}],max_tokens:5})});
+        j=await r.json(); msg.textContent=j.choices?.[0]?'✅ OpenRouter hoạt động!':'⚠️ '+JSON.stringify(j).slice(0,80);
+      }
+    }catch(e){ msg.textContent='❌ Lỗi: '+e.message; }
+  };
+  if($('#showSql')) $('#showSql').onclick=()=>{$('#sqlOut').textContent=SQL_SCHEMA;$('#sqlOut').classList.toggle('hidden')};
+
+  // Config — Supabase hardcoded, không cần save
+}
+
+/* ============================================================
+   CHARTS
+============================================================ */
+function drawWeight(days){
+  const arr=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===State.activeProfile).slice(-days);
+  const ctx=$('#weightChart');if(!ctx) return;
+  if(ctx._c) ctx._c.destroy();
+  ctx._c=new Chart(ctx,{type:'line',data:{labels:arr.map(w=>w.date.slice(5)),datasets:[{label:'kg',data:arr.map(w=>w.value),borderColor:'#22c55e',backgroundColor:'#22c55e22',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
+}
+function drawReports(){
+  const key=State.activeProfile;
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10))}
+  const data=days.map(d=>{const m=State.meals.filter(x=>(x.date||x.created_at||'').slice(0,10)===d && (x.profile_key||x.profileKey||'husband')===key);return {
+    c:m.reduce((a,b)=>a+(+b.calories||0),0),
+    p:m.reduce((a,b)=>a+(+b.protein||0),0),
+    a:m.reduce((a,b)=>a+(+b.carbs||0),0),
+    f:m.reduce((a,b)=>a+(+b.fat||0),0)
+  }});
+  const lab=days.map(d=>d.slice(5));
+  new Chart($('#calChart'),{type:'bar',data:{labels:lab,datasets:[{label:'kcal',data:data.map(x=>x.c),backgroundColor:'#22c55e'}]},options:{plugins:{legend:{display:false}}}});
+  new Chart($('#macroChart'),{type:'line',data:{labels:lab,datasets:[
+    {label:'P',data:data.map(x=>x.p),borderColor:'#f43f5e',tension:.3},
+    {label:'C',data:data.map(x=>x.a),borderColor:'#f59e0b',tension:.3},
+    {label:'F',data:data.map(x=>x.f),borderColor:'#8b5cf6',tension:.3}
+  ]}});
+  const w=State.weights.filter(x=>(x.profile_key||x.profileKey||'husband')===key).slice(-30);
+  new Chart($('#wTrend'),{type:'line',data:{labels:w.map(x=>x.date.slice(5)),datasets:[{label:'kg',data:w.map(x=>x.value),borderColor:'#3b82f6',backgroundColor:'#3b82f622',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
+}
+
+/* ============================================================
+   DATA OPS
+============================================================ */
+async function addMeal(m){
+  m.user_id = State.user?.id;
+  m.profile_key = State.activeProfile;
+  State.meals.unshift(m);
+  if(sb && !State.demo){ try{ await sb.from('meals').insert(m); }catch(e){console.warn(e)} }
+  saveLocal();
+}
+async function delMeal(id){
+  State.meals = State.meals.filter(x=>x.id!==id);
+  if(sb && !State.demo){ try{ await sb.from('meals').delete().eq('id',id); }catch(e){} }
+  saveLocal();
+}
+
+/* ============================================================
+   SQL SCHEMA (for admin display & manual Supabase setup)
+============================================================ */
+const SQL_SCHEMA = `
+-- PROFILES
+create table if not exists profiles (
+  id uuid primary key references auth.users on delete cascade,
+  name text, role text check (role in ('admin','husband','wife')) default 'husband',
+  gender text, age int, height numeric, weight numeric, "goalWeight" numeric,
+  activity text, goal text, created_at timestamptz default now()
+);
+alter table profiles enable row level security;
+create policy "own_profile_rw" on profiles for all using (auth.uid()=id) with check (auth.uid()=id);
+create policy "couple_read" on profiles for select using (true);
+
+-- MEALS
+create table if not exists meals (
+  id text primary key, user_id uuid references auth.users on delete cascade,
+  name text, calories numeric, protein numeric, carbs numeric, fat numeric,
+  fiber numeric, sugar numeric, sodium numeric, photo text,
+  meal_type text, date date, notes text, created_at timestamptz default now()
+);
+alter table meals enable row level security;
+create policy "own_meals" on meals for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+
+-- WATER
+create table if not exists water (
+  id text primary key, user_id uuid references auth.users on delete cascade,
+  ml int, date date, created_at timestamptz default now()
+);
+alter table water enable row level security;
+create policy "own_water" on water for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+
+-- WEIGHTS
+create table if not exists weights (
+  id text primary key, user_id uuid references auth.users on delete cascade,
+  value numeric, body_fat numeric, waist numeric, date date,
+  created_at timestamptz default now()
+);
+alter table weights enable row level security;
+create policy "own_weights" on weights for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+
+-- AI SETTINGS / RULES
+create table if not exists ai_settings ( key text primary key, value jsonb );
+alter table ai_settings enable row level security;
+-- Mọi user đã đăng nhập đều đọc được (để load Gemini key)
+create policy "ai_settings_read" on ai_settings
+  for select to authenticated using (true);
+-- Chỉ admin (role = 'admin' trong profiles) mới ghi được
+-- Tạm thời cho phép tất cả authenticated write; chỉnh lại nếu cần strict admin-only
+create policy "ai_settings_write" on ai_settings
+  for all to authenticated using (true) with check (true);
+
+create table if not exists nutrition_rules ( key text primary key, value jsonb );
+create table if not exists food_database (
+  id bigserial primary key, name text, calories numeric, protein numeric,
+  carbs numeric, fat numeric
+);
+
+-- INDEXES
+create index if not exists meals_user_date on meals(user_id, date);
+create index if not exists water_user_date on water(user_id, date);
+create index if not exists weights_user_date on weights(user_id, date);
+
+-- STORAGE BUCKET
+insert into storage.buckets (id,name,public) values ('food-photos','food-photos',true)
+on conflict do nothing;
+`;
+
+/* ============================================================
+   BOOT
+============================================================ */
+(async ()=>{
+  icons();
+  if(sb){ const restored = await tryRestore(); if(restored) return; }
+})();
+</script>
+</body>
+</html>
