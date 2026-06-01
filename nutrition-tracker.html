@@ -459,6 +459,7 @@ const State = {
   water: [],
   weights: [],
   chats: [],
+  diaryDate: null, // null = today; set to 'YYYY-MM-DD' when browsing history
 };
 
 let sb = null;
@@ -791,11 +792,49 @@ function ringSvg(pct, big, small){
 /* ============================================================
    DIARY
 ============================================================ */
+function diaryDateStr(){
+  // Always return a concrete YYYY-MM-DD string
+  if(State.diaryDate) return State.diaryDate;
+  return today();
+}
+function diaryIsToday(){ return diaryDateStr() === today(); }
+function diaryShift(delta){
+  // Block moving forward past today
+  if(delta > 0 && diaryIsToday()) return;
+  // Parse current date safely using local-time parts to avoid timezone shift
+  const cur = diaryDateStr();
+  const [y,mo,dd] = cur.split('-').map(Number);
+  const d = new Date(y, mo-1, dd);   // local time constructor — no timezone offset
+  d.setDate(d.getDate() + delta);
+  const pad = n => String(n).padStart(2,'0');
+  const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  State.diaryDate = s === today() ? null : s;
+  render();
+}
 function viewDiary(){
-  const d=today();
+  const d = diaryDateStr();
+  const isToday = diaryIsToday();
+  const labelDate = isToday ? 'Hôm nay' : new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
   const day = State.meals.filter(m=>(m.date||m.created_at||'').slice(0,10)===d && (m.profile_key||m.profileKey||'husband')===State.activeProfile);
   const by = {breakfast:[],lunch:[],dinner:[],snack:[]};
   day.forEach(m=>{ (by[m.meal_type||'snack']||by.snack).push(m); });
+
+  // daily totals
+  const tot = {calories:0,protein:0,carbs:0,fat:0};
+  day.forEach(m=>{tot.calories+=+m.calories||0;tot.protein+=+m.protein||0;tot.carbs+=+m.carbs||0;tot.fat+=+m.fat||0;});
+
+  const dateNav = `
+    <div class="card" style="padding:12px 16px">
+      <div class="row between" style="align-items:center">
+        <button class="btn small ghost" id="diaryPrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
+        <div style="text-align:center">
+          <div style="font-weight:700;font-size:15px">${labelDate}</div>
+          <div class="muted" style="font-size:12px">${fmt(tot.calories)} kcal · P${fmt(tot.protein)}g C${fmt(tot.carbs)}g F${fmt(tot.fat)}g</div>
+        </div>
+        <button class="btn small ghost" id="diaryNext" style="width:36px;height:36px;padding:0;border-radius:10px;${isToday?'opacity:.35;pointer-events:none':''}"><i data-lucide="chevron-right"></i></button>
+      </div>
+    </div>`;
+
   const sec = (k,t)=>`
     <div class="card">
       <div class="row between"><h3>${t}</h3>
@@ -803,17 +842,65 @@ function viewDiary(){
       </div>
       ${by[k].length?by[k].map(mealItem).join(''):'<div class="muted">Chưa có dữ liệu</div>'}
     </div>`;
-  return sec('breakfast','🌅 Bữa sáng')+sec('lunch','☀️ Bữa trưa')+sec('dinner','🌙 Bữa tối')+sec('snack','🍎 Ăn vặt');
+  return dateNav + sec('breakfast','🌅 Bữa sáng')+sec('lunch','☀️ Bữa trưa')+sec('dinner','🌙 Bữa tối')+sec('snack','🍎 Ăn vặt');
 }
 function mealItem(m){
-  return `<div class="item" style="margin-top:8px" data-meal="${m.id}">
+  return `<div class="item" style="margin-top:8px;cursor:pointer" data-meal-detail="${m.id}">
     <img src="${m.photo||'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22><rect width=%2256%22 height=%2256%22 fill=%22%23eee%22/></svg>'}"/>
     <div style="flex:1;min-width:0">
       <div style="font-weight:600">${m.name||'Food'}</div>
       <div class="muted" style="font-size:12px">${fmt(m.calories)} kcal · P${fmt(m.protein)} C${fmt(m.carbs)} F${fmt(m.fat)}</div>
     </div>
-    <button class="btn small ghost" data-del-meal="${m.id}"><i data-lucide="trash-2"></i></button>
+    <button class="btn small ghost" data-del-meal="${m.id}" style="flex-shrink:0"><i data-lucide="trash-2"></i></button>
   </div>`;
+}
+
+function showMealDetail(id){
+  const m = State.meals.find(x=>x.id===id);
+  if(!m) return;
+  const mealLabel = {'breakfast':'🌅 Bữa sáng','lunch':'☀️ Bữa trưa','dinner':'🌙 Bữa tối','snack':'🍎 Ăn vặt'}[m.meal_type]||m.meal_type||'—';
+  const hasPhoto = m.photo && !m.photo.startsWith('data:image/svg');
+  const modal = document.createElement('div');
+  modal.className='modal';
+  modal.id='mealDetailModal';
+  modal.innerHTML=`<div class="sheet" style="padding:24px">
+    <div class="row between" style="margin-bottom:16px">
+      <h2 style="margin:0">${m.name||'Món ăn'}</h2>
+      <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
+    </div>
+    ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:200px;object-fit:cover;border-radius:16px;margin-bottom:16px"/>` :''}
+    <div class="grid4" style="margin-bottom:14px">
+      <div class="stat"><div class="l">Calo</div><div class="v" style="color:var(--primary)">${fmt(m.calories)}</div><div class="muted" style="font-size:10px">kcal</div></div>
+      <div class="stat"><div class="l">Protein</div><div class="v" style="color:var(--p)">${fmt(m.protein)}</div><div class="muted" style="font-size:10px">g</div></div>
+      <div class="stat"><div class="l">Carbs</div><div class="v" style="color:var(--c)">${fmt(m.carbs)}</div><div class="muted" style="font-size:10px">g</div></div>
+      <div class="stat"><div class="l">Chất béo</div><div class="v" style="color:var(--f)">${fmt(m.fat)}</div><div class="muted" style="font-size:10px">g</div></div>
+    </div>
+    ${(m.fiber||m.sugar||m.sodium)?`<div class="row" style="gap:12px;margin-bottom:14px">
+      ${m.fiber?`<span class="pill">Xơ: ${fmt(m.fiber)}g</span>`:''}
+      ${m.sugar?`<span class="pill">Đường: ${fmt(m.sugar)}g</span>`:''}
+      ${m.sodium?`<span class="pill">Natri: ${fmt(m.sodium)}mg</span>`:''}
+    </div>`:''}
+    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
+      <span class="muted" style="font-size:13px">Bữa ăn</span>
+      <b style="font-size:13px">${mealLabel}</b>
+    </div>
+    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
+      <span class="muted" style="font-size:13px">Ngày</span>
+      <b style="font-size:13px">${m.date||''}</b>
+    </div>
+    <div class="row between" style="padding:10px 0;border-top:1px solid var(--border)">
+      <span class="muted" style="font-size:13px">Người dùng</span>
+      <b style="font-size:13px">${State.activeProfile==='husband'?'👨 Chồng':'👩 Vợ'}</b>
+    </div>
+    <button class="btn danger" id="mealDetailDel" style="margin-top:16px"><i data-lucide="trash-2"></i> Xoá bữa ăn này</button>
+  </div>`;
+  document.body.appendChild(modal);
+  lucide.createIcons();
+  modal.querySelector('#closeMealDetail').onclick = ()=>modal.remove();
+  modal.onclick = e=>{ if(e.target===modal) modal.remove(); };
+  modal.querySelector('#mealDetailDel').onclick = async ()=>{
+    await delMeal(id); modal.remove(); render(); toast('Đã xoá!');
+  };
 }
 
 /* ============================================================
@@ -1378,9 +1465,21 @@ function attachHandlers(){
     new Chart($('#macroPie'),{type:'doughnut',data:{labels:['Protein','Carbs','Fat'],datasets:[{data:[t.protein*4,t.carbs*4,t.fat*9],backgroundColor:['#f43f5e','#f59e0b','#8b5cf6'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'}},cutout:'65%'}});
   }
 
-  // Diary
+  // Diary — date navigation
+  if($('#diaryPrev')) $('#diaryPrev').onclick=()=>diaryShift(-1);
+  if($('#diaryNext')) $('#diaryNext').onclick=()=>{ if(!diaryIsToday()) diaryShift(1); };
+
+  // Diary — meal detail modal (tap on meal item)
+  $$('[data-meal-detail]').forEach(el=>{
+    el.onclick=e=>{
+      // Don't open modal if the delete button was clicked
+      if(e.target.closest('[data-del-meal]')) return;
+      showMealDetail(el.dataset.mealDetail);
+    };
+  });
+
   $$('[data-add-meal]').forEach(b=>b.onclick=()=>{State.view='scan';render()});
-  $$('[data-del-meal]').forEach(b=>b.onclick=async ()=>{await delMeal(b.dataset.delMeal);toast('Deleted');render()});
+  $$('[data-del-meal]').forEach(b=>b.onclick=async e=>{e.stopPropagation();await delMeal(b.dataset.delMeal);toast('Deleted');render()});
 
   // Scan
   if($('#camIn')) $('#camIn').onchange=e=>handleScanFile(e.target.files[0]);
