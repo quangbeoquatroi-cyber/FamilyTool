@@ -2212,6 +2212,7 @@ create policy "food_photos_read" on storage.objects
     menu.classList.add('open');
   }
 
+  function fmtNum(n){ n=+n||0; return Math.round(n*10)/10; }
   function fillRow(input, food){
     var schema = findSchema(input); if(!schema) return;
     var row = input.closest(schema.row); if(!row) return;
@@ -2221,13 +2222,47 @@ create policy "food_photos_read" on storage.objects
       el.dispatchEvent(new Event('input',{bubbles:true}));
       el.dispatchEvent(new Event('change',{bubbles:true}));
     }
+    var baseQty = (food.quantity!=null && +food.quantity>0) ? +food.quantity : 1;
+    var baseCal = +food.kcal_per_unit||0;
+    var baseP   = +food.protein_g||0;
+    var baseC   = +food.carbs_g||0;
+    var baseF   = +food.fat_g||0;
+
     input.value = food.name;
-    set(schema.map.qty,  (food.quantity!=null && +food.quantity>0) ? food.quantity : 1);
+    set(schema.map.qty,  baseQty);
     set(schema.map.unit, food.unit);
-    set(schema.map.cal,  food.kcal_per_unit);
-    set(schema.map.p,    food.protein_g);
-    set(schema.map.c,    food.carbs_g);
-    set(schema.map.f,    food.fat_g);
+    set(schema.map.cal,  fmtNum(baseCal));
+    set(schema.map.p,    fmtNum(baseP));
+    set(schema.map.c,    fmtNum(baseC));
+    set(schema.map.f,    fmtNum(baseF));
+
+    // Save base ratios on the row so changing SL auto-scales kcal/P/C/F
+    row.dataset.baseQty = baseQty;
+    row.dataset.baseCal = baseCal;
+    row.dataset.baseP   = baseP;
+    row.dataset.baseC   = baseC;
+    row.dataset.baseF   = baseF;
+
+    var qtyEl = row.querySelector(schema.map.qty);
+    if(qtyEl && !qtyEl.dataset.autoScaleBound){
+      qtyEl.dataset.autoScaleBound = '1';
+      qtyEl.addEventListener('input', function(){
+        var bQ = +row.dataset.baseQty||0;
+        if(!bQ) return;
+        var ratio = (+qtyEl.value||0) / bQ;
+        function upd(sel, base){
+          var el = row.querySelector(sel); if(!el) return;
+          el.value = fmtNum(base * ratio);
+          el.dispatchEvent(new Event('input',{bubbles:true}));
+          el.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+        upd(schema.map.cal, +row.dataset.baseCal||0);
+        upd(schema.map.p,   +row.dataset.baseP||0);
+        upd(schema.map.c,   +row.dataset.baseC||0);
+        upd(schema.map.f,   +row.dataset.baseF||0);
+      });
+    }
+
     input.dispatchEvent(new Event('input',{bubbles:true}));
     input.dispatchEvent(new Event('change',{bubbles:true}));
     closeMenu();
