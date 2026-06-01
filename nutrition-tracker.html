@@ -465,7 +465,7 @@ const State = {
 let sb = null;
 function initSupabase(){
   if(window.supabase){
-    try{ sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); }catch(e){ console.error(e); }
+    try{ sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); window.sb = sb; }catch(e){ console.error(e); }
   }
 }
 initSupabase();
@@ -2130,6 +2130,144 @@ create policy "food_photos_read" on storage.objects
 (async ()=>{
   icons();
   if(sb){ const restored = await tryRestore(); if(restored) return; }
+})();
+</script>
+
+<!-- ============ TÍCH HỢP CHỌN THÀNH PHẦN TỪ BẢNG foods ============ -->
+<style>
+  .food-ac-menu{position:absolute;z-index:9999;background:var(--card,#fff);border:1px solid var(--border,#d8e8d8);
+    border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);max-height:240px;overflow:auto;min-width:220px;display:none;font-family:inherit}
+  .food-ac-menu.open{display:block}
+  .food-ac-item{padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--text,#0d1117)}
+  .food-ac-item:hover,.food-ac-item.active{background:rgba(58,171,30,.12)}
+  .food-ac-item small{color:var(--muted,#8b95a8);font-size:11px;white-space:nowrap}
+  .food-ac-empty{padding:12px;color:var(--muted,#8b95a8);font-size:13px;text-align:center}
+</style>
+<script>
+/* Autocomplete chọn thành phần từ public.foods cho cả 2 form:
+   - Modal sửa  : .ii-name / .ii-unit / .ii-cal / .ii-p / .ii-c / .ii-f
+   - Nhập thủ công: .mi-name / .mi-unit / .mi-cal / .mi-p / .mi-c / .mi-f
+*/
+(function(){
+  var FOODS = [], loaded = false, loading = null;
+  function waitForSb(timeout){
+    return new Promise(function(resolve){
+      if(window.sb) return resolve(window.sb);
+      var elapsed = 0, interval = 100;
+      var t = setInterval(function(){
+        elapsed += interval;
+        if(window.sb){ clearInterval(t); resolve(window.sb); }
+        else if(elapsed >= (timeout||10000)){ clearInterval(t); resolve(null); }
+      }, interval);
+    });
+  }
+  function loadFoods(){
+    if(loaded) return Promise.resolve(FOODS);
+    if(loading) return loading;
+    loading = waitForSb(10000).then(function(sbClient){
+      if(!sbClient){ console.warn('[foods] Supabase chưa khởi tạo sau 10s'); loading=null; return []; }
+      return sbClient.from('foods')
+        .select('id,name,unit,kcal_per_unit,protein_g,carbs_g,fat_g')
+        .order('name',{ascending:true}).limit(1000)
+        .then(function(res){
+          if(res.error){ console.error('[foods]',res.error); loading=null; return []; }
+          FOODS = res.data||[]; loaded = true;
+          console.log('[foods] loaded', FOODS.length, 'items');
+          return FOODS;
+        });
+    });
+    return loading;
+  }
+
+  var SCHEMAS = [
+    { name:'.ii-name', row:'tr', map:{ unit:'.ii-unit', cal:'.ii-cal', p:'.ii-p', c:'.ii-c', f:'.ii-f' } },
+    { name:'.mi-name', row:'tr', map:{ unit:'.mi-unit', cal:'.mi-cal', p:'.mi-p', c:'.mi-c', f:'.mi-f' } }
+  ];
+  function findSchema(input){ for(var i=0;i<SCHEMAS.length;i++){ if(input.matches(SCHEMAS[i].name)) return SCHEMAS[i]; } return null; }
+
+  var menu = document.createElement('div');
+  menu.className = 'food-ac-menu';
+  document.body.appendChild(menu);
+  var currentInput = null;
+
+  function positionMenu(input){
+    var r = input.getBoundingClientRect();
+    menu.style.left  = (window.scrollX + r.left) + 'px';
+    menu.style.top   = (window.scrollY + r.bottom + 4) + 'px';
+    menu.style.width = Math.max(r.width, 220) + 'px';
+  }
+  function closeMenu(){ menu.classList.remove('open'); currentInput=null; }
+  function escapeHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+
+  function renderMenu(q){
+    var term = (q||'').trim().toLowerCase();
+    var list = !term ? FOODS.slice(0,30)
+      : FOODS.filter(function(f){return f.name.toLowerCase().indexOf(term)>=0;}).slice(0,30);
+    if(!list.length){ menu.innerHTML = '<div class="food-ac-empty">Không tìm thấy món</div>'; }
+    else {
+      menu.innerHTML = list.map(function(f){
+        return '<div class="food-ac-item" data-id="'+f.id+'">'+
+          '<span>'+escapeHtml(f.name)+'</span>'+
+          '<small>'+(+f.kcal_per_unit||0)+' kcal / '+escapeHtml(f.unit||'')+'</small>'+
+          '</div>';
+      }).join('');
+    }
+    menu.classList.add('open');
+  }
+
+  function fillRow(input, food){
+    var schema = findSchema(input); if(!schema) return;
+    var row = input.closest(schema.row); if(!row) return;
+    function set(sel, val){
+      var el = row.querySelector(sel); if(!el) return;
+      el.value = (val==null?'':val);
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      el.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    input.value = food.name;
+    set(schema.map.unit, food.unit);
+    set(schema.map.cal,  food.kcal_per_unit);
+    set(schema.map.p,    food.protein_g);
+    set(schema.map.c,    food.carbs_g);
+    set(schema.map.f,    food.fat_g);
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+    closeMenu();
+  }
+
+  document.addEventListener('focusin', function(e){
+    var inp = e.target;
+    if(!(inp instanceof HTMLInputElement)) return;
+    if(!findSchema(inp)) return;
+    currentInput = inp;
+    var show = function(){ positionMenu(inp); renderMenu(inp.value); };
+    if(!loaded){ loadFoods().then(function(){ if(currentInput===inp) show(); }); }
+    else show();
+  });
+  document.addEventListener('input', function(e){
+    var inp = e.target;
+    if(!(inp instanceof HTMLInputElement)) return;
+    if(!findSchema(inp)) return;
+    currentInput = inp; positionMenu(inp); renderMenu(inp.value);
+  });
+  document.addEventListener('focusout', function(){
+    setTimeout(function(){ if(!menu.matches(':hover')) closeMenu(); }, 150);
+  });
+  window.addEventListener('scroll', function(){ if(currentInput) positionMenu(currentInput); }, true);
+  window.addEventListener('resize', function(){ if(currentInput) positionMenu(currentInput); });
+
+  menu.addEventListener('mousedown', function(e){
+    var it = e.target.closest('.food-ac-item'); if(!it || !currentInput) return;
+    e.preventDefault();
+    var food = FOODS.find(function(x){ return x.id === it.dataset.id; });
+    if(food) fillRow(currentInput, food);
+  });
+
+  function tryPreload(){ if(window.sb){ loadFoods(); return true; } return false; }
+  if(!tryPreload()){
+    var t = setInterval(function(){ if(tryPreload()) clearInterval(t); }, 500);
+    setTimeout(function(){ clearInterval(t); }, 15000);
+  }
 })();
 </script>
 </body>
