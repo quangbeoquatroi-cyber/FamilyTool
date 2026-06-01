@@ -930,7 +930,7 @@ function showMealDetail(id){
         <h2 style="margin:0;font-size:17px">${escHtml(m.name||'Món ăn')}</h2>
         <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
       </div>
-      ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:14px;margin-bottom:12px"/>` :''}
+      ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:340px;object-fit:contain;background:var(--card2);border-radius:14px;margin-bottom:12px"/>` :''}
 
       <!-- Totals summary -->
       <div class="grid4" style="margin-bottom:12px" id="detailTotals">
@@ -966,7 +966,12 @@ function showMealDetail(id){
       <!-- Meta rows -->
       <div class="row between" style="padding:8px 0;border-top:1px solid var(--border)">
         <span class="muted" style="font-size:13px">Bữa ăn</span>
-        <b style="font-size:13px">${mealLabel}</b>
+        <select id="editMealType" class="input" style="width:auto;font-size:13px;font-weight:700;padding:6px 10px">
+          <option value="breakfast" ${m.meal_type==='breakfast'?'selected':''}>🌅 Bữa sáng</option>
+          <option value="lunch" ${m.meal_type==='lunch'?'selected':''}>☀️ Bữa trưa</option>
+          <option value="dinner" ${m.meal_type==='dinner'?'selected':''}>🌙 Bữa tối</option>
+          <option value="snack" ${(m.meal_type==='snack'||!m.meal_type)?'selected':''}>🍎 Ăn vặt</option>
+        </select>
       </div>
       <div class="row between" style="padding:8px 0;border-top:1px solid var(--border)">
         <span class="muted" style="font-size:13px">Ngày</span>
@@ -996,13 +1001,15 @@ function showMealDetail(id){
     // Save changes
     modal.querySelector('#mealDetailSave').onclick = async ()=>{
       const tot = recalcTotals();
+      const newMealType = modal.querySelector('#editMealType')?.value || m.meal_type || 'snack';
       m.items = editItems.map(it=>({...it}));
       m.calories = Math.round(tot.calories);
       m.protein  = Math.round(tot.protein);
       m.carbs    = Math.round(tot.carbs);
       m.fat      = Math.round(tot.fat);
+      m.meal_type = newMealType;
       if(sb && !State.demo){
-        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items}).eq('id',m.id); }catch(e){console.warn(e)}
+        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items,meal_type:newMealType}).eq('id',m.id); }catch(e){console.warn(e)}
       }
       saveLocal();
       modal.remove(); render(); toast('✅ Đã cập nhật!');
