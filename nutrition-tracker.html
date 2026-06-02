@@ -699,13 +699,16 @@ function render(){
   else if(v==='couple') root.innerHTML=viewCouple();
   else if(v==='admin') root.innerHTML=viewAdmin();
   else if(v==='config') root.innerHTML=viewConfig();
+  else if(v==='foods') root.innerHTML=viewFoods();
   $('#topTitle').textContent = {
     dashboard:'Hôm nay', diary:'Nhật ký ăn uống', scan:'AI Scanner', coach:'AI Coach',
     more:'Thêm', profile:'Hồ sơ', weight:'Cân nặng', water:'Nước uống',
-    reports:'Báo cáo', couple:'Couple', admin:'Cài đặt', config:'Cấu hình'
+    reports:'Báo cáo', couple:'Couple', admin:'Cài đặt', config:'Cấu hình',
+    foods:'Thực phẩm'
   }[v]||'';
   icons();
   attachHandlers();
+  if(v==='foods') attachFoodsHandlers();
 }
 
 /* ============================================================
@@ -1371,6 +1374,7 @@ function viewMore(){
     ['water','droplet','Lượng nước uống'],
     ['reports','bar-chart-3','Báo cáo'],
     ['couple','heart','Couple Dashboard'],
+    ['foods','database','Cơ sở dữ liệu thực phẩm'],
     ['config','settings','Cấu hình / API Keys'],
   ];
   return `<div class="card">${items.map(([v,i,t])=>`
@@ -1639,6 +1643,420 @@ function viewAdmin(){
   </div>`;
 }
 
+function viewFoods(){
+  return `${backBtn()}
+  <div class="card" style="border-top:3px solid var(--primary)">
+    <div class="row between" style="margin-bottom:14px">
+      <h3 style="margin:0">🥗 Cơ sở dữ liệu thực phẩm</h3>
+      <button class="btn small" id="foodAddBtn" style="width:auto;padding:8px 14px;gap:6px"><i data-lucide="plus"></i> Thêm mới</button>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="row" style="gap:8px;margin-bottom:10px">
+      <input id="foodSearch" class="input" placeholder="🔍 Tìm kiếm thực phẩm..." style="flex:1;font-size:14px"/>
+      <select id="foodCatFilter" class="select" style="width:auto;min-width:130px;font-size:13px">
+        <option value="">Tất cả danh mục</option>
+      </select>
+    </div>
+
+    <!-- Sort bar -->
+    <div class="tabbar" id="foodSortBar" style="margin-bottom:12px">
+      <button class="chip active" data-sort="name">Tên A→Z</button>
+      <button class="chip" data-sort="kcal_desc">Calo ↓</button>
+      <button class="chip" data-sort="kcal_asc">Calo ↑</button>
+      <button class="chip" data-sort="protein">Protein ↓</button>
+      <button class="chip" data-sort="category">Danh mục</button>
+    </div>
+
+    <!-- Stats -->
+    <div id="foodStats" class="muted" style="font-size:12px;margin-bottom:10px;padding:8px;background:var(--bg);border-radius:10px">Đang tải...</div>
+
+    <!-- Table -->
+    <div style="overflow-x:auto">
+      <table id="foodTable" style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;border-bottom:2px solid var(--border)">
+            <th style="padding:8px 6px;text-align:left">TÊN MÓN</th>
+            <th style="padding:8px 6px;text-align:left">DANH MỤC</th>
+            <th style="padding:8px 4px;text-align:center">ĐƠN VỊ</th>
+            <th style="padding:8px 4px;text-align:center">SL</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--primary)">KCAL</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--p)">P(g)</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--c)">C(g)</th>
+            <th style="padding:8px 4px;text-align:center;color:var(--f)">F(g)</th>
+            <th style="padding:8px 4px;text-align:center"></th>
+          </tr>
+        </thead>
+        <tbody id="foodTbody">
+          <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)"><i data-lucide="loader-2" style="animation:spin 1s linear infinite"></i> Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="foodPaging" class="row" style="gap:8px;margin-top:12px;justify-content:center"></div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="foodModal" class="modal hidden">
+    <div class="sheet" style="padding:20px;max-height:90dvh;overflow-y:auto">
+      <div class="row between" style="margin-bottom:14px">
+        <h3 id="foodModalTitle" style="margin:0">Thêm thực phẩm mới</h3>
+        <button id="foodModalClose" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
+      </div>
+      <input type="hidden" id="foodEditId"/>
+      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Tên thực phẩm *</label>
+      <input id="foodEditName" class="input" placeholder="VD: Cơm trắng" style="margin-bottom:10px"/>
+      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Danh mục</label>
+      <div class="row" style="gap:8px;margin-bottom:10px">
+        <input id="foodEditCat" class="input" list="foodCatDatalist" placeholder="Chọn hoặc nhập danh mục mới..." style="flex:1" autocomplete="off"/>
+        <datalist id="foodCatDatalist"></datalist>
+      </div>
+      <div class="grid2" style="gap:10px;margin-bottom:10px">
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Đơn vị</label>
+          <input id="foodEditUnit" class="input" placeholder="VD: chén, gram, miếng"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Số lượng mặc định</label>
+          <input id="foodEditQty" class="input" type="number" step="0.1" min="0.1" placeholder="VD: 1"/>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">DINH DƯỠNG (PER ĐƠN VỊ)</div>
+      <div class="grid2" style="gap:10px;margin-bottom:10px">
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Calories (kcal) *</label>
+          <input id="foodEditKcal" class="input" type="number" min="0" step="0.1" placeholder="0" style="border-color:var(--primary)"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Protein (g)</label>
+          <input id="foodEditP" class="input" type="number" min="0" step="0.1" placeholder="0" style="border-color:var(--p)"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Carbs (g)</label>
+          <input id="foodEditC" class="input" type="number" min="0" step="0.1" placeholder="0" style="border-color:var(--c)"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Fat (g)</label>
+          <input id="foodEditF" class="input" type="number" min="0" step="0.1" placeholder="0" style="border-color:var(--f)"/>
+        </div>
+      </div>
+      <div id="foodSaveMsg" class="muted" style="font-size:12px;margin-bottom:8px;min-height:18px"></div>
+      <button class="btn" id="foodSaveBtn"><i data-lucide="cloud-upload"></i> Lưu thực phẩm</button>
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  <div id="foodDelConfirm" class="modal hidden">
+    <div class="sheet" style="padding:24px;max-width:380px;margin:0 auto;border-radius:24px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="width:52px;height:52px;background:rgba(240,64,96,.12);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px">🗑</div>
+        <h3 style="margin:0 0 6px">Xác nhận xoá</h3>
+        <div class="muted" id="foodDelConfirmName" style="font-size:14px"></div>
+      </div>
+      <div class="grid2" style="gap:8px">
+        <button class="btn secondary" id="foodDelCancel">Huỷ</button>
+        <button class="btn danger" id="foodDelOk"><i data-lucide="trash-2"></i> Xoá</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    #foodTable tbody tr:hover{background:var(--bg2)}
+    #foodTable tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+    .food-cat-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+    #foodEditCat::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
+  </style>`;
+}
+
+function attachFoodsHandlers(){
+  const FS = {
+    all: [], filtered: [],
+    page: 0, pageSize: 20,
+    sort: 'name', search: '', category: '',
+    pendingDelId: null, pendingDelName: '',
+  };
+
+  function escH(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function getCats(){ return [...new Set(FS.all.map(f=>f.category||f.cat||'').filter(Boolean))].sort(); }
+
+  function refreshCatUI(keepVal){
+    // Filter dropdown
+    const sel = document.getElementById('foodCatFilter');
+    if(sel){
+      const cur = keepVal !== undefined ? keepVal : sel.value;
+      sel.innerHTML = '<option value="">Tất cả danh mục</option>' + getCats().map(c=>`<option value="${escH(c)}" ${cur===c?'selected':''}>${escH(c)}</option>`).join('');
+    }
+    // Datalist in modal
+    const dl = document.getElementById('foodCatDatalist');
+    if(dl) dl.innerHTML = getCats().map(c=>`<option value="${escH(c)}">`).join('');
+  }
+
+  async function loadFoodsDB(){
+    if(!sb){ renderRows([]); return; }
+    const tb = document.getElementById('foodTbody');
+    if(tb) tb.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)"><span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Đang tải...</td></tr>`;
+    try{
+      const {data,error} = await sb.from('foods').select('*').order('name');
+      if(error) throw error;
+      FS.all = data || [];
+      refreshCatUI('');
+      applyFilterSort();
+    }catch(e){
+      const tb2 = document.getElementById('foodTbody');
+      if(tb2) tb2.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger)">Lỗi tải dữ liệu: ${escH(e.message)}</td></tr>`;
+    }
+  }
+
+  function applyFilterSort(){
+    let list = FS.all.slice();
+    if(FS.search){ const q=FS.search.toLowerCase(); list=list.filter(f=>(f.name||'').toLowerCase().includes(q)); }
+    if(FS.category){ list=list.filter(f=>(f.category||f.cat||'')===FS.category); }
+    switch(FS.sort){
+      case 'name':     list.sort((a,b)=>(a.name||'').localeCompare(b.name||'')); break;
+      case 'kcal_desc':list.sort((a,b)=>(+b.kcal_per_unit||0)-(+a.kcal_per_unit||0)); break;
+      case 'kcal_asc': list.sort((a,b)=>(+a.kcal_per_unit||0)-(+b.kcal_per_unit||0)); break;
+      case 'protein':  list.sort((a,b)=>(+b.protein_g||0)-(+a.protein_g||0)); break;
+      case 'category': list.sort((a,b)=>(a.category||a.cat||'').localeCompare(b.category||b.cat||'')||(a.name||'').localeCompare(b.name||'')); break;
+    }
+    FS.filtered = list;
+    FS.page = 0;
+    const stats = document.getElementById('foodStats');
+    if(stats) stats.textContent = `Hiển thị ${list.length} / ${FS.all.length} thực phẩm`;
+    renderRows(list);
+  }
+
+  function renderRows(list){
+    const tb = document.getElementById('foodTbody');
+    const pg = document.getElementById('foodPaging');
+    if(!tb) return;
+    const start = FS.page * FS.pageSize;
+    const page = list.slice(start, start + FS.pageSize);
+    if(!page.length){
+      tb.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)">Không có thực phẩm nào.</td></tr>`;
+    } else {
+      tb.innerHTML = page.map(f=>{
+        const cat = f.category || f.cat || '';
+        const catHue = cat ? Math.abs(cat.split('').reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0)%360) : 220;
+        return `<tr data-fid="${escH(f.id)}">
+          <td style="padding:8px 6px;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(f.name)}</td>
+          <td style="padding:8px 4px">${cat?`<span class="food-cat-badge" style="background:hsl(${catHue},60%,92%);border-color:hsl(${catHue},50%,80%);color:hsl(${catHue},50%,35%)">${escH(cat)}</span>`:'<span class="muted">—</span>'}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--muted)">${escH(f.unit||'—')}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--muted)">${f.quantity!=null?+f.quantity:1}</td>
+          <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--primary)">${Math.round(+f.kcal_per_unit||0)}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--p)">${Math.round(+f.protein_g||0)}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--c)">${Math.round(+f.carbs_g||0)}</td>
+          <td style="padding:8px 4px;text-align:center;color:var(--f)">${Math.round(+f.fat_g||0)}</td>
+          <td style="padding:8px 4px;text-align:center">
+            <div class="row" style="gap:4px;justify-content:center">
+              <button class="btn small ghost food-edit-btn" data-fid="${escH(f.id)}" style="width:28px;height:28px;padding:0;border-radius:8px"><i data-lucide="pencil"></i></button>
+              <button class="btn small ghost food-del-btn" data-fid="${escH(f.id)}" data-fname="${escH(f.name)}" style="width:28px;height:28px;padding:0;border-radius:8px;color:var(--danger)"><i data-lucide="trash-2"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    lucide.createIcons();
+
+    // Paging — smart ellipsis
+    const pages = Math.ceil(list.length / FS.pageSize);
+    if(pg){
+      pg.innerHTML = '';
+      if(pages > 1){
+        function mkBtn(label, onClick, active, disabled){
+          const b = document.createElement('button');
+          b.className = 'btn small ' + (active?'':'secondary');
+          b.style.cssText = 'min-width:34px;padding:6px 8px;border-radius:10px;flex-shrink:0';
+          b.innerHTML = label; b.disabled = !!disabled;
+          b.onclick = onClick;
+          return b;
+        }
+        function mkDots(){ const s=document.createElement('span'); s.textContent='…'; s.style.cssText='color:var(--muted);padding:0 2px;align-self:center;flex-shrink:0'; return s; }
+        pg.style.cssText='display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:12px;align-items:center';
+        pg.appendChild(mkBtn('‹',()=>{FS.page--;renderRows(FS.filtered);},false,FS.page===0));
+        const shown=new Set(); [0,pages-1,FS.page-2,FS.page-1,FS.page,FS.page+1,FS.page+2].filter(i=>i>=0&&i<pages).forEach(i=>shown.add(i));
+        let prev=-1;
+        [...shown].sort((a,b)=>a-b).forEach(i=>{
+          if(prev>=0&&i-prev>1) pg.appendChild(mkDots());
+          pg.appendChild(mkBtn(i+1,()=>{FS.page=i;renderRows(FS.filtered);},i===FS.page));
+          prev=i;
+        });
+        pg.appendChild(mkBtn('›',()=>{FS.page++;renderRows(FS.filtered);},false,FS.page>=pages-1));
+      }
+    }
+
+    // Edit handlers
+    document.querySelectorAll('.food-edit-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        const f=FS.all.find(x=>String(x.id)===String(btn.dataset.fid));
+        if(f) openFoodModal(f);
+      };
+    });
+
+    // Delete handlers — show inline confirm modal instead of confirm()
+    document.querySelectorAll('.food-del-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        FS.pendingDelId   = btn.dataset.fid;
+        FS.pendingDelName = btn.dataset.fname || 'thực phẩm này';
+        const nameEl = document.getElementById('foodDelConfirmName');
+        if(nameEl) nameEl.textContent = `Bạn có chắc muốn xoá "${FS.pendingDelName}"?`;
+        const modal = document.getElementById('foodDelConfirm');
+        if(modal){ modal.classList.remove('hidden'); lucide.createIcons(); }
+      };
+    });
+  }
+
+  // Delete confirm modal — MUST use document-level delegation.
+  // Reason: getElementById at init time captures a DOM ref that becomes stale
+  // after any render() call replaces #view innerHTML. Delegation always finds
+  // the live element at click time.
+  if(window._foodDelHandler) document.removeEventListener('click', window._foodDelHandler);
+  window._foodDelHandler = async function(e){
+    const cancelBtn = e.target.closest('#foodDelCancel');
+    const okBtn     = e.target.closest('#foodDelOk');
+    const backdrop  = document.getElementById('foodDelConfirm');
+
+    if(cancelBtn || (backdrop && e.target === backdrop)){
+      backdrop.classList.add('hidden');
+      FS.pendingDelId = null;
+      return;
+    }
+    if(!okBtn) return;
+    if(!FS.pendingDelId) return;
+
+    const delId = String(FS.pendingDelId);
+    // Hide modal first
+    if(backdrop) backdrop.classList.add('hidden');
+    FS.pendingDelId = null;
+
+    if(!sb){ toast('Cần kết nối Supabase'); return; }
+    okBtn.disabled = true;
+
+    // Log to verify correct UUID being sent
+    console.log('[Foods] Deleting id:', delId);
+    const {error, data} = await sb.from('foods').delete().eq('id', delId).select();
+    console.log('[Foods] Delete result:', {error, data});
+
+    okBtn.disabled = false;
+    if(error){ toast('❌ Lỗi xoá: ' + error.message); return; }
+
+    // RLS silent rejection: Supabase trả về error:null nhưng data:[] khi policy chặn
+    if(!data || data.length === 0){
+      toast('⚠️ Không xoá được — RLS policy chặn. Kiểm tra Supabase Dashboard → Table Editor → foods → Policies, đảm bảo có policy DELETE cho authenticated users.');
+      return;
+    }
+
+    // Confirmed deleted — remove from local cache
+    FS.all = FS.all.filter(x => String(x.id) !== delId);
+    if(window.FOODS) window.FOODS = window.FOODS.filter(x => String(x.id) !== delId);
+    refreshCatUI();
+    applyFilterSort();
+    toast('🗑 Đã xoá thực phẩm!');
+  };
+  document.addEventListener('click', window._foodDelHandler);
+
+  function openFoodModal(f){
+    const modal = document.getElementById('foodModal');
+    if(!modal) return;
+    document.getElementById('foodModalTitle').textContent = f ? 'Chỉnh sửa thực phẩm' : 'Thêm thực phẩm mới';
+    document.getElementById('foodEditId').value   = f ? f.id : '';
+    document.getElementById('foodEditName').value = f ? (f.name||'') : '';
+    document.getElementById('foodEditCat').value  = f ? (f.category||f.cat||'') : '';
+    document.getElementById('foodEditUnit').value = f ? (f.unit||'') : '';
+    document.getElementById('foodEditQty').value  = f ? (f.quantity!=null?+f.quantity:1) : 1;
+    document.getElementById('foodEditKcal').value = f ? (+f.kcal_per_unit||0) : '';
+    document.getElementById('foodEditP').value    = f ? (+f.protein_g||0) : '';
+    document.getElementById('foodEditC').value    = f ? (+f.carbs_g||0) : '';
+    document.getElementById('foodEditF').value    = f ? (+f.fat_g||0) : '';
+    document.getElementById('foodSaveMsg').textContent = '';
+    // Refresh datalist
+    refreshCatUI();
+    modal.classList.remove('hidden');
+    lucide.createIcons();
+    setTimeout(()=>document.getElementById('foodEditName')?.focus(),100);
+  }
+
+  // Wire controls
+  const addBtn = document.getElementById('foodAddBtn');
+  if(addBtn) addBtn.onclick = ()=>openFoodModal(null);
+
+  const closeBtn = document.getElementById('foodModalClose');
+  if(closeBtn) closeBtn.onclick = ()=>document.getElementById('foodModal').classList.add('hidden');
+
+  const modal = document.getElementById('foodModal');
+  if(modal) modal.onclick = e=>{ if(e.target===modal) modal.classList.add('hidden'); };
+
+  const searchIn = document.getElementById('foodSearch');
+  if(searchIn) searchIn.oninput = ()=>{ FS.search=searchIn.value; applyFilterSort(); };
+
+  const catFilter = document.getElementById('foodCatFilter');
+  if(catFilter) catFilter.onchange = ()=>{ FS.category=catFilter.value; applyFilterSort(); };
+
+  document.querySelectorAll('#foodSortBar .chip').forEach(c=>{
+    c.onclick=()=>{
+      document.querySelectorAll('#foodSortBar .chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      FS.sort=c.dataset.sort;
+      applyFilterSort();
+    };
+  });
+
+  const saveBtn = document.getElementById('foodSaveBtn');
+  if(saveBtn) saveBtn.onclick = async()=>{
+    const name  = document.getElementById('foodEditName').value.trim();
+    const cat   = document.getElementById('foodEditCat').value.trim();
+    const unit  = document.getElementById('foodEditUnit').value.trim();
+    const qty   = parseFloat(document.getElementById('foodEditQty').value)||1;
+    const kcal  = parseFloat(document.getElementById('foodEditKcal').value)||0;
+    const prot  = parseFloat(document.getElementById('foodEditP').value)||0;
+    const carbs = parseFloat(document.getElementById('foodEditC').value)||0;
+    const fat   = parseFloat(document.getElementById('foodEditF').value)||0;
+    const msgEl = document.getElementById('foodSaveMsg');
+    const editId = document.getElementById('foodEditId').value;
+
+    if(!name){ msgEl.style.color='var(--danger)'; msgEl.textContent='⚠️ Vui lòng nhập tên thực phẩm'; return; }
+    if(!sb){ msgEl.style.color='var(--danger)'; msgEl.textContent='⚠️ Cần kết nối Supabase'; return; }
+
+    saveBtn.disabled=true;
+    msgEl.style.color='var(--muted)';
+    msgEl.textContent='⏳ Đang lưu...';
+
+    const row = {name, category:cat, unit, quantity:qty, kcal_per_unit:kcal, protein_g:prot, carbs_g:carbs, fat_g:fat};
+
+    if(editId){
+      // Dùng .select() để detect RLS silent rejection (error:null nhưng data:[])
+      const {error, data: updData} = await sb.from('foods').update(row).eq('id', editId).select();
+      saveBtn.disabled=false;
+      if(error){ msgEl.style.color='var(--danger)'; msgEl.textContent='❌ Lỗi: '+error.message; return; }
+      // RLS silent rejection: Supabase trả về error:null nhưng data:[] khi policy chặn
+      if(!updData || updData.length === 0){
+        msgEl.style.color='var(--danger)';
+        msgEl.textContent='⚠️ RLS chặn UPDATE. Vào Supabase → Table Editor → foods → Policies → thêm UPDATE policy cho authenticated users.';
+        return;
+      }
+      const existing = FS.all.find(x=>String(x.id)===String(editId)) || {};
+      const merged = {...existing, ...row};
+      const idx = FS.all.findIndex(x=>String(x.id)===String(editId));
+      if(idx>=0) FS.all[idx] = merged;
+      if(window.FOODS){ const fi=window.FOODS.findIndex(x=>String(x.id)===String(editId)); if(fi>=0) window.FOODS[fi]=merged; }
+    } else {
+      const {data, error} = await sb.from('foods').insert(row).select();
+      saveBtn.disabled=false;
+      if(error){ msgEl.style.color='var(--danger)'; msgEl.textContent='❌ Lỗi: '+error.message; return; }
+      const inserted = Array.isArray(data) && data[0] ? data[0] : {...row, id: crypto.randomUUID?.() || Date.now().toString()};
+      FS.all.push(inserted);
+      if(window.FOODS) window.FOODS.push(inserted);
+    }
+
+    document.getElementById('foodModal').classList.add('hidden');
+    refreshCatUI();
+    applyFilterSort();
+    toast(editId ? '✅ Đã cập nhật thực phẩm!' : '✅ Đã thêm thực phẩm mới!');
+  };
+
+  loadFoodsDB();
+}
+
 function viewConfig(){
   const provLabel = CONFIG.AI_PROVIDER==='gemini'?'⚡ Gemini':CONFIG.AI_PROVIDER==='groq'?'⚡ Groq':'🔀 OpenRouter';
   return `${backBtn()}<div class="card" style="background:var(--bg)">
@@ -1675,7 +2093,7 @@ function attachHandlers(){
   if($('#backBtn')) $('#backBtn').onclick=()=>{
     const fromView=State.view;
     // subviews that come from "More" menu
-    const moreSubviews=['profile','weight','water','reports','couple','admin','config'];
+    const moreSubviews=['profile','weight','water','reports','couple','admin','config','foods'];
     State.view = moreSubviews.includes(fromView)?'more':'dashboard';
     render();
   };
