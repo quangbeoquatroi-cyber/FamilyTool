@@ -553,35 +553,81 @@ function loadLocal(){
 
 /* ============================================================
    NUTRITION MATH
+   Chuẩn: Mifflin-St Jeor (BMR), ISSN/ACSM 2022-2026 (Macro),
+          DRI 2020 (Fiber), WHO/EFSA (Water)
 ============================================================ */
 function calcBMR(p){
   if(!p.weight||!p.height||!p.age) return 0;
-  // Mifflin-St Jeor
+  // Mifflin-St Jeor (1990) — tiêu chuẩn vàng 2026
+  // Nam:  10×W(kg) + 6.25×H(cm) − 5×A(tuổi) + 5
+  // Nữ:   10×W(kg) + 6.25×H(cm) − 5×A(tuổi) − 161
   const s = p.gender==='female' ? -161 : 5;
   return 10*p.weight + 6.25*p.height - 5*p.age + s;
 }
 function calcTDEE(p){
+  // Hệ số hoạt động chuẩn Harris-Benedict hiệu chỉnh
+  // sedentary  = ít/không vận động         ×1.2
+  // light      = nhẹ 1-3 ngày/tuần         ×1.375
+  // moderate   = vừa 3-5 ngày/tuần         ×1.55
+  // active     = nặng 6-7 ngày/tuần        ×1.725
+  // very       = vận động viên / lao động nặng ×1.9
   const m = {sedentary:1.2, light:1.375, moderate:1.55, active:1.725, very:1.9};
   return calcBMR(p) * (m[p.activity]||1.375);
 }
 function targetCalories(p){
   const t = calcTDEE(p);
-  if(p.goal==='loss') return Math.round(t-500);
-  if(p.goal==='bulk') return Math.round(t+300);
-  if(p.goal==='recomp') return Math.round(t);
+  if(p.goal==='loss'){
+    // Deficit 20% TDEE — đủ để giảm mỡ (~0.5kg/tuần), không mất cơ
+    // Tối thiểu 1200 kcal (nữ) / 1500 kcal (nam) để đảm bảo dinh dưỡng
+    const minCal = p.gender==='female' ? 1200 : 1500;
+    return Math.round(Math.max(t * 0.80, minCal));
+  }
+  if(p.goal==='bulk'){
+    // Surplus 10% TDEE — lean bulk, tăng cơ tối thiểu mỡ
+    return Math.round(t * 1.10);
+  }
+  if(p.goal==='recomp'){
+    // Recomp: duy trì TDEE, dùng protein cao + tập tạ để tái cấu trúc
+    return Math.round(t);
+  }
+  // maintain
   return Math.round(t);
 }
 function macroTargets(p){
   const cals = targetCalories(p);
-  // recomp: higher protein (40%), lower carbs (30%), fat 30%
-  const isRecomp = p.goal==='recomp';
+  const w    = p.weight || 70;
+
+  // ── Protein theo g/kg thể trọng (ISSN Position Stand 2017, 2022) ──
+  // loss:   2.0 g/kg — bảo toàn cơ trong deficit
+  // bulk:   1.8 g/kg — tối ưu tăng cơ trong surplus
+  // recomp: 2.2 g/kg — cao nhất vì cần cả giảm mỡ lẫn tăng cơ
+  // maintain: 1.2 g/kg — đủ theo DRI cho người tập
+  let proteinG;
+  if(p.goal==='loss')        proteinG = Math.round(w * 2.0);
+  else if(p.goal==='bulk')   proteinG = Math.round(w * 1.8);
+  else if(p.goal==='recomp') proteinG = Math.round(w * 2.2);
+  else                       proteinG = Math.round(w * 1.2);
+
+  // ── Fat: 25% tổng calo (tối thiểu để hấp thụ vitamin A/D/E/K) ──
+  const fatG = Math.round(cals * 0.25 / 9);
+
+  // ── Carb: phần còn lại sau protein + fat ──
+  const remainCals = cals - (proteinG * 4) - (fatG * 9);
+  const carbG = Math.round(Math.max(remainCals, 0) / 4);
+
+  // ── Fiber: DRI 2020 — Nam 38g, Nữ 25g ──
+  const fiberG = p.gender==='female' ? 25 : 38;
+
+  // ── Nước: 35ml/kg/ngày (WHO/EFSA) ──
+  const waterMl = Math.round(w * 35);
+
   return {
     calories: cals,
-    protein: Math.round(cals*(isRecomp?0.40:0.30)/4),
-    carbs: Math.round(cals*(isRecomp?0.30:0.40)/4),
-    fat: Math.round(cals*0.30/9),
-    fiber: 30,
-    water: 2500
+    protein:  proteinG,
+    carbs:    carbG,
+    fat:      fatG,
+    fiber:    fiberG,
+    water:    waterMl
   };
 }
 
@@ -1588,7 +1634,7 @@ function viewProfile(){
       <div class="stat"><div class="l">TDEE</div><div class="v">${fmt(calcTDEE(p))}</div></div>
       <div class="stat"><div class="l">Mục tiêu</div><div class="v">${fmt(targetCalories(p))}</div></div>
     </div>
-    <div class="muted" style="margin-top:8px">Giảm ${fmt(calcTDEE(p)-500)} · Duy trì/Recomp ${fmt(calcTDEE(p))} · Tăng ${fmt(calcTDEE(p)+300)}</div>
+    <div class="muted" style="margin-top:8px">Giảm ${fmt(calcTDEE(p)*0.80)} · Duy trì/Recomp ${fmt(calcTDEE(p))} · Tăng ${fmt(calcTDEE(p)*1.10)}</div>
   </div>`;
 }
 
