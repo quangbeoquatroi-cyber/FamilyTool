@@ -1016,34 +1016,14 @@ function showMealDetail(id){
   function itemRow(it, idx){
     const q = +it.quantity||1;
     return `<tr data-iidx="${idx}" style="border-bottom:1px solid var(--border)">
-      <td style="padding:8px 4px">
-        <input class="input ii-name" style="min-width:90px;font-size:13px;padding:6px 8px" value="${escHtml(it.name||'')}">
-      </td>
-      <td style="padding:8px 4px;width:72px">
-        <input class="input ii-qty" type="number" min="0.1" step="0.1" style="font-size:13px;padding:6px 8px;text-align:center" value="${q}">
-      </td>
-      <td style="padding:8px 4px;width:56px">
-        <input class="input ii-unit" style="font-size:12px;padding:6px 6px;text-align:center" value="${escHtml(it.unit||'phần')}">
-      </td>
-      <td style="padding:8px 4px;width:68px">
-        <input class="input ii-cal" type="number" min="0" style="font-size:13px;padding:6px 8px;text-align:center" value="${fmt(it.base_calories||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_calories||0)} kcal</div>
-      </td>
-      <td style="padding:8px 4px;width:52px">
-        <input class="input ii-p" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--p)" value="${fmt(it.base_protein||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_protein||0)}g</div>
-      </td>
-      <td style="padding:8px 4px;width:52px">
-        <input class="input ii-c" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--c)" value="${fmt(it.base_carbs||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_carbs||0)}g</div>
-      </td>
-      <td style="padding:8px 4px;width:52px">
-        <input class="input ii-f" type="number" min="0" style="font-size:12px;padding:6px 6px;text-align:center;color:var(--f)" value="${fmt(it.base_fat||0)}">
-        <div class="muted" style="font-size:10px;text-align:center">${fmt(it.base_fat||0)}g</div>
-      </td>
-      <td style="padding:8px 4px;width:32px;text-align:center">
-        <button class="btn small ghost ii-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button>
-      </td>
+      <td style="padding:4px 4px"><input class="input ii-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px;width:100%" value="${escHtml(it.name||'')}"></td>
+      <td style="padding:4px 4px"><input class="input ii-qty" type="number" min="0.1" step="0.1" style="font-size:13px;padding:6px 6px;text-align:center;width:100%" value="${q}"></td>
+      <td style="padding:4px 4px"><input class="input ii-unit" type="text" style="font-size:13px;padding:6px 6px;text-align:center;width:100%" value="${escHtml(it.unit||'phần')}"></td>
+      <td style="padding:4px 4px"><input class="input ii-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;width:100%" value="${fmt(it.base_calories||0)}"></td>
+      <td style="padding:4px 4px"><input class="input ii-p" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--p);width:100%" value="${fmt(it.base_protein||0)}"></td>
+      <td style="padding:4px 4px"><input class="input ii-c" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--c);width:100%" value="${fmt(it.base_carbs||0)}"></td>
+      <td style="padding:4px 4px"><input class="input ii-f" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--f);width:100%" value="${fmt(it.base_fat||0)}"></td>
+      <td style="padding:4px 4px;text-align:center"><button class="btn small ghost ii-del" style="width:32px;height:32px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>
     </tr>`;
   }
 
@@ -1053,7 +1033,7 @@ function showMealDetail(id){
     const tot = recalcTotals();
     modal.innerHTML=`<div class="sheet" style="padding:20px;max-height:90dvh;overflow-y:auto">
       <div class="row between" style="margin-bottom:12px">
-        <h2 style="margin:0;font-size:17px">${escHtml(m.name||'Món ăn')}</h2>
+        <input id="editMealName" class="input" value="${escHtml(m.name||'')}" style="font-size:17px;font-weight:700;flex:1;margin-right:8px;padding:8px 12px">
         <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
       </div>
       <div style="margin-bottom:12px">
@@ -1082,18 +1062,18 @@ function showMealDetail(id){
 
       <!-- Ingredient table -->
       <div style="margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)">CHI TIẾT THÀNH PHẦN</div>
-      <div style="overflow-x:auto;margin-bottom:8px">
-        <table style="width:100%;border-collapse:collapse">
+      <div style="overflow-x:auto;margin-bottom:8px;-webkit-overflow-scrolling:touch">
+        <table style="width:100%;min-width:720px;border-collapse:collapse;table-layout:fixed">
           <thead>
             <tr style="font-size:10px;color:var(--muted);font-weight:600">
-              <th style="padding:4px 4px;text-align:left">Món</th>
-              <th style="padding:4px 4px;text-align:center">SL</th>
-              <th style="padding:4px 4px;text-align:center">Đơn vị</th>
-              <th style="padding:4px 4px;text-align:center">kcal/đv</th>
-              <th style="padding:4px 4px;text-align:center">P(g)</th>
-              <th style="padding:4px 4px;text-align:center">C(g)</th>
-              <th style="padding:4px 4px;text-align:center">F(g)</th>
-              <th></th>
+              <th style="padding:4px 4px;text-align:left;min-width:160px">Món</th>
+              <th style="padding:4px 4px;text-align:center;width:64px">SL</th>
+              <th style="padding:4px 4px;text-align:center;width:84px">Đơn vị</th>
+              <th style="padding:4px 4px;text-align:center;width:84px">kcal/đv</th>
+              <th style="padding:4px 4px;text-align:center;width:70px">P(g)</th>
+              <th style="padding:4px 4px;text-align:center;width:70px">C(g)</th>
+              <th style="padding:4px 4px;text-align:center;width:70px">F(g)</th>
+              <th style="width:36px"></th>
             </tr>
           </thead>
           <tbody id="itemsTbody">
@@ -1142,6 +1122,8 @@ function showMealDetail(id){
     modal.querySelector('#mealDetailSave').onclick = async ()=>{
       const tot = recalcTotals();
       const newMealType = modal.querySelector('#editMealType')?.value || m.meal_type || 'snack';
+      const newName = (modal.querySelector('#editMealName')?.value || '').trim() || m.name;
+      m.name = newName;
       m.items = editItems.map(it=>({...it}));
       m.calories = Math.round(tot.calories);
       m.protein  = Math.round(tot.protein);
@@ -1168,7 +1150,7 @@ function showMealDetail(id){
       m.photo = newPhoto;
 
       if(sb && !State.demo){
-        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items,meal_type:newMealType,photo:m.photo}).eq('id',m.id); }catch(e){console.warn(e)}
+        try{ await sb.from('meals').update({name:m.name,calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items,meal_type:newMealType,photo:m.photo}).eq('id',m.id); }catch(e){console.warn(e)}
       }
       saveLocal();
       modal.remove(); render(); toast('✅ Đã cập nhật!');
@@ -1241,12 +1223,6 @@ function showMealDetail(id){
       editItems[idx].base_protein   = +tr.querySelector('.ii-p').value||0;
       editItems[idx].base_carbs     = +tr.querySelector('.ii-c').value||0;
       editItems[idx].base_fat       = +tr.querySelector('.ii-f').value||0;
-      // Update the per-row total cells without full re-render
-      const it = editItems[idx];
-      tr.querySelector('.ii-cal').nextElementSibling.textContent = `${fmt(it.base_calories)} kcal`;
-      tr.querySelector('.ii-p').nextElementSibling.textContent   = `${fmt(it.base_protein)}g`;
-      tr.querySelector('.ii-c').nextElementSibling.textContent   = `${fmt(it.base_carbs)}g`;
-      tr.querySelector('.ii-f').nextElementSibling.textContent   = `${fmt(it.base_fat)}g`;
       // Update summary totals
       const tot = recalcTotals();
       const d = modal.querySelector('#detailTotals');
