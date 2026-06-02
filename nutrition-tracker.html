@@ -1314,30 +1314,30 @@ function viewScan(){
 
     <!-- Ingredient detail table -->
     <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)">CHI TIẾT THÀNH PHẦN</div>
-    <div style="overflow-x:auto;margin-bottom:8px">
-      <table style="width:100%;border-collapse:collapse" id="mItemsTable">
+    <div style="overflow-x:auto;margin-bottom:8px;-webkit-overflow-scrolling:touch">
+      <table style="width:100%;min-width:720px;border-collapse:collapse;table-layout:fixed" id="mItemsTable">
         <thead>
           <tr style="font-size:10px;color:var(--muted);font-weight:600">
-            <th style="padding:4px 4px;text-align:left">Món</th>
-            <th style="padding:4px 4px;text-align:center;width:44px">SL</th>
-            <th style="padding:4px 4px;text-align:center;width:62px">Đơn vị</th>
-            <th style="padding:4px 4px;text-align:center;width:64px">kcal/đv</th>
-            <th style="padding:4px 4px;text-align:center;width:50px">P(g)</th>
-            <th style="padding:4px 4px;text-align:center;width:50px">C(g)</th>
-            <th style="padding:4px 4px;text-align:center;width:50px">F(g)</th>
-            <th style="width:28px"></th>
+            <th style="padding:4px 4px;text-align:left;min-width:160px">Món</th>
+            <th style="padding:4px 4px;text-align:center;width:64px">SL</th>
+            <th style="padding:4px 4px;text-align:center;width:84px">Đơn vị</th>
+            <th style="padding:4px 4px;text-align:center;width:84px">kcal/đv</th>
+            <th style="padding:4px 4px;text-align:center;width:70px">P(g)</th>
+            <th style="padding:4px 4px;text-align:center;width:70px">C(g)</th>
+            <th style="padding:4px 4px;text-align:center;width:70px">F(g)</th>
+            <th style="width:36px"></th>
           </tr>
         </thead>
         <tbody id="mItemsTbody">
           <tr data-midx="0">
-            <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px"></td>
-            <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-            <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-            <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-            <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--p)"></td>
-            <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--c)"></td>
-            <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--f)"></td>
-            <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>
+            <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px;width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--p);width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--c);width:100%"></td>
+            <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--f);width:100%"></td>
+            <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:32px;height:32px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>
           </tr>
         </tbody>
       </table>
@@ -2380,14 +2380,14 @@ function attachHandlers(){
     const tr=document.createElement('tr');
     tr.dataset.midx=idx;
     tr.innerHTML=`
-      <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px"></td>
-      <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-      <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-      <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center"></td>
-      <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--p)"></td>
-      <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--c)"></td>
-      <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:12px;padding:6px 4px;text-align:center;color:var(--f)"></td>
-      <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:28px;height:28px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>`;
+      <td style="padding:4px 4px"><input class="input mi-name" type="text" placeholder="Tên thành phần" style="font-size:13px;padding:6px 8px;width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-qty" type="number" min="0.1" step="0.1" value="1" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-unit" type="text" value="phần" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-cal" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-p" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--p);width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-c" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--c);width:100%"></td>
+      <td style="padding:4px 4px"><input class="input mi-f" type="number" min="0" placeholder="0" style="font-size:13px;padding:6px 6px;text-align:center;color:var(--f);width:100%"></td>
+      <td style="padding:4px 4px;text-align:center"><button class="btn small ghost mi-del" style="width:32px;height:32px;padding:0;border-radius:8px;color:#ef4444"><i data-lucide="x"></i></button></td>`;
     tbody.appendChild(tr);
     lucide.createIcons();
     mAttachRowHandlers();
@@ -3414,13 +3414,13 @@ create policy "food_photos_read" on storage.objects
   }
 
   /* === Bottom navigation: floating premium === */
-  .bottomnav, .bottom-nav, .tabbar, nav.bottom, .bnav{
+  .bottomnav, .bottom-nav, nav.bottom, .bnav{
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
     box-shadow: 0 -2px 12px rgba(13,17,23,.04), 0 -8px 32px rgba(58,171,30,.08), 0 -20px 60px rgba(13,17,23,.06) !important;
     border-top: 1px solid rgba(58,171,30,.10) !important;
   }
-  .dark .bottomnav, .dark .bottom-nav, .dark .tabbar, .dark nav.bottom, .dark .bnav{
+  .dark .bottomnav, .dark .bottom-nav, .dark nav.bottom, .dark .bnav{
     box-shadow: 0 -8px 32px rgba(0,0,0,.5) !important;
     border-top-color: rgba(58,171,30,.18) !important;
   }
@@ -3517,7 +3517,7 @@ create policy "food_photos_read" on storage.objects
 
   /* === Safe-area === */
   body{ padding-bottom: env(safe-area-inset-bottom); }
-  .bottomnav, .bottom-nav, .tabbar, nav.bottom, .bnav{
+  .bottomnav, .bottom-nav, nav.bottom, .bnav{
     padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
   }
   header, .topbar, .app-header{ padding-top: max(0px, env(safe-area-inset-top)); }
