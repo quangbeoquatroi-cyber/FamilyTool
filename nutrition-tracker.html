@@ -149,6 +149,40 @@
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
   @media(min-width:780px){.nav{border-radius:20px;left:16px;right:16px;bottom:16px;max-width:780px;margin:0 auto;border:1px solid var(--border)}}
+
+  /* ── Meal Plan / Weekly grid (shared: diary tab + mealplan page) ── */
+  .mp-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;padding-bottom:4px}
+  @media(max-width:760px){.mp-grid{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}}
+  .mp-grid::-webkit-scrollbar{height:3px}
+  .mp-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+  .mp-day{min-width:0;border-right:1px solid var(--border);padding:0}
+  @media(max-width:760px){.mp-day{flex:0 0 160px;scroll-snap-align:start}}
+  .mp-day:last-child{border-right:none}
+  .mp-day-header{padding:10px 10px 8px;background:var(--card2);border-bottom:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2}
+  .mp-today .mp-day-header{background:linear-gradient(135deg,rgba(58,171,30,.18),rgba(58,171,30,.08));border-bottom-color:var(--primary)}
+  .mp-today .mp-day-name{color:var(--primary)}
+  .mp-day-name{font-weight:700;font-size:13px}
+  .mp-day-date{font-size:11px;color:var(--muted)}
+  .mp-day-kcal{font-size:10px;color:var(--primary);font-weight:600;margin-top:2px}
+  .mp-day-check{font-size:10px;color:var(--muted);margin-top:1px}
+  .mp-slot{padding:8px;border-bottom:1px solid var(--border);min-height:60px}
+  .mp-slot:last-child{border-bottom:none}
+  .mp-slot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .mp-slot-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+  .mp-add-btn{width:20px;height:20px;border-radius:6px;background:var(--primary);color:white;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:transform .15s}
+  .mp-add-btn:active{transform:scale(.88)}
+  .mp-empty{font-size:11px;color:var(--muted);font-style:italic;padding:2px 0}
+  .mp-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 7px;margin-bottom:4px;transition:opacity .2s}
+  .mp-item.done{opacity:.55}
+  .mp-item.done .mp-item-name{text-decoration:line-through}
+  .mp-item-name{font-size:12px;font-weight:600;line-height:1.3;word-break:break-word}
+  .mp-item-kcal{font-size:10px;color:var(--primary);margin-top:1px}
+  .mp-item-actions{display:flex;gap:3px;margin-top:4px}
+  .mp-done-btn,.mp-log-btn,.mp-del-btn{font-size:11px;padding:2px 5px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .15s;line-height:1.4}
+  .mp-done-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+  .mp-log-btn:hover{background:var(--accent);color:white;border-color:var(--accent)}
+  .mp-del-btn:hover{background:var(--danger);color:white;border-color:var(--danger)}
+  @media(max-width:480px){.mp-day{flex:0 0 140px}}
 </style>
 </head>
 <body>
@@ -460,6 +494,7 @@ const State = {
   weights: [],
   chats: [],
   diaryDate: null, // null = today; set to 'YYYY-MM-DD' when browsing history
+  mealPlans: [], // [{id, profile_key, date, meal_type, name, calories, protein, carbs, fat, note}]
 };
 
 let sb = null;
@@ -612,6 +647,10 @@ async function loadCloud(){
     sb.from('weights').select('*').eq('user_id',uid).order('date',{ascending:true}).limit(730),
   ]);
   State.meals=meals||[]; State.water=water||[]; State.weights=weights||[];
+  try{
+    const {data:mealPlans}=await sb.from('meal_plans').select('*').eq('user_id',uid).order('date',{ascending:true}).limit(500);
+    State.mealPlans=mealPlans||[];
+  }catch(e){ State.mealPlans=[]; }
 }
 
 async function tryRestore(){
@@ -700,15 +739,17 @@ function render(){
   else if(v==='admin') root.innerHTML=viewAdmin();
   else if(v==='config') root.innerHTML=viewConfig();
   else if(v==='foods') root.innerHTML=viewFoods();
+  else if(v==='mealplan') root.innerHTML=viewMealPlan();
   $('#topTitle').textContent = {
     dashboard:'Hôm nay', diary:'Nhật ký ăn uống', scan:'AI Scanner', coach:'AI Coach',
     more:'Thêm', profile:'Hồ sơ', weight:'Cân nặng', water:'Nước uống',
     reports:'Báo cáo', couple:'Couple', admin:'Cài đặt', config:'Cấu hình',
-    foods:'Thực phẩm'
+    foods:'Thực phẩm', mealplan:'Lịch ăn tuần'
   }[v]||'';
   icons();
   attachHandlers();
   if(v==='foods') attachFoodsHandlers();
+  if(v==='mealplan') attachMealPlanHandlers();
 }
 
 /* ============================================================
@@ -826,18 +867,29 @@ function viewDiary(){
   const tot = {calories:0,protein:0,carbs:0,fat:0};
   day.forEach(m=>{tot.calories+=+m.calories||0;tot.protein+=+m.protein||0;tot.carbs+=+m.carbs||0;tot.fat+=+m.fat||0;});
 
+  // active diary tab stored in State
+  if(!State.diaryTab) State.diaryTab='log';
+
   const dateNav = `
     <div class="card" style="padding:12px 16px">
       <div class="row between" style="align-items:center">
         <button class="btn small ghost" id="diaryPrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
         <div style="text-align:center">
           <div style="font-weight:700;font-size:15px">${labelDate}</div>
-          <div class="muted" style="font-size:12px">${fmt(tot.calories)} kcal</div>
+          <div class="muted" style="font-size:12px">${fmt(tot.calories)} kcal đã ăn</div>
         </div>
         <button class="btn small ghost" id="diaryNext" style="width:36px;height:36px;padding:0;border-radius:10px;${isToday?'opacity:.35;pointer-events:none':''}"><i data-lucide="chevron-right"></i></button>
       </div>
     </div>`;
 
+  // Tab bar
+  const tabBar = `
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="chip ${State.diaryTab==='log'?'active':''}" id="diaryTabLog" style="flex:1;justify-content:center">📋 Nhật ký</button>
+      <button class="chip ${State.diaryTab==='plan'?'active':''}" id="diaryTabPlan" style="flex:1;justify-content:center">📅 Kế hoạch tuần</button>
+    </div>`;
+
+  // LOG tab
   const sec = (k,t)=>`
     <div class="card">
       <div class="row between"><h3>${t}</h3>
@@ -845,7 +897,16 @@ function viewDiary(){
       </div>
       ${by[k].length?by[k].map(mealItem).join(''):'<div class="muted">Chưa có dữ liệu</div>'}
     </div>`;
-  return dateNav + sec('breakfast','🌅 Bữa sáng')+sec('lunch','☀️ Bữa trưa')+sec('dinner','🌙 Bữa tối')+sec('snack','🍎 Ăn vặt');
+  const logTab = sec('breakfast','🌅 Bữa sáng')+sec('lunch','☀️ Bữa trưa')+sec('dinner','🌙 Bữa tối')+sec('snack','🍎 Ăn vặt');
+
+  // PLAN tab — weekly grid T2→CN (reuse viewMealPlan logic)
+  const planTab = window.buildWeeklyPlanGrid ? window.buildWeeklyPlanGrid() : '';
+
+  // Modal for adding plan item is included in buildWeeklyPlanGrid output above
+
+  return dateNav + tabBar +
+    `<div id="diaryLogContent" ${State.diaryTab!=='log'?'class="hidden"':''}>` + logTab + `</div>` +
+    `<div id="diaryPlanContent" ${State.diaryTab!=='plan'?'class="hidden"':''}>` + planTab + `</div>`;
 }
 function mealItem(m){
   return `<div class="item" style="margin-top:8px;cursor:pointer" data-meal-detail="${m.id}">
@@ -1375,6 +1436,7 @@ function viewMore(){
     ['reports','bar-chart-3','Báo cáo'],
     ['couple','heart','Couple Dashboard'],
     ['foods','database','Cơ sở dữ liệu thực phẩm'],
+    ['mealplan','calendar','Lịch ăn tuần'],
     ['config','settings','Cấu hình / API Keys'],
   ];
   return `<div class="card">${items.map(([v,i,t])=>`
@@ -2093,7 +2155,7 @@ function attachHandlers(){
   if($('#backBtn')) $('#backBtn').onclick=()=>{
     const fromView=State.view;
     // subviews that come from "More" menu
-    const moreSubviews=['profile','weight','water','reports','couple','admin','config','foods'];
+    const moreSubviews=['profile','weight','water','reports','couple','admin','config','foods','mealplan'];
     State.view = moreSubviews.includes(fromView)?'more':'dashboard';
     render();
   };
@@ -2115,6 +2177,26 @@ function attachHandlers(){
   // Diary — date navigation
   if($('#diaryPrev')) $('#diaryPrev').onclick=()=>diaryShift(-1);
   if($('#diaryNext')) $('#diaryNext').onclick=()=>{ if(!diaryIsToday()) diaryShift(1); };
+
+  // Diary — tab switching (Log / Kế hoạch)
+  if($('#diaryTabLog')) $('#diaryTabLog').onclick=()=>{
+    State.diaryTab='log';
+    $('#diaryLogContent')?.classList.remove('hidden');
+    $('#diaryPlanContent')?.classList.add('hidden');
+    $('#diaryTabLog').classList.add('active');
+    $('#diaryTabPlan').classList.remove('active');
+  };
+  if($('#diaryTabPlan')) $('#diaryTabPlan').onclick=()=>{
+    State.diaryTab='plan';
+    $('#diaryPlanContent')?.classList.remove('hidden');
+    $('#diaryLogContent')?.classList.add('hidden');
+    $('#diaryTabPlan').classList.add('active');
+    $('#diaryTabLog').classList.remove('active');
+    if(window.attachMealPlanHandlers) attachMealPlanHandlers();
+  };
+
+  // Diary plan tab — weekly grid handlers (shared with mealplan page)
+  if(State.diaryTab==='plan' && window.attachMealPlanHandlers) attachMealPlanHandlers();
 
   // Diary — meal detail modal (tap on meal item)
   $$('[data-meal-detail]').forEach(el=>{
@@ -2403,6 +2485,483 @@ function drawReports(){
   new Chart($('#wTrend'),{type:'line',data:{labels:w.map(x=>x.date.slice(5)),datasets:[{label:'kg',data:w.map(x=>x.value),borderColor:'#3b82f6',backgroundColor:'#3b82f622',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}}}});
 }
 
+
+/* ============================================================
+   MEAL PLAN — lịch ăn tuần
+============================================================ */
+(function(){
+
+// ── helpers ────────────────────────────────────────────────
+function mpWeekStart(dateStr){
+  // Monday of the week containing dateStr
+  const [y,mo,dd]=dateStr.split('-').map(Number);
+  const d=new Date(y,mo-1,dd);
+  const dow=d.getDay(); // 0=Sun
+  const diff = dow===0 ? -6 : 1-dow;
+  d.setDate(d.getDate()+diff);
+  return fmtDate(d);
+}
+function fmtDate(d){
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function addDays(dateStr,n){
+  const [y,mo,dd]=dateStr.split('-').map(Number);
+  const d=new Date(y,mo-1,dd);
+  d.setDate(d.getDate()+n);
+  return fmtDate(d);
+}
+function weekDays(startStr){ return Array.from({length:7},(_,i)=>addDays(startStr,i)); }
+function dayLabel(dateStr){
+  const names=['CN','T2','T3','T4','T5','T6','T7'];
+  const [y,mo,dd]=dateStr.split('-').map(Number);
+  return names[new Date(y,mo-1,dd).getDay()];
+}
+function isTodayStr(s){ return s===today(); }
+function plansFor(dateStr, profileKey){
+  const key=profileKey||State.activeProfile;
+  return State.mealPlans.filter(p=>p.date===dateStr&&(p.profile_key||'husband')===key);
+}
+function mealLabel(type){
+  return {breakfast:'🌅 Sáng',lunch:'☀️ Trưa',dinner:'🌙 Tối',snack:'🍎 Vặt'}[type]||type;
+}
+
+// ── State ──────────────────────────────────────────────────
+if(!State.mpWeek) State.mpWeek = mpWeekStart(today());
+
+// ── viewMealPlan ────────────────────────────────────────────
+window.viewMealPlan = function(){
+  const ws = State.mpWeek;
+  const days = weekDays(ws);
+  const we = addDays(ws,6);
+  const isCurrentWeek = ws===mpWeekStart(today());
+
+  const weekLabel = (()=>{
+    const [y1,m1,d1]=ws.split('-');
+    const [,m2,d2]=we.split('-');
+    if(m1===m2) return `${+d1}–${+d2} tháng ${+m1}, ${y1}`;
+    return `${+d1}/${+m1} – ${+d2}/${+m2}, ${y1}`;
+  })();
+
+  const MEAL_TYPES=['breakfast','lunch','dinner','snack'];
+
+  // Weekly totals
+  const profileKey=State.activeProfile;
+  let wkCal=0, wkP=0, wkC=0, wkF=0;
+  days.forEach(d=>{plansFor(d,profileKey).forEach(p=>{wkCal+=+p.calories||0;wkP+=+p.protein||0;wkC+=+p.carbs||0;wkF+=+p.fat||0;});});
+  const tgt=macroTargets(State.profile);
+  const wkTgtCal=tgt.calories*7;
+  const wkPct=Math.min(100,wkCal/wkTgtCal*100||0);
+
+  // Build day columns
+  const cols = days.map(d=>{
+    const isToday=isTodayStr(d);
+    const dayPlans=plansFor(d,profileKey);
+    const dayCal=dayPlans.reduce((a,b)=>a+(+b.calories||0),0);
+    const dayDone=dayPlans.filter(x=>x.done).length;
+    const dayTotal=dayPlans.length;
+
+    const mealRows=MEAL_TYPES.map(type=>{
+      const items=dayPlans.filter(p=>p.meal_type===type);
+      return `<div class="mp-slot" data-date="${d}" data-type="${type}">
+        <div class="mp-slot-header">
+          <span class="mp-slot-label">${mealLabel(type)}</span>
+          <button class="mp-add-btn" data-date="${d}" data-type="${type}" title="Thêm">+</button>
+        </div>
+        ${items.length===0?'<div class="mp-empty">Trống</div>':items.map(item=>`
+          <div class="mp-item ${item.done?'done':''}" data-pid="${item.id}">
+            <div class="mp-item-name">${escMp(item.name||'Chưa đặt tên')}</div>
+            ${item.calories?`<div class="mp-item-kcal">${Math.round(item.calories)} kcal</div>`:''}
+            <div class="mp-item-actions">
+              <button class="mp-done-btn ${item.done?'active':''}" data-pid="${item.id}" title="${item.done?'Bỏ đánh dấu':'Đã ăn'}">✓</button>
+              <button class="mp-log-btn" data-pid="${item.id}" title="Log vào Diary">📋</button>
+              <button class="mp-del-btn" data-pid="${item.id}" title="Xoá">✕</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+
+    return `<div class="mp-day ${isToday?'mp-today':''}">
+      <div class="mp-day-header">
+        <div class="mp-day-name">${dayLabel(d)}</div>
+        <div class="mp-day-date">${d.slice(8)}</div>
+        ${dayCal>0?`<div class="mp-day-kcal">${Math.round(dayCal)}</div>`:''}
+        ${dayTotal>0?`<div class="mp-day-check">${dayDone}/${dayTotal}</div>`:''}
+      </div>
+      ${mealRows}
+    </div>`;
+  }).join('');
+
+  return `${backBtn()}
+
+  <!-- Week nav -->
+  <div class="card" style="padding:12px 16px">
+    <div class="row between" style="align-items:center;gap:8px">
+      <button class="btn small ghost" id="mpPrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
+      <div style="text-align:center;flex:1">
+        <div style="font-weight:700;font-size:14px">${weekLabel}</div>
+        <div class="muted" style="font-size:11px">${isCurrentWeek?'Tuần này':''}</div>
+      </div>
+      <button class="btn small ghost" id="mpNext" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Weekly summary -->
+  <div class="card" style="padding:14px">
+    <div class="row between" style="margin-bottom:8px">
+      <span style="font-weight:600;font-size:13px">Tổng tuần</span>
+      <span class="muted" style="font-size:12px">${Math.round(wkCal)} / ${Math.round(wkTgtCal)} kcal</span>
+    </div>
+    <div class="progress"><div style="width:${wkPct}%;background:var(--primary)"></div></div>
+    <div class="grid4" style="margin-top:10px;gap:6px">
+      <div style="text-align:center"><div style="font-size:11px;color:var(--muted)">Kcal TB</div><div style="font-weight:700;font-size:15px">${Math.round(wkCal/7)}</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--p)">Protein</div><div style="font-weight:700;font-size:15px;color:var(--p)">${Math.round(wkP/7)}g</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--c)">Carbs</div><div style="font-weight:700;font-size:15px;color:var(--c)">${Math.round(wkC/7)}g</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--f)">Fat</div><div style="font-weight:700;font-size:15px;color:var(--f)">${Math.round(wkF/7)}g</div></div>
+    </div>
+  </div>
+
+  <!-- 7-day grid (horizontal scroll) -->
+  <div class="card" style="padding:0;overflow-x:auto;overflow-y:visible">
+    <div class="mp-grid">${cols}</div>
+  </div>
+
+  <!-- Add/Edit modal -->
+  <div id="mpModal" class="modal hidden">
+    <div class="sheet" style="padding:20px;max-height:88dvh;overflow-y:auto">
+      <div class="row between" style="margin-bottom:14px">
+        <h3 id="mpModalTitle" style="margin:0">Thêm vào lịch</h3>
+        <button id="mpModalClose" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
+      </div>
+      <input type="hidden" id="mpEditId"/>
+      <input type="hidden" id="mpEditDate"/>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Ngày</label>
+        <input id="mpEditDateShow" class="input" type="date" style="font-size:15px"/>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Bữa ăn</label>
+        <select id="mpEditType" class="select">
+          <option value="breakfast">🌅 Bữa sáng</option>
+          <option value="lunch">☀️ Bữa trưa</option>
+          <option value="dinner">🌙 Bữa tối</option>
+          <option value="snack">🍎 Ăn vặt</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Tên món *</label>
+        <input id="mpEditName" class="input" placeholder="VD: Phở bò, Cơm gà, Salad..." autocomplete="off"/>
+      </div>
+      <div class="grid2" style="gap:10px;margin-bottom:10px">
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Calories (kcal)</label>
+          <input id="mpEditCal" class="input" type="number" min="0" placeholder="0"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Protein (g)</label>
+          <input id="mpEditP" class="input" type="number" min="0" placeholder="0"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Carbs (g)</label>
+          <input id="mpEditC" class="input" type="number" min="0" placeholder="0"/>
+        </div>
+        <div>
+          <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Fat (g)</label>
+          <input id="mpEditF" class="input" type="number" min="0" placeholder="0"/>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Ghi chú</label>
+        <input id="mpEditNote" class="input" placeholder="Tuỳ chọn..."/>
+      </div>
+      <div id="mpSaveMsg" class="muted" style="font-size:12px;margin-bottom:8px;min-height:16px"></div>
+      <button class="btn" id="mpSaveBtn"><i data-lucide="check"></i> Lưu vào lịch</button>
+    </div>
+  </div>`;
+};
+
+function escMp(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// ── buildWeeklyPlanGrid — dùng trong Diary tab Kế hoạch ────
+window.buildWeeklyPlanGrid = function(){
+  if(!State.mpWeek) State.mpWeek = mpWeekStart(today());
+  const ws = State.mpWeek;
+  const days = weekDays(ws);
+  const we = addDays(ws,6);
+  const isCurrentWeek = ws===mpWeekStart(today());
+
+  const weekLabel = (()=>{
+    const [y1,m1,d1]=ws.split('-');
+    const [,m2,d2]=we.split('-');
+    if(m1===m2) return `${+d1}–${+d2} tháng ${+m1}, ${y1}`;
+    return `${+d1}/${+m1} – ${+d2}/${+m2}, ${y1}`;
+  })();
+
+  const MEAL_TYPES=['breakfast','lunch','dinner','snack'];
+  const profileKey=State.activeProfile;
+  let wkCal=0,wkP=0,wkC=0,wkF=0;
+  days.forEach(d=>{plansFor(d,profileKey).forEach(p=>{wkCal+=+p.calories||0;wkP+=+p.protein||0;wkC+=+p.carbs||0;wkF+=+p.fat||0;});});
+  const tgt=macroTargets(State.profile);
+  const wkTgtCal=tgt.calories*7;
+  const wkPct=Math.min(100,wkCal/wkTgtCal*100||0);
+
+  const cols = days.map(d=>{
+    const isToday=isTodayStr(d);
+    const dayPlans=plansFor(d,profileKey);
+    const dayCal=dayPlans.reduce((a,b)=>a+(+b.calories||0),0);
+    const dayDone=dayPlans.filter(x=>x.done).length;
+    const dayTotal=dayPlans.length;
+    const mealRows=MEAL_TYPES.map(type=>{
+      const items=dayPlans.filter(p=>p.meal_type===type);
+      return `<div class="mp-slot" data-date="${d}" data-type="${type}">
+        <div class="mp-slot-header">
+          <span class="mp-slot-label">${mealLabel(type)}</span>
+          <button class="mp-add-btn" data-date="${d}" data-type="${type}" title="Thêm">+</button>
+        </div>
+        ${items.length===0?'<div class="mp-empty">Trống</div>':items.map(item=>`
+          <div class="mp-item ${item.done?'done':''}" data-pid="${item.id}">
+            <div class="mp-item-name">${escMp(item.name||'Chưa đặt tên')}</div>
+            ${item.calories?`<div class="mp-item-kcal">${Math.round(item.calories)} kcal</div>`:''}
+            <div class="mp-item-actions">
+              <button class="mp-done-btn ${item.done?'active':''}" data-pid="${item.id}" title="${item.done?'Bỏ':'Đã ăn'}">✓</button>
+              <button class="mp-log-btn" data-pid="${item.id}" title="Log vào Diary">📋</button>
+              <button class="mp-del-btn" data-pid="${item.id}" title="Xoá">✕</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+    return `<div class="mp-day ${isToday?'mp-today':''}">
+      <div class="mp-day-header">
+        <div class="mp-day-name">${dayLabel(d)}</div>
+        <div class="mp-day-date">${d.slice(8)}</div>
+        ${dayCal>0?`<div class="mp-day-kcal">${Math.round(dayCal)}</div>`:''}
+        ${dayTotal>0?`<div class="mp-day-check">${dayDone}/${dayTotal}</div>`:''}
+      </div>
+      ${mealRows}
+    </div>`;
+  }).join('');
+
+  return `
+  <!-- Week nav (diary plan tab) -->
+  <div class="card" style="padding:12px 16px">
+    <div class="row between" style="align-items:center;gap:8px">
+      <button class="btn small ghost" id="mpPrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
+      <div style="text-align:center;flex:1">
+        <div style="font-weight:700;font-size:14px">${weekLabel}</div>
+        <div class="muted" style="font-size:11px">${isCurrentWeek?'Tuần này':''}</div>
+      </div>
+      <button class="btn small ghost" id="mpNext" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Weekly summary -->
+  <div class="card" style="padding:14px">
+    <div class="row between" style="margin-bottom:8px">
+      <span style="font-weight:600;font-size:13px">Tổng tuần</span>
+      <span class="muted" style="font-size:12px">${Math.round(wkCal)} / ${Math.round(wkTgtCal)} kcal</span>
+    </div>
+    <div class="progress"><div style="width:${wkPct}%;background:var(--primary)"></div></div>
+    <div class="grid4" style="margin-top:10px;gap:6px">
+      <div style="text-align:center"><div style="font-size:11px;color:var(--muted)">Kcal TB</div><div style="font-weight:700;font-size:15px">${Math.round(wkCal/7)}</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--p)">Protein</div><div style="font-weight:700;font-size:15px;color:var(--p)">${Math.round(wkP/7)}g</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--c)">Carbs</div><div style="font-weight:700;font-size:15px;color:var(--c)">${Math.round(wkC/7)}g</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--f)">Fat</div><div style="font-weight:700;font-size:15px;color:var(--f)">${Math.round(wkF/7)}g</div></div>
+    </div>
+  </div>
+
+  <!-- 7-day grid -->
+  <div class="card" style="padding:0;overflow-x:auto;overflow-y:visible">
+    <div class="mp-grid">${cols}</div>
+  </div>
+
+  <!-- Add/Edit modal (shared with mealplan page) -->
+  <div id="mpModal" class="modal hidden">
+    <div class="sheet" style="padding:20px;max-height:88dvh;overflow-y:auto">
+      <div class="row between" style="margin-bottom:14px">
+        <h3 id="mpModalTitle" style="margin:0">Thêm vào lịch</h3>
+        <button id="mpModalClose" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
+      </div>
+      <input type="hidden" id="mpEditId"/>
+      <input type="hidden" id="mpEditDate"/>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Ngày</label>
+        <input id="mpEditDateShow" class="input" type="date" style="font-size:15px"/>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Bữa ăn</label>
+        <select id="mpEditType" class="select">
+          <option value="breakfast">🌅 Bữa sáng</option>
+          <option value="lunch">☀️ Bữa trưa</option>
+          <option value="dinner">🌙 Bữa tối</option>
+          <option value="snack">🍎 Ăn vặt</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Tên món *</label>
+        <input id="mpEditName" class="input" placeholder="VD: Phở bò, Cơm gà, Salad..." autocomplete="off"/>
+      </div>
+      <div class="grid2" style="gap:10px;margin-bottom:10px">
+        <div><label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Calories (kcal)</label><input id="mpEditCal" class="input" type="number" min="0" placeholder="0"/></div>
+        <div><label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Protein (g)</label><input id="mpEditP" class="input" type="number" min="0" placeholder="0"/></div>
+        <div><label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Carbs (g)</label><input id="mpEditC" class="input" type="number" min="0" placeholder="0"/></div>
+        <div><label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Fat (g)</label><input id="mpEditF" class="input" type="number" min="0" placeholder="0"/></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="muted" style="font-size:12px;display:block;margin-bottom:4px">Ghi chú</label>
+        <input id="mpEditNote" class="input" placeholder="Tuỳ chọn..."/>
+      </div>
+      <div id="mpSaveMsg" class="muted" style="font-size:12px;margin-bottom:8px;min-height:16px"></div>
+      <button class="btn" id="mpSaveBtn"><i data-lucide="check"></i> Lưu vào lịch</button>
+    </div>
+  </div>`;
+};
+
+// ── CRUD ───────────────────────────────────────────────────
+async function mpSavePlan(plan){
+  const existing=State.mealPlans.findIndex(x=>x.id===plan.id);
+  if(existing>=0) State.mealPlans[existing]=plan;
+  else State.mealPlans.push(plan);
+  if(sb && !State.demo){
+    try{
+      const {error}=await sb.from('meal_plans').upsert(plan);
+      if(error) console.warn('meal_plans upsert:',error.message);
+    }catch(e){console.warn(e)}
+  }
+}
+async function mpDeletePlan(id){
+  State.mealPlans=State.mealPlans.filter(x=>x.id!==id);
+  if(sb && !State.demo){
+    try{ await sb.from('meal_plans').delete().eq('id',id); }catch(e){}
+  }
+}
+async function mpToggleDone(id){
+  const p=State.mealPlans.find(x=>x.id===id);
+  if(!p) return;
+  p.done=!p.done;
+  if(sb && !State.demo){
+    try{ await sb.from('meal_plans').update({done:p.done}).eq('id',id); }catch(e){}
+  }
+}
+window.mpLogToDiary = async function mpLogToDiary(id){
+  const p=State.mealPlans.find(x=>x.id===id);
+  if(!p) return;
+  // Check not already logged
+  const already=State.meals.find(m=>m.date===p.date&&m.name===p.name&&(m.profile_key||'husband')===(p.profile_key||'husband')&&m.meal_type===p.meal_type);
+  if(already){ toast('⚠️ Đã có trong Diary ngày này rồi!'); return; }
+  const meal={
+    id:uid(), name:p.name, calories:+p.calories||0, protein:+p.protein||0,
+    carbs:+p.carbs||0, fat:+p.fat||0, fiber:0, sugar:0, sodium:0,
+    photo:'', meal_type:p.meal_type, date:p.date,
+    created_at:new Date().toISOString(), items:[],
+    notes: p.note||''
+  };
+  await addMeal(meal);
+  // Mark plan as done
+  p.done=true;
+  if(sb && !State.demo){ try{ await sb.from('meal_plans').update({done:true}).eq('id',id); }catch(e){} }
+  toast('✅ Đã log vào Diary!');
+  render();
+}
+
+// ── handlers ───────────────────────────────────────────────
+window.attachMealPlanHandlers = function(){
+  // Week navigation
+  if(document.getElementById('mpPrev')){
+    document.getElementById('mpPrev').onclick=()=>{
+      State.mpWeek=addDays(State.mpWeek,-7);render();
+    };
+  }
+  if(document.getElementById('mpNext')){
+    document.getElementById('mpNext').onclick=()=>{
+      State.mpWeek=addDays(State.mpWeek,7);render();
+    };
+  }
+
+  // Open modal to ADD
+  document.querySelectorAll('.mp-add-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      const date=btn.dataset.date, type=btn.dataset.type;
+      document.getElementById('mpModalTitle').textContent='Thêm vào lịch';
+      document.getElementById('mpEditId').value='';
+      document.getElementById('mpEditDate').value=date;
+      document.getElementById('mpEditDateShow').value=date;
+      document.getElementById('mpEditType').value=type;
+      document.getElementById('mpEditName').value='';
+      document.getElementById('mpEditCal').value='';
+      document.getElementById('mpEditP').value='';
+      document.getElementById('mpEditC').value='';
+      document.getElementById('mpEditF').value='';
+      document.getElementById('mpEditNote').value='';
+      document.getElementById('mpSaveMsg').textContent='';
+      document.getElementById('mpModal').classList.remove('hidden');
+      if(window.lucide) lucide.createIcons();
+      setTimeout(()=>document.getElementById('mpEditName')?.focus(),120);
+    };
+  });
+
+  // Toggle done
+  document.querySelectorAll('.mp-done-btn').forEach(btn=>{
+    btn.onclick=async()=>{ await mpToggleDone(btn.dataset.pid); render(); };
+  });
+
+  // Log to diary
+  document.querySelectorAll('.mp-log-btn').forEach(btn=>{
+    btn.onclick=async()=>{ await mpLogToDiary(btn.dataset.pid); };
+  });
+
+  // Delete
+  document.querySelectorAll('.mp-del-btn').forEach(btn=>{
+    btn.onclick=async()=>{
+      await mpDeletePlan(btn.dataset.pid);
+      toast('🗑 Đã xoá');
+      render();
+    };
+  });
+
+  // Modal close
+  if(document.getElementById('mpModalClose')){
+    document.getElementById('mpModalClose').onclick=()=>document.getElementById('mpModal').classList.add('hidden');
+    document.getElementById('mpModal').onclick=e=>{ if(e.target===document.getElementById('mpModal')) document.getElementById('mpModal').classList.add('hidden'); };
+  }
+
+  // Save
+  if(document.getElementById('mpSaveBtn')){
+    document.getElementById('mpSaveBtn').onclick=async()=>{
+      const name=document.getElementById('mpEditName').value.trim();
+      const msgEl=document.getElementById('mpSaveMsg');
+      if(!name){ msgEl.style.color='var(--danger)'; msgEl.textContent='⚠️ Vui lòng nhập tên món'; return; }
+      const date=document.getElementById('mpEditDateShow').value || document.getElementById('mpEditDate').value;
+      if(!date){ msgEl.style.color='var(--danger)'; msgEl.textContent='⚠️ Chưa chọn ngày'; return; }
+      const editId=document.getElementById('mpEditId').value;
+      const plan={
+        id: editId || uid(),
+        user_id: State.user?.id,
+        profile_key: State.activeProfile,
+        date,
+        meal_type: document.getElementById('mpEditType').value,
+        name,
+        calories: parseFloat(document.getElementById('mpEditCal').value)||0,
+        protein:  parseFloat(document.getElementById('mpEditP').value)||0,
+        carbs:    parseFloat(document.getElementById('mpEditC').value)||0,
+        fat:      parseFloat(document.getElementById('mpEditF').value)||0,
+        note:     document.getElementById('mpEditNote').value.trim(),
+        done:     false,
+      };
+      document.getElementById('mpSaveBtn').disabled=true;
+      msgEl.style.color='var(--muted)'; msgEl.textContent='⏳ Đang lưu...';
+      await mpSavePlan(plan);
+      document.getElementById('mpSaveBtn').disabled=false;
+      document.getElementById('mpModal').classList.add('hidden');
+      // Jump to the week containing the saved date
+      State.mpWeek=mpWeekStart(date);
+      toast(editId?'✅ Đã cập nhật!':'✅ Đã thêm vào lịch!');
+      render();
+    };
+  }
+};
+
+})();
+
 /* ============================================================
    DATA OPS
 ============================================================ */
@@ -2524,6 +3083,28 @@ create table if not exists food_database (
   id bigserial primary key, name text, calories numeric, protein numeric,
   carbs numeric, fat numeric
 );
+
+-- ================================================
+-- MEAL PLANS
+-- ================================================
+create table if not exists meal_plans (
+  id text primary key,
+  user_id uuid references auth.users on delete cascade,
+  profile_key text,
+  date date not null,
+  meal_type text not null,   -- breakfast | lunch | dinner | snack
+  name text,
+  calories numeric default 0,
+  protein numeric default 0,
+  carbs numeric default 0,
+  fat numeric default 0,
+  note text,
+  done boolean default false,
+  created_at timestamptz default now()
+);
+alter table meal_plans enable row level security;
+create policy "own_meal_plans" on meal_plans
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- INDEXES
 create index if not exists meals_user_date    on meals(user_id, date);
