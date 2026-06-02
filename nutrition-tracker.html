@@ -1620,10 +1620,10 @@ function viewProfile(){
     </select>
     <label class="muted" style="font-size:12px;margin-bottom:2px;display:block">Mục tiêu</label>
     <select id="pGoal" class="select" style="margin-bottom:10px">
-      <option value="loss" ${p.goal==='loss'?'selected':''}>Giảm cân (−500 kcal/ngày)</option>
+      <option value="loss" ${p.goal==='loss'?'selected':''}>Giảm cân (−20% TDEE)</option>
       <option value="maintain" ${p.goal==='maintain'?'selected':''}>Duy trì cân nặng hiện tại</option>
       <option value="recomp" ${p.goal==='recomp'?'selected':''}>Giảm mỡ tăng cơ (±0 kcal/ngày)</option>
-      <option value="bulk" ${p.goal==='bulk'?'selected':''}>Tăng cơ (+300 kcal/ngày)</option>
+      <option value="bulk" ${p.goal==='bulk'?'selected':''}>Tăng cơ (+10% TDEE)</option>
     </select>
     <button class="btn" id="pSave" style="margin-top:4px">Lưu hồ sơ</button>
   </div>
