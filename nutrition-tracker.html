@@ -948,7 +948,10 @@ function showMealDetail(id){
   }
 
   const mealLabel = {'breakfast':'🌅 Bữa sáng','lunch':'☀️ Bữa trưa','dinner':'🌙 Bữa tối','snack':'🍎 Ăn vặt'}[m.meal_type]||m.meal_type||'—';
-  const hasPhoto = m.photo && !m.photo.startsWith('data:image/svg');
+  let currentPhoto = (m.photo && !m.photo.startsWith('data:image/svg')) ? m.photo : '';
+  let pendingPhotoBlob = null;
+  let pendingPhotoDataUrl = null;
+  let removePhoto = false;
 
   const modal = document.createElement('div');
   modal.className='modal';
@@ -1007,7 +1010,21 @@ function showMealDetail(id){
         <h2 style="margin:0;font-size:17px">${escHtml(m.name||'Món ăn')}</h2>
         <button id="closeMealDetail" class="btn small ghost" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="x"></i></button>
       </div>
-      ${hasPhoto?`<img src="${m.photo}" style="width:100%;max-height:340px;object-fit:contain;background:var(--card2);border-radius:14px;margin-bottom:12px"/>` :''}
+      <div style="margin-bottom:12px">
+        <label class="muted" style="font-size:11px;font-weight:700;letter-spacing:.06em;display:block;margin-bottom:6px">ẢNH MÓN ĂN</label>
+        <div id="mdPhotoPreview" style="margin-bottom:8px">
+          ${(currentPhoto || pendingPhotoDataUrl) ? `<img src="${pendingPhotoDataUrl||currentPhoto}" style="width:100%;max-height:300px;object-fit:contain;background:var(--card2);border-radius:14px"/>` : `<div style="width:100%;height:120px;border:1px dashed var(--border2);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;background:var(--card2)">Chưa có ảnh</div>`}
+        </div>
+        <div class="grid2" style="gap:8px">
+          <label class="btn secondary" style="cursor:pointer;min-height:42px;font-size:13px"><i data-lucide="camera"></i> Chụp ảnh
+            <input id="mdCamIn" type="file" accept="image/*" capture="environment" style="display:none">
+          </label>
+          <label class="btn secondary" style="cursor:pointer;min-height:42px;font-size:13px"><i data-lucide="upload"></i> Tải ảnh lên
+            <input id="mdUpIn" type="file" accept="image/*" style="display:none">
+          </label>
+        </div>
+        ${(currentPhoto || pendingPhotoDataUrl) ? `<button class="btn small ghost" id="mdPhotoDel" style="margin-top:8px;color:var(--danger)"><i data-lucide="trash-2"></i> Xoá ảnh</button>` : ''}
+      </div>
 
       <!-- Totals summary -->
       <div class="grid4" style="margin-bottom:12px" id="detailTotals">
@@ -1085,12 +1102,73 @@ function showMealDetail(id){
       m.carbs    = Math.round(tot.carbs);
       m.fat      = Math.round(tot.fat);
       m.meal_type = newMealType;
+
+      // Handle photo upload / removal
+      let newPhoto = currentPhoto;
+      if(pendingPhotoBlob){
+        if(sb && !State.demo){
+          try{
+            const path = `meals/${m.id}-${Date.now()}.jpg`;
+            const up = await sb.storage.from('food-photos').upload(path,pendingPhotoBlob,{contentType:pendingPhotoBlob.type||'image/jpeg',upsert:true});
+            if(!up.error) newPhoto = sb.storage.from('food-photos').getPublicUrl(path).data.publicUrl;
+            else newPhoto = pendingPhotoDataUrl || newPhoto;
+          }catch(e){ console.warn(e); newPhoto = pendingPhotoDataUrl || newPhoto; }
+        } else {
+          newPhoto = pendingPhotoDataUrl || newPhoto;
+        }
+      } else if(removePhoto){
+        newPhoto = '';
+      }
+      m.photo = newPhoto;
+
       if(sb && !State.demo){
-        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items,meal_type:newMealType}).eq('id',m.id); }catch(e){console.warn(e)}
+        try{ await sb.from('meals').update({calories:m.calories,protein:m.protein,carbs:m.carbs,fat:m.fat,items:m.items,meal_type:newMealType,photo:m.photo}).eq('id',m.id); }catch(e){console.warn(e)}
       }
       saveLocal();
       modal.remove(); render(); toast('✅ Đã cập nhật!');
     };
+
+    // Photo capture / upload handlers
+    function handlePhotoFile(file){
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        pendingPhotoBlob = file;
+        pendingPhotoDataUrl = ev.target.result;
+        removePhoto = false;
+        const prev = modal.querySelector('#mdPhotoPreview');
+        if(prev) prev.innerHTML = `<img src="${pendingPhotoDataUrl}" style="width:100%;max-height:300px;object-fit:contain;background:var(--card2);border-radius:14px"/>`;
+        // Ensure delete button exists
+        if(!modal.querySelector('#mdPhotoDel')){
+          const grid = modal.querySelector('#mdPhotoPreview').parentElement;
+          const delBtn = document.createElement('button');
+          delBtn.className = 'btn small ghost';
+          delBtn.id = 'mdPhotoDel';
+          delBtn.style.cssText = 'margin-top:8px;color:var(--danger)';
+          delBtn.innerHTML = '<i data-lucide="trash-2"></i> Xoá ảnh';
+          grid.appendChild(delBtn);
+          delBtn.onclick = onPhotoDel;
+          lucide.createIcons();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    function onPhotoDel(){
+      pendingPhotoBlob = null;
+      pendingPhotoDataUrl = null;
+      removePhoto = true;
+      currentPhoto = '';
+      const prev = modal.querySelector('#mdPhotoPreview');
+      if(prev) prev.innerHTML = `<div style="width:100%;height:120px;border:1px dashed var(--border2);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;background:var(--card2)">Chưa có ảnh</div>`;
+      const delBtn = modal.querySelector('#mdPhotoDel');
+      if(delBtn) delBtn.remove();
+    }
+    const camIn = modal.querySelector('#mdCamIn');
+    const upIn = modal.querySelector('#mdUpIn');
+    if(camIn) camIn.onchange = e=>handlePhotoFile(e.target.files[0]);
+    if(upIn) upIn.onchange = e=>handlePhotoFile(e.target.files[0]);
+    const delBtnInit = modal.querySelector('#mdPhotoDel');
+    if(delBtnInit) delBtnInit.onclick = onPhotoDel;
 
     // Add item row
     modal.querySelector('#addItemRow').onclick = ()=>{
