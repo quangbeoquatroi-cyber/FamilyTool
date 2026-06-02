@@ -460,7 +460,6 @@ const State = {
   weights: [],
   chats: [],
   diaryDate: null, // null = today; set to 'YYYY-MM-DD' when browsing history
-  coupleDate: null, // null = today; set to 'YYYY-MM-DD' when browsing couple history
 };
 
 let sb = null;
@@ -833,7 +832,7 @@ function viewDiary(){
         <button class="btn small ghost" id="diaryPrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
         <div style="text-align:center">
           <div style="font-weight:700;font-size:15px">${labelDate}</div>
-          <div class="muted" style="font-size:12px">${fmt(tot.calories)} kcal · P${fmt(tot.protein)}g C${fmt(tot.carbs)}g F${fmt(tot.fat)}g</div>
+          <div class="muted" style="font-size:12px">${fmt(tot.calories)} kcal</div>
         </div>
         <button class="btn small ghost" id="diaryNext" style="width:36px;height:36px;padding:0;border-radius:10px;${isToday?'opacity:.35;pointer-events:none':''}"><i data-lucide="chevron-right"></i></button>
       </div>
@@ -1499,48 +1498,14 @@ function viewReports(){
   </div>`;
 }
 
-function coupleDate(){ return State.coupleDate || today(); }
-function coupleDateIsToday(){ return coupleDate() === today(); }
-function coupleDateShift(delta){
-  if(delta > 0 && coupleDateIsToday()) return;
-  const cur = coupleDate();
-  const [y,mo,dd] = cur.split('-').map(Number);
-  const d = new Date(y, mo-1, dd);
-  d.setDate(d.getDate() + delta);
-  const pad = n => String(n).padStart(2,'0');
-  const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  State.coupleDate = s === today() ? null : s;
-  render();
-}
 function viewCouple(){
-  const d = coupleDate();
-  const isToday = coupleDateIsToday();
-  const labelDate = isToday ? 'Hôm nay' : new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-  return `${backBtn()}
-  <div class="card">
-    <div class="row between" style="align-items:center">
-      <div>
-        <h3 style="margin:0">Couple Dashboard</h3>
-        <div class="muted" style="font-size:12px;margin-top:2px">So sánh tiến độ Chồng &amp; Vợ</div>
-      </div>
-    </div>
+  return `${backBtn()}<div class="card">
+    <h3>Couple Dashboard</h3>
+    <div class="muted">So sánh tiến độ của Chồng &amp; Vợ trong ngày hôm nay.</div>
   </div>
-
-  <!-- Date navigation -->
-  <div class="card" style="padding:12px 16px">
-    <div class="row between" style="align-items:center">
-      <button class="btn small ghost" id="couplePrev" style="width:36px;height:36px;padding:0;border-radius:10px"><i data-lucide="chevron-left"></i></button>
-      <div style="text-align:center">
-        <div style="font-weight:700;font-size:15px">${labelDate}</div>
-        <div class="muted" style="font-size:11px">${isToday?'':'📅 '}${d}</div>
-      </div>
-      <button class="btn small ghost" id="coupleNext" style="width:36px;height:36px;padding:0;border-radius:10px;${isToday?'opacity:.35;pointer-events:none':''}"><i data-lucide="chevron-right"></i></button>
-    </div>
-  </div>
-
   <div class="grid2">
-    ${coupleCard('husband', d)}
-    ${coupleCard('wife', d)}
+    ${coupleCard('husband')}
+    ${coupleCard('wife')}
   </div>
   <div class="card">
     <h3>Tiến độ mục tiêu</h3>
@@ -1555,37 +1520,22 @@ function viewCouple(){
     }).join('')}
   </div>`;
 }
-function dateTotals(profileKey, dateStr){
-  const key = profileKey || State.activeProfile;
-  const d = dateStr || today();
-  const t={calories:0,protein:0,carbs:0,fat:0,fiber:0,sugar:0,sodium:0};
-  State.meals.filter(m=>(m.date||m.created_at||'').slice(0,10)===d && (m.profile_key||m.profileKey||'husband')===key).forEach(m=>{
-    t.calories+=+m.calories||0; t.protein+=+m.protein||0; t.carbs+=+m.carbs||0;
-    t.fat+=+m.fat||0; t.fiber+=+m.fiber||0; t.sugar+=+m.sugar||0; t.sodium+=+m.sodium||0;
-  });
-  const w = State.water.filter(x=>(x.date||x.created_at||'').slice(0,10)===d && (x.profile_key||x.profileKey||'husband')===key).reduce((a,b)=>a+(+b.ml||0),0);
-  return {...t, water:w};
-}
-function coupleCard(key, dateStr){
+function coupleCard(key){
   const p=State.profiles[key];
   if(!p) return `<div class="card"><div class="muted">Chưa có hồ sơ</div></div>`;
-  const d = dateStr || today();
-  const t=dateTotals(key, d);
+  const t=todayTotals(key);
   const tgt=macroTargets(p);
   const color=key==='husband'?'#2d8c16':'#f04060';
   const label=key==='husband'?'👨 Chồng':'👩 Vợ';
   const curW=State.weights.filter(w=>(w.profile_key||w.profileKey||'husband')===key).slice(-1)[0]?.value||p.weight;
   const pct=Math.min(100,(t.calories/tgt.calories)*100||0);
-  const isToday = d === today();
   return `<div class="card" style="border-top:3px solid ${color}">
     <h3>${label} ${p.name||''}</h3>
-    <div class="muted" style="font-size:11px">Calories ${isToday?'hôm nay':d}</div>
+    <div class="muted" style="font-size:11px">Calories hôm nay</div>
     <div style="font-size:22px;font-weight:700">${fmt(t.calories)}</div>
     <div class="progress" style="margin:4px 0"><div style="width:${pct}%;background:${color}"></div></div>
     <div class="muted" style="font-size:11px">/${fmt(tgt.calories)} kcal</div>
     <div class="row between" style="margin-top:6px"><span class="muted" style="font-size:12px">Protein</span><b>${fmt(t.protein)}g</b></div>
-    <div class="row between"><span class="muted" style="font-size:12px">Carbs</span><b>${fmt(t.carbs)}g</b></div>
-    <div class="row between"><span class="muted" style="font-size:12px">Fat</span><b>${fmt(t.fat)}g</b></div>
     <div class="row between"><span class="muted" style="font-size:12px">Nước</span><b>${fmt(t.water)}ml</b></div>
     <div class="row between"><span class="muted" style="font-size:12px">Cân nặng</span><b>${curW} kg</b></div>
   </div>`;
@@ -2165,10 +2115,6 @@ function attachHandlers(){
   // Diary — date navigation
   if($('#diaryPrev')) $('#diaryPrev').onclick=()=>diaryShift(-1);
   if($('#diaryNext')) $('#diaryNext').onclick=()=>{ if(!diaryIsToday()) diaryShift(1); };
-
-  // Couple — date navigation
-  if($('#couplePrev')) $('#couplePrev').onclick=()=>coupleDateShift(-1);
-  if($('#coupleNext')) $('#coupleNext').onclick=()=>{ if(!coupleDateIsToday()) coupleDateShift(1); };
 
   // Diary — meal detail modal (tap on meal item)
   $$('[data-meal-detail]').forEach(el=>{
