@@ -3145,6 +3145,196 @@ create policy "food_photos_read" on storage.objects
   .food-ac-item:hover,.food-ac-item.active{background:rgba(58,171,30,.12)}
   .food-ac-item small{color:var(--muted,#8b95a8);font-size:11px;white-space:nowrap}
   .food-ac-empty{padding:12px;color:var(--muted,#8b95a8);font-size:13px;text-align:center}
+
+  /* ============================================================
+     PREMIUM POLISH v2 — UI/UX upgrade only, brand colors preserved
+     ============================================================ */
+  :root{
+    --shadow-premium: 0 1px 2px rgba(13,17,23,.04), 0 4px 16px rgba(58,171,30,.05), 0 12px 40px rgba(13,17,23,.06);
+    --shadow-premium-hover: 0 2px 4px rgba(13,17,23,.05), 0 8px 24px rgba(58,171,30,.10), 0 24px 64px rgba(13,17,23,.10);
+    --ring-brand: 0 0 0 4px rgba(58,171,30,.14);
+    --ease-out: cubic-bezier(.22,.61,.36,1);
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+  html,body{ overflow-x:hidden; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
+  body{ font-feature-settings:"ss01","cv11"; }
+
+  /* === Cards: softer borders + premium shadow + lift on hover === */
+  .card, .stat, .meal, .panel, .mp-card, .glass-card{
+    border-radius:24px !important;
+    border:1px solid rgba(58,171,30,.10) !important;
+    box-shadow: var(--shadow-premium) !important;
+    transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out) !important;
+  }
+  .dark .card, .dark .stat, .dark .meal, .dark .panel, .dark .mp-card, .dark .glass-card{
+    border-color: rgba(58,171,30,.18) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px rgba(0,0,0,.45) !important;
+  }
+  @media(hover:hover){
+    .card:hover, .stat:hover, .meal:hover, .panel:hover, .mp-card:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-premium-hover) !important;
+      border-color: rgba(58,171,30,.22) !important;
+    }
+  }
+  .card:active, .stat:active, .meal:active, .panel:active, .mp-card:active{
+    transform: scale(.985);
+    transition-duration:.12s;
+  }
+
+  /* === Buttons: micro-interaction === */
+  button, .btn, .chip, [role="button"]{
+    transition: transform .18s var(--ease-out), box-shadow .18s var(--ease-out), background-color .18s var(--ease-out), color .18s var(--ease-out), border-color .18s var(--ease-out) !important;
+    will-change: transform;
+  }
+  @media(hover:hover){
+    button:not(:disabled):hover, .btn:not(:disabled):hover{ transform: translateY(-1px); }
+  }
+  button:not(:disabled):active, .btn:not(:disabled):active{ transform: scale(.96); transition-duration:.08s; }
+  button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:none; box-shadow: var(--ring-brand);
+  }
+
+  /* === Inputs: no iOS zoom, larger touch targets === */
+  input, select, textarea{
+    font-size:16px;
+    min-height:48px;
+    border-radius:14px;
+    transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out);
+  }
+  input[type=checkbox], input[type=radio]{ min-height:auto; }
+  button, .btn{ min-height:44px; }
+  .chip, .pill{ min-height:36px; }
+
+  /* === Topbar: refined glass === */
+  header, .topbar, .app-header, .header{
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+  }
+
+  /* === Bottom navigation: floating premium === */
+  .bottomnav, .bottom-nav, .tabbar, nav.bottom, .bnav{
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 -2px 12px rgba(13,17,23,.04), 0 -8px 32px rgba(58,171,30,.08), 0 -20px 60px rgba(13,17,23,.06) !important;
+    border-top: 1px solid rgba(58,171,30,.10) !important;
+  }
+  .dark .bottomnav, .dark .bottom-nav, .dark .tabbar, .dark nav.bottom, .dark .bnav{
+    box-shadow: 0 -8px 32px rgba(0,0,0,.5) !important;
+    border-top-color: rgba(58,171,30,.18) !important;
+  }
+  .bnav-item, .nav-item, .tab-item{
+    transition: transform .2s var(--ease-spring), color .2s var(--ease-out);
+  }
+  .bnav-item.active, .nav-item.active, .tab-item.active{ transform: translateY(-2px); }
+  .bnav-item:active, .nav-item:active, .tab-item:active{ transform: scale(.92); }
+
+  /* === Calorie ring glow === */
+  .ring, .calorie-ring, .cal-ring, svg.ring{
+    filter: drop-shadow(0 4px 16px rgba(58,171,30,.22)) drop-shadow(0 2px 6px rgba(58,171,30,.15));
+  }
+
+  /* === Modals: smooth open/close === */
+  .modal, .dialog, [role="dialog"]{
+    animation: modalIn .28s var(--ease-out);
+  }
+  .modal-overlay, .overlay, .backdrop{
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    animation: fadeIn .22s var(--ease-out);
+  }
+  @keyframes modalIn{
+    from{ opacity:0; transform: scale(.96) translateY(8px); }
+    to  { opacity:1; transform: scale(1) translateY(0); }
+  }
+  @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+  @keyframes slideUp{
+    from{ opacity:0; transform: translateY(10px); }
+    to  { opacity:1; transform: translateY(0); }
+  }
+
+  /* === Tab switch fade === */
+  .tab-content, .screen, .page, [data-screen]{
+    animation: slideUp .3s var(--ease-out);
+  }
+
+  /* === Meal images larger & nicer === */
+  .meal img, .meal-img, .meal-photo, .food-photo{
+    border-radius:18px !important;
+    transition: transform .35s var(--ease-out);
+  }
+  .meal:hover .meal-img, .meal:hover img{ transform: scale(1.02); }
+
+  /* === Scrollbar polish === */
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(58,171,30,.25); border-radius:8px; }
+  ::-webkit-scrollbar-thumb:hover{ background:rgba(58,171,30,.45); }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  /* === Skeleton loader utility === */
+  .skeleton{
+    background: linear-gradient(90deg, rgba(58,171,30,.06) 25%, rgba(58,171,30,.14) 50%, rgba(58,171,30,.06) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 12px;
+  }
+  @keyframes shimmer{
+    0%{ background-position: 200% 0; }
+    100%{ background-position: -200% 0; }
+  }
+
+  /* === Chat bubbles (AI Coach) polish === */
+  .chat-bubble, .msg, .message-bubble, .bubble{
+    border-radius:20px !important;
+    animation: slideUp .25s var(--ease-out);
+    box-shadow: 0 1px 2px rgba(13,17,23,.04), 0 4px 12px rgba(13,17,23,.05);
+  }
+  .chat-bubble.user, .msg.user, .message-bubble.user{
+    border-bottom-right-radius:6px !important;
+  }
+  .chat-bubble.ai, .msg.ai, .message-bubble.ai, .chat-bubble.assistant{
+    border-bottom-left-radius:6px !important;
+  }
+
+  /* === AI Scanner upload zone === */
+  .upload-zone, .dropzone, .scanner-upload, [data-dropzone]{
+    border:2px dashed rgba(58,171,30,.35) !important;
+    border-radius:20px !important;
+    transition: all .25s var(--ease-out);
+    background: linear-gradient(135deg, rgba(58,171,30,.03), rgba(58,171,30,.07));
+  }
+  .upload-zone:hover, .dropzone:hover, .scanner-upload:hover{
+    border-color: var(--primary) !important;
+    background: linear-gradient(135deg, rgba(58,171,30,.08), rgba(58,171,30,.14));
+    transform: translateY(-2px);
+  }
+  .upload-zone.dragover, .dropzone.dragover, .scanner-upload.dragover{
+    border-color: var(--primary) !important;
+    background: rgba(58,171,30,.16) !important;
+    transform: scale(1.01);
+  }
+
+  /* === Safe-area === */
+  body{ padding-bottom: env(safe-area-inset-bottom); }
+  .bottomnav, .bottom-nav, .tabbar, nav.bottom, .bnav{
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+  header, .topbar, .app-header{ padding-top: max(0px, env(safe-area-inset-top)); }
+
+  /* === Reduce motion respect === */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      transition-duration:.01ms !important;
+    }
+  }
+
+  /* === Mobile tightening === */
+  @media (max-width: 480px){
+    .card, .stat, .meal, .panel, .mp-card{ border-radius:20px !important; }
+    h1,h2,h3{ letter-spacing:-.01em; }
+  }
 </style>
 <script>
 /* Autocomplete chọn thành phần từ public.foods cho cả 2 form:
