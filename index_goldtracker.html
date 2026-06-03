@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/secure-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
@@ -771,8 +772,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://acwlagoieszpydklikqw.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd2xhZ29pZXN6cHlka2xpa3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODc5MDYsImV4cCI6MjA5MzE2MzkwNn0.I50smOD2_phj8PSSg4A0KzepYliWQinGXVmZpop9ljI';
+const SUPABASE_URL = window.SecureConfig.SUPABASE_URL;
+const SUPABASE_KEY = window.SecureConfig.SUPABASE_ANON_KEY;
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 

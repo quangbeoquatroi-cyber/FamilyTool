@@ -16,6 +16,7 @@
 <meta name="theme-color" content="#0d2b1e">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/secure-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 /* ── RESET & ROOT ──────────────────────────────────────── */
@@ -2425,10 +2426,10 @@ function closeMobileMenu() {
 }
 
 // ── CONFIG ──────────────────────────────────────────────
-const _c=atob,_d='aHR0cHM6Ly9hY3dsYWdvaWVzenB5ZGtsaWtxdy5zdXBhYmFzZS5jbw==',_e='ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1GamQyeGhaMjlwWlhONmNIbGthMnhwYTNGM0lpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpjMU9EYzVNRFlzSW1WNGNDSTZNakE1TXpFMk16a3dObjAuSTUwc21PRDJfcGhqOFBTU2c0QTBLemVwWWxpV1FpbkdYVm1acG9wOWxqSQ==';
+/* secrets moved to SecureConfig */
 // ── INIT SUPABASE ────────────────────────────────────────
 const { createClient } = supabase;
-const sb = createClient(_c(_d), _c(_e));
+const sb = createClient(window.SecureConfig.SUPABASE_URL, window.SecureConfig.SUPABASE_ANON_KEY);
 
 // ── APP STATE ────────────────────────────────────────────
 const S = {

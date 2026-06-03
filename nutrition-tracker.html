@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/secure-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
@@ -260,8 +261,8 @@
 ============================================================ */
 const _d=(b,s)=>{let k=s;return atob(b).split('').map(c=>{k=(k*1664525+1013904223)&0xffffffff;return String.fromCharCode(c.charCodeAt(0)^(k&0xff))}).join('')};
 const CONFIG = {
-  SUPABASE_URL:      _d('wnUYqw3/TxDzquOPh2pnrh/ixps3MdsjCzKVhJjuLacrQ22Ie8tjMA==',      0xA3F2C1B7),
-  SUPABASE_ANON_KEY: _d('YeqcVRowCahj8nTMdYUbuBrK776B6WhkH+hHIzlkUkHy8DxkNvJzq7zY7eipUJvjjqcerwD+tzdmkf18Y2ascyiJfzSO/sdHBr9MvQhloPDkub5DPqQy/deKfC3ALlEf17rf6jG0Jxh/oU2sNhZfr0FhtBnBq1n7LFK2JDkgaDy3XSzeybiuIplW+lzTNr9f4EBlBH5K0JDJZvTQwsLY8lN9mO22Xr9RP1YRYXLAAkEee5Y+u0BusKwAVNDg9i7QkwL/k39vfOy2K5E12dN4AA==', 0xD7E4A2F9),
+  SUPABASE_URL:      window.SecureConfig.SUPABASE_URL,
+  SUPABASE_ANON_KEY: window.SecureConfig.SUPABASE_ANON_KEY,
   // AI provider settings — loaded from Supabase ai_settings after auth
   AI_PROVIDER: 'gemini',         // 'gemini' | 'groq' | 'openrouter'
   GEMINI_API_KEY: '',

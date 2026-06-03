@@ -10,17 +10,36 @@
  *       0 2,5,8,11,14 * * *   (chạy lúc 9h, 12h, 15h, 18h, 21h giờ VN)
  *  5. Copy URL worker → dán vào index.html tại PROXY_URL
  *
- *  LƯU Ý QUAN TRỌNG:
- *  - Điền SUPABASE_URL và SUPABASE_KEY bên dưới trước khi deploy
+ *  LƯU Ý QUAN TRỌNG (BẢO MẬT):
+ *  - KHÔNG hardcode SUPABASE_URL / SUPABASE_KEY trong file này.
+ *    Cấu hình hai biến môi trường (env bindings) trên Cloudflare Worker:
+ *      Workers & Pages → worker → Settings → Variables → Add variable
+ *        • SUPABASE_URL  = https://<project>.supabase.co
+ *        • SUPABASE_KEY  = <anon hoặc service_role key>
+ *      (đánh dấu "Encrypt" cho SUPABASE_KEY để mã hóa khi lưu)
  *  - Mỗi ngày mỗi brand chỉ có đúng 1 dòng (upsert theo recorded_at + brand)
  *  - Cron chạy ngay cả khi không ai mở app
  *  - Cron chỉ upsert khi giá thực sự thay đổi so với lần ghi trước
  * ════════════════════════════════════════════════════════════
  */
 
-// ── CONFIG — điền thông tin của bạn vào đây ──────────────────
-const SUPABASE_URL = 'https://acwlagoieszpydklikqw.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd2xhZ29pZXN6cHlka2xpa3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODc5MDYsImV4cCI6MjA5MzE2MzkwNn0.I50smOD2_phj8PSSg4A0KzepYliWQinGXVmZpop9ljI';
+// ── CONFIG — nạp từ Cloudflare Worker env bindings (KHÔNG hardcode) ──
+let SUPABASE_URL = '';
+let SUPABASE_KEY = '';
+let SB_HEADERS = null;
+function initSecrets(env) {
+  if (SUPABASE_URL && SUPABASE_KEY && SB_HEADERS) return;
+  SUPABASE_URL = (env && env.SUPABASE_URL) || '';
+  SUPABASE_KEY = (env && env.SUPABASE_KEY) || '';
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    throw new Error('Missing SUPABASE_URL / SUPABASE_KEY env bindings — configure in Workers Settings → Variables');
+  }
+  SB_HEADERS = {
+    'Content-Type':  'application/json',
+    'apikey':        SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+  };
+}
 // ─────────────────────────────────────────────────────────────
 
 const SOURCES = [
@@ -163,11 +182,7 @@ async function getPrices(force = false) {
 }
 
 // ── SUPABASE HELPERS ──────────────────────────────────────────
-const SB_HEADERS = {
-  'Content-Type':  'application/json',
-  'apikey':        SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-};
+// (SB_HEADERS được khởi tạo runtime bởi initSecrets(env) ở trên)
 
 /**
  * Lấy giá đang lưu trong DB cho ngày hôm nay.
@@ -263,12 +278,13 @@ const CORS = {
 export default {
 
   // ── HTTP: phục vụ frontend lấy giá realtime ────────────────
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS });
     }
 
     try {
+      initSecrets(env);
       const url    = new URL(request.url);
       const force  = url.searchParams.get('refresh') === '1';
       const prices = await getPrices(force);
@@ -298,6 +314,7 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
+        initSecrets(env);
         console.log('[cron] Bắt đầu fetch giá...', new Date().toISOString());
 
         // Force refresh — bỏ qua in-memory cache để lấy giá mới nhất từ nguồn

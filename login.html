@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Josefin+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/secure-config.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -448,8 +449,8 @@
 /* ══════════════════════════════════════════════
    AUTH
 ══════════════════════════════════════════════ */
-const SUPABASE_URL = 'https://acwlagoieszpydklikqw.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd2xhZ29pZXN6cHlka2xpa3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODc5MDYsImV4cCI6MjA5MzE2MzkwNn0.I50smOD2_phj8PSSg4A0KzepYliWQinGXVmZpop9ljI';
+const SUPABASE_URL = window.SecureConfig.SUPABASE_URL;
+const SUPABASE_KEY = window.SecureConfig.SUPABASE_ANON_KEY;
 
 const { createClient } = supabase;
 const auth = createClient(SUPABASE_URL, SUPABASE_KEY);
