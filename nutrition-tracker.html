@@ -775,6 +775,8 @@ $('#btnWife').onclick=()=>switchProfile('wife');
    NAV
 ============================================================ */
 $$('.nav button').forEach(b=>b.onclick=()=>{
+  // Khi bấm Scan trực tiếp từ nav → luôn về hôm nay
+  if(b.dataset.view==='scan') State.diaryDate = null;
   State.view=b.dataset.view;
   $$('.nav button').forEach(x=>x.classList.toggle('active',x===b));
   render();
@@ -1247,9 +1249,17 @@ function showMealDetail(id){
    SCAN
 ============================================================ */
 function viewScan(){
+  const _scanDate = diaryDateStr();
+  const _isToday = diaryIsToday();
+  const _dateLabel = _isToday ? 'Hôm nay' : _scanDate;
+  const _dateBanner = `<div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:12px;background:${_isToday?'rgba(58,171,30,.12)':'rgba(245,158,11,.13)'};border:1.5px solid ${_isToday?'var(--primary)':'var(--warn)'};margin-bottom:10px">
+    <span style="font-size:18px">${_isToday?'📅':'⏪'}</span>
+    <div><div style="font-size:13px;font-weight:700;color:${_isToday?'var(--primary)':'var(--warn)'}">Sẽ lưu vào: ${_dateLabel}</div><div class="muted" style="font-size:11px">${_isToday?'Đang xem nhật ký hôm nay':'Đang xem nhật ký ngày quá khứ — bữa ăn sẽ được lưu đúng ngày này'}</div></div>
+  </div>`;
   return `
   <div class="card">
     <h3>📷 Quét món ăn bằng AI</h3>
+    ${_dateBanner}
     <div class="muted">Chụp ảnh hoặc tải lên. AI nhận diện các món Việt Nam và quốc tế, tính toán dinh dưỡng chính xác, đưa lời khuyên theo mục tiêu của bạn.</div>
     <div class="grid2" style="margin-top:10px">
       <label class="btn" style="cursor:pointer"><i data-lucide="camera"></i> Mở Camera
@@ -1475,7 +1485,7 @@ async function handleScanFile(file){
     await addMeal({
       id:uid(), name:res.dish_name||'Food', calories:+res.calories||0, protein:+res.protein||0,
       carbs:+res.carbs||0, fat:+res.fat||0, fiber:+res.fiber||0, sugar:+res.sugar||0,
-      sodium:+res.sodium||0, photo:photoUrl, meal_type:$('#resMeal').value, date:today(),
+      sodium:+res.sodium||0, photo:photoUrl, meal_type:$('#resMeal').value, date:diaryDateStr(),
       created_at:new Date().toISOString(), items: savedItems
     });
     toast('✅ Đã lưu vào nhật ký!'); State.view='diary'; render();
@@ -2414,7 +2424,7 @@ function attachHandlers(){
       id:uid(), name,
       calories:Math.round(tot.calories), protein:Math.round(tot.protein),
       carbs:Math.round(tot.carbs), fat:Math.round(tot.fat),
-      meal_type:$('#mMeal').value, date:today(),
+      meal_type:$('#mMeal').value, date:diaryDateStr(),
       created_at:new Date().toISOString(),
       photo:photoUrl||'',
       items: hasItems ? items : []
