@@ -521,6 +521,19 @@
       <div class="dash-sub" id="d-em-full">VNĐ</div>
     </div>
 
+    <!-- TRUNG BÌNH GIÁ -->
+    <div class="dash-card">
+      <div class="dash-label">🔵 Anh — Trung bình giá</div>
+      <div class="dash-value" id="d-anh-avg">--</div>
+      <div class="dash-sub" id="d-anh-avg-sub">VNĐ / chỉ</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-label">🩷 Em — Trung bình giá</div>
+      <div class="dash-value" id="d-em-avg">--</div>
+      <div class="dash-sub" id="d-em-avg-sub">VNĐ / chỉ</div>
+    </div>
+
     <!-- LÃI -->
     <div class="dash-card">
       <div class="dash-label">🔵 Anh — Lãi / Lỗ</div>
@@ -1384,6 +1397,16 @@ function renderDashboard() {
 
   document.getElementById('d-em-total').textContent = fmtM(emT);
   document.getElementById('d-em-full').textContent = fmt(emT) + ' VNĐ';
+
+  // --- TRUNG BÌNH GIÁ ---
+  const anhAvg = anhQ > 0 ? anhT / anhQ : 0;
+  const emAvg  = emQ  > 0 ? emT  / emQ  : 0;
+
+  document.getElementById('d-anh-avg').textContent = anhAvg > 0 ? fmtM(anhAvg) : '--';
+  document.getElementById('d-anh-avg-sub').textContent = anhAvg > 0 ? fmt(Math.round(anhAvg)) + ' VNĐ / chỉ' : 'VNĐ / chỉ';
+
+  document.getElementById('d-em-avg').textContent = emAvg > 0 ? fmtM(emAvg) : '--';
+  document.getElementById('d-em-avg-sub').textContent = emAvg > 0 ? fmt(Math.round(emAvg)) + ' VNĐ / chỉ' : 'VNĐ / chỉ';
 
   // --- LÃI ---
   const anhProfitEl = document.getElementById('d-anh-profit');
