@@ -1947,8 +1947,8 @@ function renderDashboard(){
     .sort((a,b)=>new Date(a.interview_date)-new Date(b.interview_date))
     .slice(0,5);
   const upEl=document.getElementById('upcoming-interviews-list');
-  if(!upcoming.length){upEl.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px;font-size:.85rem;">Không có phỏng vấn sắp tới</div>';return;}
-  upEl.innerHTML=upcoming.map(i=>{
+  if(!upcoming.length){upEl.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px;font-size:.85rem;">Không có phỏng vấn sắp tới</div>';}
+  else upEl.innerHTML=upcoming.map(i=>{
     const job=allJobs.find(j=>j.id===i.job_id);
     const d=new Date(i.interview_date);
     return `<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
