@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="JobTracker" />
+<meta name="theme-color" content="#e8602c" />
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22JobTracker%22%2C%22short_name%22%3A%22JobTracker%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f0eb%22%2C%22theme_color%22%3A%22%23e8602c%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2Fe8602c%2Ffff%3Ftext%3DJT%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2Fe8602c%2Ffff%3Ftext%3DJT%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D" />
 <title>JobTracker — Quản lý tìm việc</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -434,7 +439,74 @@ textarea.form-control { resize:vertical; min-height:90px; }
 .stat-icon { display:none; }
 
 /* ============================================================
-   TABLE
+   IOS PWA INSTALL BANNER
+   ============================================================ */
+#ios-install-banner {
+  position:fixed; bottom:0; left:0; right:0; z-index:9999;
+  background:#1c1917; color:#fff;
+  padding:14px 16px 28px; /* extra bottom for iPhone home indicator */
+  display:none;
+  flex-direction:column; gap:10px;
+  box-shadow:0 -4px 24px rgba(0,0,0,.35);
+  border-radius:20px 20px 0 0;
+  animation: slideUpBanner .35s ease;
+}
+@keyframes slideUpBanner {
+  from { transform:translateY(100%); }
+  to   { transform:translateY(0); }
+}
+#ios-install-banner.show { display:flex; }
+.ios-banner-header { display:flex; align-items:center; gap:12px; }
+.ios-banner-icon {
+  width:48px; height:48px; border-radius:12px;
+  background:var(--accent); display:flex; align-items:center;
+  justify-content:center; font-size:1.4rem; flex-shrink:0;
+}
+.ios-banner-title { font-size:.95rem; font-weight:700; }
+.ios-banner-sub { font-size:.78rem; color:rgba(255,255,255,.65); margin-top:2px; }
+.ios-banner-steps { display:flex; flex-direction:column; gap:7px; }
+.ios-banner-step {
+  display:flex; align-items:center; gap:10px;
+  font-size:.82rem; color:rgba(255,255,255,.85);
+}
+.ios-banner-step-num {
+  width:22px; height:22px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.7rem; font-weight:800; flex-shrink:0;
+}
+.ios-banner-close {
+  position:absolute; top:12px; right:14px;
+  background:rgba(255,255,255,.15); border:none; color:#fff;
+  width:26px; height:26px; border-radius:50%;
+  cursor:pointer; font-size:.85rem; display:flex;
+  align-items:center; justify-content:center;
+}
+#notif-permission-banner {
+  position:fixed; top:0; left:0; right:0; z-index:9998;
+  background:linear-gradient(135deg,#e8602c,#f59e0b);
+  color:#fff; padding:14px 16px;
+  display:none; align-items:center; gap:12px;
+  box-shadow:0 4px 16px rgba(232,96,44,.4);
+  animation: slideDownBanner .35s ease;
+}
+@keyframes slideDownBanner {
+  from { transform:translateY(-100%); }
+  to   { transform:translateY(0); }
+}
+#notif-permission-banner.show { display:flex; }
+.notif-banner-text { flex:1; font-size:.85rem; font-weight:600; }
+.notif-banner-sub { font-size:.75rem; font-weight:400; opacity:.85; }
+.notif-banner-btn {
+  background:#fff; color:var(--accent);
+  border:none; border-radius:8px;
+  padding:8px 14px; font-size:.8rem; font-weight:700;
+  cursor:pointer; white-space:nowrap; flex-shrink:0;
+}
+.notif-banner-dismiss {
+  background:transparent; border:none; color:#fff;
+  font-size:1.1rem; cursor:pointer; padding:4px; flex-shrink:0;
+}
    ============================================================ */
 .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 table { width:100%; border-collapse:collapse; font-size:.875rem; table-layout:fixed; }
@@ -2482,11 +2554,13 @@ async function checkInterviewNotifications(){
   }
 }
 function requestNotifPermission(){
-  if(!('Notification' in window)){toast('Browser không hỗ trợ thông báo','error');return;}
-  Notification.requestPermission().then(p=>{
-    if(p==='granted')toast('Đã bật thông báo browser','success');
-    else toast('Bạn đã từ chối thông báo','warning');
-  });
+  if(!isStandalone() && isIOS()){
+    // On iOS, must be PWA to request notification
+    document.getElementById('ios-install-banner').classList.add('show');
+    toast('Cần cài app về màn hình chính trước','warning');
+    return;
+  }
+  enableNotifications();
 }
 function sendBrowserNotif(msg){
   if(Notification.permission==='granted'){
@@ -2667,6 +2741,104 @@ function animateStatCards() {
 // INIT
 // ============================================================
 initAuth();
+
+// ============================================================
+// PWA — iOS Install Banner + Notification Permission
+// ============================================================
+function isIOS(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isStandalone(){
+  return window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+}
+function initPWA(){
+  if(isIOS() && !isStandalone()){
+    // Show install banner after 2s if not dismissed before
+    const dismissed = localStorage.getItem('pwa-banner-dismissed');
+    if(!dismissed){
+      setTimeout(()=>{
+        document.getElementById('ios-install-banner').classList.add('show');
+      }, 2000);
+    }
+  }
+  if(isStandalone()){
+    // Running as PWA from Home Screen — try to get notification permission
+    requestNotifPermissionAuto();
+  }
+}
+async function requestNotifPermissionAuto(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted') return;
+  if(Notification.permission === 'denied') return;
+  // Show top banner prompting user to allow
+  const banner = document.getElementById('notif-permission-banner');
+  if(banner) banner.classList.add('show');
+}
+function dismissInstallBanner(){
+  document.getElementById('ios-install-banner').classList.remove('show');
+  localStorage.setItem('pwa-banner-dismissed','1');
+}
+function dismissNotifBanner(){
+  document.getElementById('notif-permission-banner').classList.remove('show');
+}
+async function enableNotifications(){
+  if(!('Notification' in window)){
+    toast('Browser chưa hỗ trợ thông báo','error'); return;
+  }
+  const permission = await Notification.requestPermission();
+  if(permission === 'granted'){
+    toast('✅ Đã bật thông báo!','success');
+    document.getElementById('notif-permission-banner').classList.remove('show');
+    // Send a test notification
+    new Notification('JobTracker 🎉', {
+      body: 'Thông báo đã được bật! Bạn sẽ nhận nhắc lịch phỏng vấn.',
+      icon: 'https://placehold.co/192x192/e8602c/fff?text=JT'
+    });
+  } else {
+    toast('Bạn đã từ chối thông báo','warning');
+    document.getElementById('notif-permission-banner').classList.remove('show');
+  }
+}
+// Init PWA logic after app loads
+window.addEventListener('load', ()=> setTimeout(initPWA, 500));
 </script>
+
+<!-- iOS Add to Home Screen Banner -->
+<div id="ios-install-banner">
+  <button class="ios-banner-close" onclick="dismissInstallBanner()">✕</button>
+  <div class="ios-banner-header">
+    <div class="ios-banner-icon">💼</div>
+    <div>
+      <div class="ios-banner-title">Cài JobTracker về máy</div>
+      <div class="ios-banner-sub">Để nhận thông báo lịch phỏng vấn</div>
+    </div>
+  </div>
+  <div class="ios-banner-steps">
+    <div class="ios-banner-step">
+      <span class="ios-banner-step-num">1</span>
+      <span>Nhấn nút <strong>Chia sẻ</strong> <span style="font-size:1rem;">⬆️</span> ở thanh Safari bên dưới</span>
+    </div>
+    <div class="ios-banner-step">
+      <span class="ios-banner-step-num">2</span>
+      <span>Chọn <strong>"Thêm vào Màn hình chính"</strong></span>
+    </div>
+    <div class="ios-banner-step">
+      <span class="ios-banner-step-num">3</span>
+      <span>Mở app từ icon trên màn hình → bật thông báo</span>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Permission Banner (shown when running as PWA) -->
+<div id="notif-permission-banner">
+  <div class="notif-banner-text">
+    <div>Bật thông báo lịch phỏng vấn 🔔</div>
+    <div class="notif-banner-sub">Nhận nhắc nhở 15 phút, 1 giờ trước khi phỏng vấn</div>
+  </div>
+  <button class="notif-banner-btn" onclick="enableNotifications()">Bật ngay</button>
+  <button class="notif-banner-dismiss" onclick="dismissNotifBanner()">✕</button>
+</div>
+
 </body>
 </html>
