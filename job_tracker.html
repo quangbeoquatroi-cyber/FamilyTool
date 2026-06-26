@@ -509,15 +509,15 @@ textarea.form-control { resize:vertical; min-height:90px; }
 }
    ============================================================ */
 .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-table { width:100%; border-collapse:collapse; font-size:.875rem; table-layout:fixed; }
-table colgroup col:nth-child(1) { width:36px; }
-table colgroup col:nth-child(2) { width:28%; }
+table { width:100%; min-width:1180px; border-collapse:collapse; font-size:.875rem; table-layout:fixed; }
+table colgroup col:nth-child(1) { width:44px; }
+table colgroup col:nth-child(2) { width:300px; }
 table colgroup col:nth-child(3) { width:110px; }
 table colgroup col:nth-child(4) { width:100px; }
-table colgroup col:nth-child(5) { width:100px; }
-table colgroup col:nth-child(6) { width:120px; }
-table colgroup col:nth-child(7) { width:100px; }
-table colgroup col:nth-child(8) { width:100px; }
+table colgroup col:nth-child(5) { width:150px; }
+table colgroup col:nth-child(6) { width:130px; }
+table colgroup col:nth-child(7) { width:140px; }
+table colgroup col:nth-child(8) { width:110px; }
 table colgroup col:nth-child(9) { width:96px; }
 th {
   text-align:left; padding:10px 14px;
@@ -526,6 +526,7 @@ th {
   border-bottom:1.5px solid var(--border); white-space:nowrap;
 }
 td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
+td:nth-child(1) { padding:11px 6px; text-align:center; overflow:visible; }
 td:nth-child(9) { padding:11px 6px; overflow:visible; }
 tr { transition:background var(--t) var(--ease); }
 tr:hover td { background:var(--surface2); }
@@ -1843,7 +1844,7 @@ function showJobDetail(jobId){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">TRẠNG THÁI</span><span class="status-badge s-${j.status}">${STATUS_LABELS[j.status]||j.status}</span></div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGÀY APPLY</span><span style="font-size:.875rem;">${j.apply_date||'—'}</span></div>
-      <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGÀY HẾT HẠN</span><span style="font-size:.875rem;${expiryStyle(j.expiry_date)}">${j.expiry_date||'—'}</span></div>
+      <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGÀY HẾT HẠN</span><span style="font-size:.875rem;${expiryInfo(j.expiry_date).style}">${j.expiry_date||'—'}</span>${j.expiry_date?expiryInfo(j.expiry_date).badge:''}</div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">MỨC LƯƠNG</span><span style="font-size:.875rem;">${j.salary_min?`${Number(j.salary_min).toLocaleString()} – ${Number(j.salary_max||0).toLocaleString()} ${j.salary_currency}`:'—'}</span></div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGUỒN</span><span style="font-size:.875rem;">${SOURCE_LABELS[j.source]||j.source||'—'}</span></div>
       ${j.recruiter_name?`<div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">RECRUITER</span><span style="font-size:.875rem;">${j.recruiter_name}${j.recruiter_email?` — ${j.recruiter_email}`:''}</span></div>`:''}
@@ -1887,14 +1888,21 @@ function filterJobs(){
   if(fav)jobs=jobs.filter(j=>j.is_favorite);
   renderJobsTable(jobs);
 }
-function expiryStyle(dateStr){
-  if(!dateStr)return'';
+function expiryInfo(dateStr){
+  if(!dateStr)return{style:'',badge:''};
   const today=new Date();today.setHours(0,0,0,0);
   const d=new Date(dateStr);
   const diffDays=Math.round((d-today)/86400000);
-  if(diffDays<0)return'color:var(--danger);font-weight:600;';
-  if(diffDays<=3)return'color:var(--warning,#f59e0b);font-weight:600;';
-  return'';
+  if(diffDays<0){
+    return{style:'color:var(--danger);font-weight:600;',badge:`<span style="display:inline-block;margin-top:3px;font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:99px;background:#fee2e2;color:var(--danger);">Hết hạn ${Math.abs(diffDays)} ngày trước</span>`};
+  }
+  if(diffDays===0){
+    return{style:'color:var(--danger);font-weight:600;',badge:`<span style="display:inline-block;margin-top:3px;font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:99px;background:#fee2e2;color:var(--danger);">Hết hạn hôm nay</span>`};
+  }
+  if(diffDays<=3){
+    return{style:'color:var(--warning,#f59e0b);font-weight:600;',badge:`<span style="display:inline-block;margin-top:3px;font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:99px;background:#fef3c7;color:#b45309;">Còn ${diffDays} ngày</span>`};
+  }
+  return{style:'',badge:`<span style="display:inline-block;margin-top:3px;font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:99px;background:#dcfce7;color:#15803d;">Còn tuyển · ${diffDays} ngày</span>`};
 }
 function renderJobsTable(jobs){
   const tbody=document.getElementById('jobs-tbody');
@@ -1908,7 +1916,7 @@ function renderJobsTable(jobs){
       </td>
       <td><span class="status-badge s-${j.status}">${STATUS_LABELS[j.status]||j.status}</span></td>
       <td style="font-size:.8rem;">${j.apply_date||'—'}</td>
-      <td style="font-size:.8rem;${expiryStyle(j.expiry_date)}">${j.expiry_date||'—'}</td>
+      <td style="font-size:.8rem;">${j.expiry_date?`<div style="${expiryInfo(j.expiry_date).style}">${j.expiry_date}</div>${expiryInfo(j.expiry_date).badge}`:'—'}</td>
       <td style="font-size:.8rem;">${j.salary_min?`${(j.salary_min/1e6).toFixed(1)}–${(j.salary_max/1e6).toFixed(1)}M ${j.salary_currency}`:'—'}</td>
       <td style="font-size:.8rem;">${SOURCE_LABELS[j.source]||j.source||'—'}</td>
       <td><span style="font-size:.75rem;padding:2px 8px;border-radius:99px;background:${j.followup_status==='replied'?'var(--primary-light)':j.followup_status==='sent'?'#f0fdf4':'var(--surface2)'};color:${j.followup_status==='replied'?'var(--primary)':j.followup_status==='sent'?'var(--success)':'var(--text2)'}">${{pending:'Chưa gửi',sent:'Đã gửi',no_reply:'Chưa phản hồi',replied:'Đã phản hồi'}[j.followup_status]||'—'}</span></td>
