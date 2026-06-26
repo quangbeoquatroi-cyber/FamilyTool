@@ -1541,9 +1541,20 @@ async function initAuth() {
   } else {
     showAuthScreen();
   }
-  sb.auth.onAuthStateChange(async(_,session)=>{
-    if(session){currentUser=session.user;await loadProfile();showApp();}
-    else{currentUser=null;currentProfile=null;showAuthScreen();}
+  sb.auth.onAuthStateChange(async(event, session)=>{
+    // Only act on actual sign-in / sign-out events, not token refreshes
+    if(event === 'SIGNED_IN' && !currentUser){
+      currentUser = session.user;
+      await loadProfile();
+      showApp();
+    } else if(event === 'SIGNED_OUT'){
+      currentUser = null;
+      currentProfile = null;
+      showAuthScreen();
+    } else if(event === 'TOKEN_REFRESHED' && session){
+      // Silently update user reference without re-rendering
+      currentUser = session.user;
+    }
   });
 }
 async function handleLogin(){
