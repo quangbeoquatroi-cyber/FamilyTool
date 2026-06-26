@@ -511,13 +511,14 @@ textarea.form-control { resize:vertical; min-height:90px; }
 .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 table { width:100%; border-collapse:collapse; font-size:.875rem; table-layout:fixed; }
 table colgroup col:nth-child(1) { width:36px; }
-table colgroup col:nth-child(2) { width:32%; }
-table colgroup col:nth-child(3) { width:120px; }
-table colgroup col:nth-child(4) { width:110px; }
-table colgroup col:nth-child(5) { width:130px; }
-table colgroup col:nth-child(6) { width:110px; }
-table colgroup col:nth-child(7) { width:110px; }
-table colgroup col:nth-child(8) { width:72px; }
+table colgroup col:nth-child(2) { width:28%; }
+table colgroup col:nth-child(3) { width:110px; }
+table colgroup col:nth-child(4) { width:100px; }
+table colgroup col:nth-child(5) { width:100px; }
+table colgroup col:nth-child(6) { width:120px; }
+table colgroup col:nth-child(7) { width:100px; }
+table colgroup col:nth-child(8) { width:100px; }
+table colgroup col:nth-child(9) { width:96px; }
 th {
   text-align:left; padding:10px 14px;
   color:var(--text2); font-weight:600; font-size:.7rem;
@@ -525,6 +526,7 @@ th {
   border-bottom:1.5px solid var(--border); white-space:nowrap;
 }
 td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
+td:nth-child(9) { padding:11px 6px; overflow:visible; }
 tr { transition:background var(--t) var(--ease); }
 tr:hover td { background:var(--surface2); }
 tr:last-child td { border-bottom:none; }
@@ -1152,7 +1154,7 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
           <div class="table-wrap">
             <table>
               <colgroup>
-                <col /><col /><col /><col /><col /><col /><col /><col />
+                <col /><col /><col /><col /><col /><col /><col /><col /><col />
               </colgroup>
               <thead>
                 <tr>
@@ -1160,6 +1162,7 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
                   <th>Vị trí / Công ty</th>
                   <th>Trạng thái</th>
                   <th>Ngày Apply</th>
+                  <th>Ngày hết hạn</th>
                   <th>Mức lương</th>
                   <th>Nguồn</th>
                   <th>Follow-up</th>
@@ -1412,6 +1415,7 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
             </select>
           </div>
           <div class="form-group"><label>Ngày Apply</label><input class="form-control" id="job-apply-date" type="date" /></div>
+          <div class="form-group"><label>Ngày hết hạn</label><input class="form-control" id="job-expiry-date" type="date" /></div>
         </div>
         <div class="form-group" style="display:flex;align-items:center;gap:10px;padding:10px 0;">
           <input type="checkbox" id="job-favorite" style="width:16px;height:16px;cursor:pointer;" />
@@ -1747,6 +1751,7 @@ function openJobModal(jobId){
       document.getElementById('job-currency').value=j.salary_currency||'VND';
       document.getElementById('job-source').value=j.source||'';
       document.getElementById('job-apply-date').value=j.apply_date||'';
+      document.getElementById('job-expiry-date').value=j.expiry_date||'';
       document.getElementById('job-favorite').checked=j.is_favorite||false;
       document.getElementById('job-recruiter-name').value=j.recruiter_name||'';
       document.getElementById('job-recruiter-email').value=j.recruiter_email||'';
@@ -1759,7 +1764,7 @@ function openJobModal(jobId){
       document.getElementById('job-followup-note').value=j.followup_note||'';
     }
   } else {
-    ['job-title','job-company','job-link','job-salary-min','job-salary-max','job-source','job-apply-date',
+    ['job-title','job-company','job-link','job-salary-min','job-salary-max','job-source','job-apply-date','job-expiry-date',
      'job-recruiter-name','job-recruiter-email','job-recruiter-phone','job-desc','job-notes',
      'job-response-date','job-followup-date','job-followup-note'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('job-status').value='wishlist';
@@ -1794,6 +1799,7 @@ async function saveJob(){
     salary_currency:document.getElementById('job-currency').value,
     source:document.getElementById('job-source').value||null,
     apply_date:document.getElementById('job-apply-date').value||null,
+    expiry_date:document.getElementById('job-expiry-date').value||null,
     is_favorite:document.getElementById('job-favorite').checked,
     recruiter_name:document.getElementById('job-recruiter-name').value||null,
     recruiter_email:document.getElementById('job-recruiter-email').value||null,
@@ -1837,6 +1843,7 @@ function showJobDetail(jobId){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">TRẠNG THÁI</span><span class="status-badge s-${j.status}">${STATUS_LABELS[j.status]||j.status}</span></div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGÀY APPLY</span><span style="font-size:.875rem;">${j.apply_date||'—'}</span></div>
+      <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGÀY HẾT HẠN</span><span style="font-size:.875rem;${expiryStyle(j.expiry_date)}">${j.expiry_date||'—'}</span></div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">MỨC LƯƠNG</span><span style="font-size:.875rem;">${j.salary_min?`${Number(j.salary_min).toLocaleString()} – ${Number(j.salary_max||0).toLocaleString()} ${j.salary_currency}`:'—'}</span></div>
       <div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">NGUỒN</span><span style="font-size:.875rem;">${SOURCE_LABELS[j.source]||j.source||'—'}</span></div>
       ${j.recruiter_name?`<div><span style="font-size:.75rem;color:var(--text2);display:block;margin-bottom:3px;">RECRUITER</span><span style="font-size:.875rem;">${j.recruiter_name}${j.recruiter_email?` — ${j.recruiter_email}`:''}</span></div>`:''}
@@ -1880,9 +1887,18 @@ function filterJobs(){
   if(fav)jobs=jobs.filter(j=>j.is_favorite);
   renderJobsTable(jobs);
 }
+function expiryStyle(dateStr){
+  if(!dateStr)return'';
+  const today=new Date();today.setHours(0,0,0,0);
+  const d=new Date(dateStr);
+  const diffDays=Math.round((d-today)/86400000);
+  if(diffDays<0)return'color:var(--danger);font-weight:600;';
+  if(diffDays<=3)return'color:var(--warning,#f59e0b);font-weight:600;';
+  return'';
+}
 function renderJobsTable(jobs){
   const tbody=document.getElementById('jobs-tbody');
-  if(!jobs.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><h3>Chưa có JD nào</h3><p>Bắt đầu thêm JD đầu tiên của bạn</p></div></td></tr>`;return;}
+  if(!jobs.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><h3>Chưa có JD nào</h3><p>Bắt đầu thêm JD đầu tiên của bạn</p></div></td></tr>`;return;}
   tbody.innerHTML=jobs.map(j=>`
     <tr>
       <td><span class="kanban-card-fav${j.is_favorite?' active':''}" onclick="toggleFav('${j.id}',${!j.is_favorite})">★</span></td>
@@ -1892,6 +1908,7 @@ function renderJobsTable(jobs){
       </td>
       <td><span class="status-badge s-${j.status}">${STATUS_LABELS[j.status]||j.status}</span></td>
       <td style="font-size:.8rem;">${j.apply_date||'—'}</td>
+      <td style="font-size:.8rem;${expiryStyle(j.expiry_date)}">${j.expiry_date||'—'}</td>
       <td style="font-size:.8rem;">${j.salary_min?`${(j.salary_min/1e6).toFixed(1)}–${(j.salary_max/1e6).toFixed(1)}M ${j.salary_currency}`:'—'}</td>
       <td style="font-size:.8rem;">${SOURCE_LABELS[j.source]||j.source||'—'}</td>
       <td><span style="font-size:.75rem;padding:2px 8px;border-radius:99px;background:${j.followup_status==='replied'?'var(--primary-light)':j.followup_status==='sent'?'#f0fdf4':'var(--surface2)'};color:${j.followup_status==='replied'?'var(--primary)':j.followup_status==='sent'?'var(--success)':'var(--text2)'}">${{pending:'Chưa gửi',sent:'Đã gửi',no_reply:'Chưa phản hồi',replied:'Đã phản hồi'}[j.followup_status]||'—'}</span></td>
@@ -2053,7 +2070,7 @@ async function kanbanDrop(e,colKey){
   else{
     await sb.from('job_activities').insert({user_id:currentUser.id,job_id:draggedJobId,activity_type:'status_change',old_value:oldStatus,new_value:colKey});
     toast(`Đã chuyển sang ${STATUS_LABELS[colKey]}`,'success');
-    renderDashboard();
+    renderDashboard();renderJobsPage();
   }
   draggedJobId=null;
 }
