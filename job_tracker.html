@@ -686,6 +686,46 @@ tr:last-child td { border-bottom:none; }
 .filter-select:focus { border-color:var(--accent); outline:none; }
 
 /* ============================================================
+   INTERVIEW PREP — Q&A bank + flashcards
+   ============================================================ */
+.prep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+.prep-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:16px;
+  box-shadow:var(--shadow-xs); transition:all var(--t) var(--ease);
+  display:flex; flex-direction:column; gap:10px;
+}
+.prep-card:hover { box-shadow:var(--shadow-md); }
+.prep-card.memorized { border-left:3px solid var(--success); }
+.prep-cat-badge {
+  display:inline-flex; align-items:center; padding:3px 9px;
+  border-radius:4px; font-size:.68rem; font-weight:700;
+  letter-spacing:.02em; white-space:nowrap;
+}
+.prep-q { font-size:.88rem; font-weight:700; line-height:1.4; }
+.prep-a { font-size:.82rem; color:var(--text2); white-space:pre-wrap; line-height:1.5; }
+.prep-card-foot { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:4px; }
+.prep-memo-label { display:flex; align-items:center; gap:7px; font-size:.72rem; color:var(--text2); font-weight:600; }
+
+/* Flashcard practice modal */
+.practice-wrap { display:flex; flex-direction:column; align-items:center; gap:18px; padding:8px 0; }
+.practice-progress { font-size:.78rem; color:var(--text2); font-weight:600; }
+.practice-card { width:100%; cursor:pointer; }
+.practice-face {
+  width:100%; border-radius:var(--radius-lg); border:1.5px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:28px; gap:12px;
+  background:var(--surface); box-shadow:var(--shadow);
+  min-height:180px; transition:background var(--t-md) var(--ease), border-color var(--t-md) var(--ease);
+}
+.practice-face.is-answer { background:var(--accent-light); border-color:var(--accent); }
+.practice-face-label { font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); }
+.practice-face-text { font-size:1.05rem; font-weight:600; line-height:1.5; white-space:pre-wrap; }
+.practice-face.is-answer .practice-face-text { font-weight:500; font-size:.95rem; color:var(--text); }
+.practice-hint { font-size:.74rem; color:var(--text3); }
+.practice-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+/* ============================================================
    CALENDAR
    ============================================================ */
 .cal-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
@@ -1028,6 +1068,10 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           Lịch phỏng vấn
         </div>
+        <div class="nav-item" data-page="prep" onclick="navigateTo('prep')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          Chuẩn bị phỏng vấn
+        </div>
         <div class="nav-item" data-page="notes" onclick="navigateTo('notes')">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Interview Notes
@@ -1236,6 +1280,34 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
       </div>
 
       <!-- NOTES PAGE -->
+      <!-- INTERVIEW PREP PAGE -->
+      <div class="page" id="page-prep">
+        <div class="page-header">
+          <h1 class="page-title">Chuẩn bị phỏng vấn</h1>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline" onclick="openPracticeMode()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Luyện tập
+            </button>
+            <button class="btn btn-primary" onclick="openPrepModal()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Thêm câu hỏi
+            </button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="prep-category-filter" onchange="filterPrep()">
+            <option value="">Tất cả danh mục</option>
+          </select>
+          <select class="filter-select" id="prep-lang-filter" onchange="filterPrep()">
+            <option value="">Tất cả ngôn ngữ</option>
+            <option value="en">English</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <div class="prep-grid" id="prep-container"></div>
+      </div>
+
       <div class="page" id="page-notes">
         <div class="page-header">
           <h1 class="page-title">Interview Notes</h1>
@@ -1524,6 +1596,63 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
 </div>
 
 <!-- NOTE MODAL -->
+<!-- INTERVIEW PREP MODAL -->
+<div class="modal-overlay" id="prep-modal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <span class="modal-title" id="prep-modal-title">Thêm câu hỏi chuẩn bị</span>
+      <button class="modal-close" onclick="closeModal('prep-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="prep-id" />
+      <div class="form-row">
+        <div class="form-group"><label>Danh mục</label>
+          <select class="form-control" id="prep-category">
+            <option value="intro">Giới thiệu bản thân</option>
+            <option value="behavioral">Hành vi (Behavioral)</option>
+            <option value="technical">Kỹ thuật</option>
+            <option value="strengths">Điểm mạnh / điểm yếu</option>
+            <option value="ask_back">Câu hỏi cho nhà tuyển dụng</option>
+            <option value="other">Khác</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Ngôn ngữ</label>
+          <select class="form-control" id="prep-language">
+            <option value="en">English</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Câu hỏi *</label><textarea class="form-control" id="prep-question" placeholder="VD: Introduce yourself in English" style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Câu trả lời soạn trước</label><textarea class="form-control" id="prep-answer" placeholder="Soạn câu trả lời để học thuộc..." style="min-height:140px;"></textarea></div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+        <label class="toggle-switch" style="margin-bottom:0;">
+          <input type="checkbox" id="prep-memorized" />
+          <span class="toggle-slider"></span>
+        </label>
+        <label style="margin-bottom:0;text-transform:none;font-size:.82rem;color:var(--text);font-weight:500;">Đã học thuộc</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('prep-modal')">Hủy</button>
+      <button class="btn btn-primary" onclick="savePrep()">Lưu câu hỏi</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTERVIEW PREP — FLASHCARD PRACTICE MODAL -->
+<div class="modal-overlay" id="practice-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <span class="modal-title">Luyện tập</span>
+      <button class="modal-close" onclick="closeModal('practice-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="practice-wrap" id="practice-wrap"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="note-modal">
   <div class="modal" style="max-width:700px;">
     <div class="modal-header">
@@ -1614,6 +1743,7 @@ let currentProfile = null;
 let allJobs = [];
 let allInterviews = [];
 let allNotes = [];
+let allPrep = [];
 let allCVs = [];
 let allNotifications = [];
 let calYear = new Date().getFullYear();
@@ -1630,6 +1760,14 @@ const STATUS_LABELS = {
   offer:'Offer',accepted:'Accepted',rejected:'Rejected',withdrawn:'Withdrawn'
 };
 const TYPE_LABELS = {hr:'HR',technical:'Technical',manager:'Manager',final:'Final',other:'Other'};
+const PREP_CATEGORIES = {
+  intro:      {label:'Giới thiệu bản thân',           color:'#0284c7', bg:'#eff8ff'},
+  behavioral: {label:'Hành vi (Behavioral)',          color:'#a855f7', bg:'#fdf4ff'},
+  technical:  {label:'Kỹ thuật',                      color:'#ea580c', bg:'#fff7ed'},
+  strengths:  {label:'Điểm mạnh / điểm yếu',          color:'#16a34a', bg:'#f0fdf4'},
+  ask_back:   {label:'Câu hỏi cho nhà tuyển dụng',    color:'#d97706', bg:'#fffbeb'},
+  other:      {label:'Khác',                          color:'#78716c', bg:'#f5f5f4'},
+};
 const SOURCE_LABELS = {linkedin:'LinkedIn',vietnamworks:'VietnamWorks',topcv:'TopCV',itviec:'ITviec',
   careerbuilder:'CareerBuilder',jobstreet:'JobStreet',referral:'Referral','company-site':'Company Site',other:'Khác'};
 
@@ -1711,7 +1849,7 @@ function showAuthScreen(){
   document.getElementById('app').style.display='none';
 }
 async function loadAllData(){
-  await Promise.all([loadJobs(),loadInterviews(),loadNotes(),loadCVs(),loadNotifications()]);
+  await Promise.all([loadJobs(),loadInterviews(),loadNotes(),loadPrep(),loadCVs(),loadNotifications()]);
   renderDashboard();
   renderJobsPage();
   renderKanban();
@@ -1734,6 +1872,7 @@ function navigateTo(page){
   closeSidebar();
   if(page==='analytics')renderAnalytics();
   if(page==='notes'){renderNotesPage();populateNoteInterviewFilter();}
+  if(page==='prep'){renderPrepPage();populatePrepCategoryFilter();}
   if(page==='cvs')renderCVGrid();
 }
 function openSidebar(){
@@ -2467,6 +2606,177 @@ function renderNotesPage(notes){
       ${n.general_notes?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);"><div style="font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:4px;">GHI CHÚ CHUNG</div><div style="font-size:.82rem;white-space:pre-wrap;">${escapeHtml(n.general_notes)}</div></div>`:''}
     </div>`;
   }).join('');
+}
+
+// ============================================================
+// INTERVIEW PREP — Q&A bank để tự chuẩn bị trước phỏng vấn
+// ============================================================
+async function loadPrep(){
+  const {data,error}=await sb.from('interview_prep').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  if(!error)allPrep=data||[];
+}
+function openPrepModal(prepId){
+  document.getElementById('prep-id').value=prepId||'';
+  document.getElementById('prep-modal-title').textContent=prepId?'Chỉnh sửa câu hỏi':'Thêm câu hỏi chuẩn bị';
+  if(prepId){
+    const p=allPrep.find(x=>x.id===prepId);
+    if(p){
+      document.getElementById('prep-category').value=p.category||'intro';
+      document.getElementById('prep-language').value=p.language||'en';
+      document.getElementById('prep-question').value=p.question||'';
+      document.getElementById('prep-answer').value=p.answer||'';
+      document.getElementById('prep-memorized').checked=!!p.is_memorized;
+    }
+  } else {
+    document.getElementById('prep-category').value='intro';
+    document.getElementById('prep-language').value='en';
+    document.getElementById('prep-question').value='';
+    document.getElementById('prep-answer').value='';
+    document.getElementById('prep-memorized').checked=false;
+  }
+  openModal('prep-modal');
+}
+async function savePrep(){
+  const prepId=document.getElementById('prep-id').value;
+  const question=document.getElementById('prep-question').value.trim();
+  if(!question){toast('Vui lòng nhập câu hỏi','error');return;}
+  const payload={
+    user_id:currentUser.id,
+    category:document.getElementById('prep-category').value,
+    language:document.getElementById('prep-language').value,
+    question,
+    answer:document.getElementById('prep-answer').value||null,
+    is_memorized:document.getElementById('prep-memorized').checked,
+  };
+  let error;
+  if(prepId){({error}=await sb.from('interview_prep').update(payload).eq('id',prepId));}
+  else{({error}=await sb.from('interview_prep').insert(payload));}
+  if(error){toast('Lỗi lưu câu hỏi: '+error.message,'error');return;}
+  toast(prepId?'Đã cập nhật':'Đã thêm câu hỏi','success');
+  closeModal('prep-modal');
+  await loadPrep();
+  renderPrepPage();
+}
+async function deletePrepItem(prepId){
+  showConfirm('Xóa câu hỏi này?',async()=>{
+    const {error}=await sb.from('interview_prep').delete().eq('id',prepId);
+    if(error){toast('Lỗi xóa','error');return;}
+    toast('Đã xóa','success');
+    await loadPrep();renderPrepPage();
+  });
+}
+async function togglePrepMemorized(prepId,checked){
+  const {error}=await sb.from('interview_prep').update({is_memorized:checked}).eq('id',prepId);
+  if(error){toast('Lỗi cập nhật','error');return;}
+  const p=allPrep.find(x=>x.id===prepId);
+  if(p)p.is_memorized=checked;
+  renderPrepPage();
+}
+function populatePrepCategoryFilter(){
+  const sel=document.getElementById('prep-category-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Tất cả danh mục</option>'+Object.entries(PREP_CATEGORIES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+  sel.value=cur;
+}
+function filterPrep(){
+  const cat=document.getElementById('prep-category-filter').value;
+  const lang=document.getElementById('prep-lang-filter').value;
+  let list=allPrep;
+  if(cat)list=list.filter(p=>p.category===cat);
+  if(lang)list=list.filter(p=>p.language===lang);
+  renderPrepPage(list);
+}
+function renderPrepPage(list){
+  const items=list||allPrep;
+  const con=document.getElementById('prep-container');
+  if(!items.length){con.innerHTML='<div class="empty-state"><svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg><h3>Chưa có câu hỏi nào</h3><p>Soạn trước câu trả lời để học thuộc trước khi phỏng vấn</p></div>';return;}
+  con.innerHTML=items.map(p=>{
+    const cat=PREP_CATEGORIES[p.category]||PREP_CATEGORIES.other;
+    return `<div class="prep-card ${p.is_memorized?'memorized':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <span class="prep-cat-badge" style="background:${cat.bg};color:${cat.color};">${cat.label}</span>
+        <span style="font-size:.68rem;font-weight:700;color:var(--text3);">${p.language==='vi'?'VI':'EN'}</span>
+      </div>
+      <div class="prep-q">${escapeHtml(p.question)}</div>
+      ${p.answer?`<div class="prep-a">${escapeHtml(p.answer)}</div>`:''}
+      <div class="prep-card-foot">
+        <label class="prep-memo-label">
+          <input type="checkbox" ${p.is_memorized?'checked':''} onchange="togglePrepMemorized('${p.id}',this.checked)" style="accent-color:var(--accent);width:14px;height:14px;" />
+          Đã học thuộc
+        </label>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm btn-ghost" onclick="openPrepModal('${p.id}')">Sửa</button>
+          <button class="btn btn-sm btn-ghost" style="color:var(--danger);" onclick="deletePrepItem('${p.id}')">Xóa</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---- Flashcard practice mode ----
+let practiceList=[];
+let practiceIndex=0;
+let practiceFlipped=false;
+function openPracticeMode(){
+  const cat=document.getElementById('prep-category-filter')?.value||'';
+  const lang=document.getElementById('prep-lang-filter')?.value||'';
+  practiceList=allPrep.filter(p=>(!cat||p.category===cat)&&(!lang||p.language===lang));
+  if(!practiceList.length){toast('Chưa có câu hỏi nào để luyện tập','error');return;}
+  shuffleArray(practiceList);
+  practiceIndex=0;practiceFlipped=false;
+  openModal('practice-modal');
+  renderPracticeCard();
+}
+function shuffleArray(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function renderPracticeCard(){
+  const wrap=document.getElementById('practice-wrap');
+  const p=practiceList[practiceIndex];
+  const cat=PREP_CATEGORIES[p.category]||PREP_CATEGORIES.other;
+  wrap.innerHTML=`
+    <div class="practice-progress">Câu ${practiceIndex+1} / ${practiceList.length} · <span class="prep-cat-badge" style="background:${cat.bg};color:${cat.color};">${cat.label}</span></div>
+    <div class="practice-card" id="practice-card" onclick="flipPracticeCard()"></div>
+    <div class="practice-controls">
+      <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();practicePrev()" ${practiceIndex===0?'disabled':''}>← Trước</button>
+      <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();shuffleArray(practiceList);practiceIndex=0;practiceFlipped=false;renderPracticeCard();">Xáo trộn</button>
+      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();practiceNext()">${practiceIndex===practiceList.length-1?'Bắt đầu lại':'Tiếp →'}</button>
+    </div>`;
+  renderPracticeFace();
+}
+function renderPracticeFace(){
+  const p=practiceList[practiceIndex];
+  const card=document.getElementById('practice-card');
+  if(!card)return;
+  if(!practiceFlipped){
+    card.innerHTML=`<div class="practice-face">
+      <div class="practice-face-label">Câu hỏi (${p.language==='vi'?'Tiếng Việt':'English'})</div>
+      <div class="practice-face-text">${escapeHtml(p.question)}</div>
+      <div class="practice-hint">Nhấp để xem câu trả lời</div>
+    </div>`;
+  } else {
+    card.innerHTML=`<div class="practice-face is-answer">
+      <div class="practice-face-label">Câu trả lời</div>
+      <div class="practice-face-text">${p.answer?escapeHtml(p.answer):'(Chưa soạn câu trả lời)'}</div>
+      <div class="practice-hint">Nhấp để xem lại câu hỏi</div>
+    </div>`;
+  }
+}
+function flipPracticeCard(){
+  practiceFlipped=!practiceFlipped;
+  renderPracticeFace();
+}
+function practiceNext(){
+  practiceFlipped=false;
+  practiceIndex=(practiceIndex+1)%practiceList.length;
+  renderPracticeCard();
+}
+function practicePrev(){
+  if(practiceIndex===0)return;
+  practiceFlipped=false;
+  practiceIndex--;
+  renderPracticeCard();
 }
 
 // ============================================================
