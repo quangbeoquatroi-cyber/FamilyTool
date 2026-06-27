@@ -1385,7 +1385,14 @@ mark { background:#fed7aa; color:#9a3412; border-radius:2px; padding:0 2px; }
           <div class="form-group"><label>Công ty *</label><input class="form-control" id="job-company" type="text" placeholder="Google, Meta, ..." /></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Link JD</label><input class="form-control" id="job-link" type="url" placeholder="https://..." /></div>
+          <div class="form-group">
+            <label>Link JD</label>
+            <div style="display:flex;gap:6px;">
+              <input class="form-control" id="job-link" type="url" placeholder="https://..." style="flex:1;" />
+              <button type="button" class="btn btn-outline" id="btn-fetch-jd" onclick="fetchJDFromLink()" style="white-space:nowrap;padding:0 12px;">🔎 Lấy JD</button>
+            </div>
+            <div style="font-size:.72rem;color:var(--text2);margin-top:4px;">AI sẽ đọc đúng nội dung trên trang để điền các trường bên dưới. Luôn kiểm tra lại trước khi lưu.</div>
+          </div>
           <div class="form-group"><label>Trạng thái</label>
             <select class="form-control" id="job-status">
               <option value="wishlist">Wishlist</option>
@@ -1756,6 +1763,58 @@ async function loadJobs(){
   const {data,error}=await sb.from('jobs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   if(!error)allJobs=data||[];
 }
+// ============================================================
+// AI JD AUTO-EXTRACTION — đọc đúng nội dung trang, không bịa, không bỏ sót
+// (logic trích xuất + API key Anthropic nằm trong Supabase Edge Function "extract-jd")
+// ============================================================
+async function callJDExtractAPI(payload){
+  // payload: { url: '...' } hoặc { text: '...' }
+  // Gọi vào Supabase Edge Function "extract-jd" — API key Anthropic được giữ
+  // an toàn ở server, không lộ ra trình duyệt.
+  const { data, error } = await sb.functions.invoke('extract-jd', { body: payload });
+  if(error){ throw new Error(error.message || 'Lỗi gọi Edge Function extract-jd'); }
+  return data;
+}
+
+function applyJDExtractionResult(result){
+  if(result.extraction_status==='failed'){
+    toast('Không lấy được nội dung từ link này'+(result.warning?': '+result.warning:'')+'. Vui lòng dán nội dung JD vào tab "Chi tiết & Recruiter".','error');
+    return;
+  }
+  if(result.job_title) document.getElementById('job-title').value = result.job_title;
+  if(result.company_name) document.getElementById('job-company').value = result.company_name;
+  if(result.salary_min!=null) document.getElementById('job-salary-min').value = result.salary_min;
+  if(result.salary_max!=null) document.getElementById('job-salary-max').value = result.salary_max;
+  if(result.salary_currency) document.getElementById('job-currency').value = result.salary_currency;
+  if(result.source) document.getElementById('job-source').value = result.source;
+  if(result.expiry_date) document.getElementById('job-expiry-date').value = result.expiry_date;
+  if(result.job_description) document.getElementById('job-desc').value = result.job_description;
+  if(result.extraction_status==='partial'){
+    toast('Đã lấy được phần lớn thông tin, nhưng thiếu: '+(result.warning||'một số trường')+'. Vui lòng kiểm tra lại.','warning');
+  } else {
+    toast('Đã trích xuất xong từ link. Vui lòng kiểm tra lại trước khi lưu.','success');
+  }
+}
+
+async function fetchJDFromLink(){
+  const url = document.getElementById('job-link').value.trim();
+  if(!url){ toast('Vui lòng nhập Link JD trước','error'); return; }
+  const btn = document.getElementById('btn-fetch-jd');
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Đang đọc...';
+  try{
+    const result = await callJDExtractAPI({ url });
+    applyJDExtractionResult(result);
+  }catch(err){
+    console.error(err);
+    toast('Có lỗi khi trích xuất tự động: '+err.message+'. Vui lòng dán nội dung JD thủ công.','error');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+}
+
 function openJobModal(jobId){
   document.getElementById('job-id').value=jobId||'';
   document.getElementById('job-modal-title').textContent=jobId?'Chỉnh sửa JD':'Thêm JD mới';
