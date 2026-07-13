@@ -654,12 +654,12 @@ async function afterAuth(){
 
   // Load profiles: thử theo id (chuẩn mới: user_id+'_husband' / user_id+'_wife')
   const [{data:hRow},{data:wRow}] = await Promise.all([
-    sb.from('profiles').select('*').eq('id',uid+'_husband').maybeSingle(),
-    sb.from('profiles').select('*').eq('id',uid+'_wife').maybeSingle(),
+    sb.from('nutrition_profiles').select('*').eq('id',uid+'_husband').maybeSingle(),
+    sb.from('nutrition_profiles').select('*').eq('id',uid+'_wife').maybeSingle(),
   ]);
 
   // Fallback: schema cũ dùng id = auth.uid
-  const {data:legacyProf}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
+  const {data:legacyProf}=await sb.from('nutrition_profiles').select('*').eq('id',uid).maybeSingle();
 
   if(hRow){
     State.profiles.husband=mapProfile(hRow);
@@ -670,7 +670,7 @@ async function afterAuth(){
       name: data.user.email.split('@')[0], profileKey:'husband', profile_key:'husband',
       gender:'male', age:30, height:170, weight:70, goalWeight:65, activity:'moderate', goal:'maintain'
     };
-    try{ await sb.from('profiles').upsert({id:uid+'_husband', user_id:uid, profile_key:'husband', name:State.profiles.husband.name, gender:State.profiles.husband.gender, age:State.profiles.husband.age, height:State.profiles.husband.height, weight:State.profiles.husband.weight, goal_weight:State.profiles.husband.goalWeight, activity:State.profiles.husband.activity, goal:State.profiles.husband.goal}); }catch(e){console.warn(e)}
+    try{ await sb.from('nutrition_profiles').upsert({id:uid+'_husband', user_id:uid, profile_key:'husband', name:State.profiles.husband.name, gender:State.profiles.husband.gender, age:State.profiles.husband.age, height:State.profiles.husband.height, weight:State.profiles.husband.weight, goal_weight:State.profiles.husband.goalWeight, activity:State.profiles.husband.activity, goal:State.profiles.husband.goal}); }catch(e){console.warn(e)}
   }
 
   if(wRow){
@@ -682,7 +682,7 @@ async function afterAuth(){
       name: 'Vợ', profileKey:'wife', profile_key:'wife',
       gender:'female', age:28, height:160, weight:55, goalWeight:52, activity:'light', goal:'maintain'
     };
-    try{ await sb.from('profiles').upsert({id:uid+'_wife', user_id:uid, profile_key:'wife', name:State.profiles.wife.name, gender:State.profiles.wife.gender, age:State.profiles.wife.age, height:State.profiles.wife.height, weight:State.profiles.wife.weight, goal_weight:State.profiles.wife.goalWeight, activity:State.profiles.wife.activity, goal:State.profiles.wife.goal}); }catch(e){console.warn(e)}
+    try{ await sb.from('nutrition_profiles').upsert({id:uid+'_wife', user_id:uid, profile_key:'wife', name:State.profiles.wife.name, gender:State.profiles.wife.gender, age:State.profiles.wife.age, height:State.profiles.wife.height, weight:State.profiles.wife.weight, goal_weight:State.profiles.wife.goalWeight, activity:State.profiles.wife.activity, goal:State.profiles.wife.goal}); }catch(e){console.warn(e)}
   }
 
   State.activeProfile='husband';
@@ -2470,7 +2470,7 @@ function attachHandlers(){
         goal_weight: updated.goalWeight,
         activity: updated.activity, goal: updated.goal,
       };
-      const {error}=await sb.from('profiles').upsert(dbRow);
+      const {error}=await sb.from('nutrition_profiles').upsert(dbRow);
       if(error){ toast('❌ Lỗi lưu: '+error.message); btn.textContent='Lưu hồ sơ'; btn.disabled=false; return; }
     }
     saveLocal();
@@ -3170,9 +3170,10 @@ async function delMeal(id){
 ============================================================ */
 const SQL_SCHEMA = `
 -- ================================================
--- PROFILES (mỗi user có 2 rows: _husband và _wife)
+-- NUTRITION_PROFILES (mỗi user có 2 rows: _husband và _wife)
+-- Đặt tên riêng để không đụng bảng "profiles" dùng chung của các app khác
 -- ================================================
-create table if not exists profiles (
+create table if not exists nutrition_profiles (
   id text primary key,              -- = user_id + '_husband' hoặc '_wife'
   user_id uuid references auth.users on delete cascade,
   profile_key text not null,        -- 'husband' | 'wife'
@@ -3187,9 +3188,9 @@ create table if not exists profiles (
   role text default 'member',
   created_at timestamptz default now()
 );
-alter table profiles enable row level security;
+alter table nutrition_profiles enable row level security;
 -- RLS: user chỉ đọc/ghi profile của chính mình (dựa vào user_id)
-create policy "own_profile_rw" on profiles
+create policy "own_nutrition_profile_rw" on nutrition_profiles
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ================================================
