@@ -1031,6 +1031,10 @@ const TAX_CODES = {
 
 // ── FORMAT HELPERS ────────────────────────────────────────
 function fmt(n) { return Number(n).toLocaleString('vi-VN'); }
+// Giá vàng thật không bao giờ âm hoặc bằng 0 → coi số âm/0/NaN là dữ liệu lỗi từ nguồn
+function isValidPrice(n) { const v = Number(n); return Number.isFinite(v) && v > 0; }
+// Định dạng riêng cho ô giá mua/bán: nếu dữ liệu lỗi (âm, 0, NaN) thì hiện "--" thay vì số âm
+function fmtPrice(n) { return isValidPrice(n) ? fmt(n) : '--'; }
 function fmtM(n) {
   n = Number(n);
   if (n >= 1e9) return (n/1e9).toFixed(2) + ' tỷ';
@@ -1155,45 +1159,14 @@ function getProcessed(target) {
 
 // ── GOLD PRICES ──────────────────────────────────────────
 
-// 🩹 VÁ LỖI DOJI: giavang.org (nguồn cũ của Worker) đã hỏng từ khi DOJI
-// chuyển sang site mới banggia.doji.vn. Hàm này lấy riêng dữ liệu DOJI
-// trực tiếp từ nguồn mới qua Jina Reader (đọc trang đã render JS).
-async function fetchDojiFromNewSource() {
-  const jinaUrl = 'https://r.jina.ai/https://banggia.doji.vn/gold-price';
-  const res = await fetch(jinaUrl, {
-    headers: {
-      'Accept': 'text/plain',
-      'X-Timeout': '15',
-      'X-Wait-For-Selector': 'table',
-    },
-  });
-  if (!res.ok) throw new Error('Jina Reader HTTP ' + res.status);
-  const content = await res.text();
-
-  const idx = content.indexOf('BẢNG GIÁ VÀNG DOJI');
-  const goldSection = idx >= 0 ? content.substring(idx) : content;
-
-  const rowRegex = /\|\s*\d+\s*\|\s*([^\|]+?)\s*\|\s*([\d,]*)\s*\|\s*([\d,]*)\s*\|/g;
-  const items = [];
-  let m;
-  while ((m = rowRegex.exec(goldSection)) !== null) {
-    const name = m[1].trim();
-    const buyRaw = m[2].replace(/,/g, '');
-    const sellRaw = m[3].replace(/,/g, '');
-    // Đơn vị gốc "Nghìn VND/chỉ" -> nhân 1000 để ra VNĐ
-    const buy = buyRaw ? Number(buyRaw) * 1000 : 0;
-    const sell = sellRaw ? Number(sellRaw) * 1000 : 0;
-    items.push({ name, buy, sell });
-  }
-  if (items.length === 0) throw new Error('Không parse được dữ liệu DOJI từ Jina Reader');
-
-  // Dòng "Nhẫn tròn 9999 Hưng Thịnh Vượng" dùng làm giá đại diện (buy/sell chính),
-  // khớp với logic fallback DOJI cũ trong code (dùng cho tính lãi/lỗ holdings)
-  const nhan = items.find(it => it.name.includes('NHẪN TRÒN') && it.name.includes('HƯNG THỊNH VƯỢNG'));
-  const dai_dien = nhan || items[0];
-
-  return { buy: dai_dien.buy, sell: dai_dien.sell, items };
-}
+// 🩹 FIX DOJI (21/7/2026): đã chuyển việc fetch+parse DOJI sang chạy
+// SERVER-SIDE ngay trong Worker chính (PROXY_URL) — xem file
+// worker-updated.js đi kèm (hàm fetchDojiPrice/parseDojiXml). Worker giờ
+// trả DOJI cùng lúc với SJC/BTMH/Mi Hồng trong 1 response JSON duy nhất,
+// nên không còn cần patch riêng phía client nữa (loại bỏ hoàn toàn vấn đề
+// CORS / origin 'null' khi mở file trực tiếp bằng file://).
+// ⚠️ CẦN LÀM: deploy lại Worker bằng nội dung file worker-updated.js
+// (thay cho code Worker cũ) để DOJI có dữ liệu thật.
 
 async function fetchAllPrices() {
   document.getElementById('refresh-icon').innerHTML = '<span class="spinner"></span>';
@@ -1207,22 +1180,20 @@ async function fetchAllPrices() {
     }
   }
 
-  // 🩹 Ghi đè riêng phần DOJI bằng dữ liệu từ nguồn mới (không đụng SJC/BTMH/Mi Hồng)
-  try {
-    const dojiMoi = await fetchDojiFromNewSource();
-    prices = { ...prices, DOJI: dojiMoi };
-  } catch (e) {
-    console.warn('Không lấy được giá DOJI từ nguồn mới, giữ dữ liệu cũ:', e.message);
-  }
-
   liveprices = prices;
   // Lưu snapshot giá hôm nay vào Supabase (để dùng cho biểu đồ)
   savePriceSnapshot(prices).catch(() => {});
   const now = new Date();
   document.getElementById('prices-container').innerHTML =
     BRANDS_CONFIG.map(b => {
-      const p = prices[b.key] || { buy:0, sell:0 };
-      let items = p.items || [];
+      const pRaw = prices[b.key] || { buy:0, sell:0 };
+      // 🩹 Lọc dữ liệu lỗi: nguồn giá đôi khi trả về số âm (bug từ trang nguồn),
+      // giá vàng thật không bao giờ âm nên loại bỏ các dòng/giá trị âm trước khi hiển thị
+      let items = (pRaw.items || []).filter(it => isValidPrice(it.buy) && isValidPrice(it.sell));
+      const p = {
+        buy: isValidPrice(pRaw.buy) ? pRaw.buy : (items[0] ? items[0].buy : pRaw.buy),
+        sell: isValidPrice(pRaw.sell) ? pRaw.sell : (items[0] ? items[0].sell : pRaw.sell),
+      };
 
       // SJC: sắp xếp đúng thứ tự 5 loại chuẩn, loại bỏ dòng thừa
       if (b.key === 'SJC' && items.length > 0) {
@@ -1280,8 +1251,8 @@ async function fetchAllPrices() {
             <tbody>
               ${items.map(it => `<tr>
                 <td style="padding:7px 12px;border-bottom:1px solid rgba(201,146,42,0.07);color:var(--text2);font-family:var(--font-body)">${it.name}</td>
-                <td style="padding:7px 10px;border-bottom:1px solid rgba(201,146,42,0.07);text-align:right;color:#4CAF7D;font-family:var(--font-mono)">${fmt(it.buy)}</td>
-                <td style="padding:7px 10px;border-bottom:1px solid rgba(201,146,42,0.07);text-align:right;color:#E88C3C;font-family:var(--font-mono)">${fmt(it.sell)}</td>
+                <td style="padding:7px 10px;border-bottom:1px solid rgba(201,146,42,0.07);text-align:right;color:#4CAF7D;font-family:var(--font-mono)">${fmtPrice(it.buy)}</td>
+                <td style="padding:7px 10px;border-bottom:1px solid rgba(201,146,42,0.07);text-align:right;color:#E88C3C;font-family:var(--font-mono)">${fmtPrice(it.sell)}</td>
               </tr>`).join('')}
             </tbody>
           </table>
@@ -1289,8 +1260,8 @@ async function fetchAllPrices() {
       return `<div class="brand-card">
         <div class="brand-header"><span class="brand-name">${b.label}</span><span class="brand-time">${now.toLocaleTimeString('vi-VN')}</span></div>
         <div class="price-row">
-          <div class="price-cell"><div class="price-label">Mua vào</div><div class="price-value price-buy">${fmt(p.buy)}</div></div>
-          <div class="price-cell"><div class="price-label">Bán ra</div><div class="price-value price-sell">${fmt(p.sell)}</div></div>
+          <div class="price-cell"><div class="price-label">Mua vào</div><div class="price-value price-buy">${fmtPrice(p.buy)}</div></div>
+          <div class="price-cell"><div class="price-label">Bán ra</div><div class="price-value price-sell">${fmtPrice(p.sell)}</div></div>
         </div>
         ${detailTable}
         <div style="padding:10px 16px;border-top:1px solid var(--border)">
