@@ -2329,62 +2329,6 @@ select.field-input option{background:var(--s2)}
   .sv-tx-amt{font-size:14px}
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ── FIX v2 (triệt để): tab 🐷 Tiết Kiệm tràn ngang / phải kéo qua kéo lại
-      trên điện thoại.
-
-   Nguyên nhân thật sự: hiệu ứng nghiêng 3D (perspective + transform-style:
-   preserve-3d + translateZ) chỉ được BẬT bằng JS khi thiết bị có chuột
-   (window.matchMedia('(hover:hover)').matches), nhưng phần CSS đặt các
-   thuộc tính 3D đó lại NẰM Ở BASE (áp dụng cho mọi thiết bị) và bản vá
-   trước chỉ tắt lại theo BỀ RỘNG màn hình (max-width:700px). Nhiều WebView
-   trong app/di động dựng sai vùng render khi gặp perspective+translateZ
-   dù màn hình < 700px, khiến nội dung bị đẩy lệch ngang y hệt điều kiện
-   bật hiệu ứng ở JS — nay tắt đúng theo CÙNG điều kiện đó (hover:hover)
-   thay vì theo bề rộng, đồng thời khoá min-width:0 / max-width:100% cho
-   toàn bộ các tầng DOM còn thiếu (.sv-wallet, .sv-section... trước đây
-   chưa được đặt min-width:0 vì chỉ có "> *" ở cấp con trực tiếp).
-   ══════════════════════════════════════════════════════════════════ */
-@media not (hover:hover){
-  #page-tietkiem .sv-page{perspective:none!important}
-  #page-tietkiem .sv-deck,
-  #page-tietkiem .sv-hero,
-  #page-tietkiem .sv-wallets,
-  #page-tietkiem .sv-wallet{transform-style:flat!important}
-  #page-tietkiem .sv-deck{transform:none!important;will-change:auto!important}
-  #page-tietkiem .sv-deck-card{display:none!important}
-  #page-tietkiem .sv-hero-top,
-  #page-tietkiem .sv-hero-amount,
-  #page-tietkiem .sv-delta,
-  #page-tietkiem .sv-contrib,
-  #page-tietkiem .sv-w-av,
-  #page-tietkiem .sv-w-bal{transform:none!important}
-  #page-tietkiem .sv-hero-pig{transform:none!important;animation:none!important}
-  #page-tietkiem .sv-wallet:hover,
-  #page-tietkiem .sv-tx:hover{transform:none!important}
-}
-#page-tietkiem{overflow-x:hidden!important;max-width:100%!important}
-#page-tietkiem,#page-tietkiem *{box-sizing:border-box!important}
-#page-tietkiem .sv-page,
-#page-tietkiem .sv-page>*,
-#page-tietkiem .sv-wallets>*,
-#page-tietkiem .sv-so,
-#page-tietkiem .sv-section,
-#page-tietkiem #sv-history-wrap,
-#page-tietkiem .sv-month-list>*,
-#page-tietkiem .sv-contrib>*{
-  min-width:0!important;
-  max-width:100%!important;
-}
-#page-tietkiem .sv-hero-amount,
-#page-tietkiem .sv-w-bal,
-#page-tietkiem .sv-so-amt,
-#page-tietkiem .sv-contrib-amt,
-#page-tietkiem .sv-delta{
-  overflow-wrap:anywhere!important;
-  word-break:break-word!important;
-}
-html,body{max-width:100vw}
 </style>
 </head>
 <body>
