@@ -2104,6 +2104,121 @@ select.field-input option{background:var(--s2)}
     newCardGlow 2s ease .45s forwards !important;
 }
 
+
+/* ═══════════════ TIẾT KIỆM ═══════════════ */
+.sv-page{max-width:960px;margin:0 auto;padding:2px 0 48px;display:flex;flex-direction:column;gap:16px}
+.sv-in{animation:svIn .55s cubic-bezier(.22,1,.36,1) both}
+@keyframes svIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes svShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sv-skel{border-radius:22px;background:linear-gradient(90deg,var(--s1) 0%,var(--s3) 50%,var(--s1) 100%);background-size:200% 100%;animation:svShimmer 1.4s linear infinite}
+.sv-hero{position:relative;overflow:hidden;border-radius:26px;padding:22px 20px 20px;
+  background:radial-gradient(110% 130% at 0% 0%,rgba(45,212,160,.30) 0%,transparent 55%),radial-gradient(110% 130% at 100% 100%,rgba(249,168,37,.24) 0%,transparent 55%),linear-gradient(160deg,#10382a 0%,#0a2219 100%);
+  border:1px solid rgba(45,212,160,.28);box-shadow:0 24px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07)}
+.sv-hero::after{content:'';position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;border:1px solid rgba(255,255,255,.07);box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 56px rgba(255,255,255,.015);pointer-events:none}
+.sv-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1}
+.sv-hero-label{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(232,234,246,.7)}
+.sv-hero-pig{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.sv-hero-amount{position:relative;z-index:1;margin-top:8px;font-size:clamp(30px,9.5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.08;font-variant-numeric:tabular-nums;
+  background:linear-gradient(90deg,#ffffff 0%,#c9f7e6 55%,#ffe2a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sv-hero-amount small{font-size:.48em;margin-left:4px;font-weight:700}
+.sv-delta{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(38,217,139,.15);color:var(--green)}
+.sv-delta.neg{background:rgba(255,82,82,.15);color:var(--red)}
+.sv-delta span{color:rgba(232,234,246,.6);font-weight:700}
+.sv-split{position:relative;z-index:1;margin-top:18px}
+.sv-split-bar{display:flex;gap:3px;height:10px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.07)}
+.sv-split-bar div{height:100%;border-radius:999px;transition:width .9s cubic-bezier(.22,1,.36,1)}
+.sv-split-anh{background:linear-gradient(90deg,#17a47a,var(--anh))}
+.sv-split-em{background:linear-gradient(90deg,var(--em),#ffd166)}
+.sv-split-legend{display:flex;justify-content:space-between;margin-top:9px;font-size:12px;font-weight:700;color:rgba(232,234,246,.75)}
+.sv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.sv-people{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sv-person{position:relative;overflow:hidden;border-radius:22px;padding:16px 14px 14px;background:linear-gradient(180deg,var(--cbg) 0%,var(--s1) 55%);border:1px solid var(--border)}
+.sv-person::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--c)}
+.sv-person.anh{--c:var(--anh);--cbg:rgba(45,212,160,.10)}
+.sv-person.em{--c:var(--em);--cbg:rgba(249,168,37,.10)}
+.sv-person-head{display:flex;align-items:center;gap:10px}
+.sv-avatar{flex:none;width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:19px;background:var(--cbg);border:1px solid var(--border)}
+.sv-person-name{font-size:14.5px;font-weight:800;line-height:1.2}
+.sv-person-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:1px}
+.sv-person-cap{margin-top:14px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sv-person-bal{margin-top:3px;font-size:clamp(17px,5.2vw,26px);font-weight:800;color:var(--c);letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.15;word-break:break-word}
+.sv-person-stats{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:5px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.sv-person-stats div{display:flex;justify-content:space-between;gap:6px}
+.sv-person-stats b{font-weight:800;font-variant-numeric:tabular-nums}
+.sv-person-stats b.in{color:var(--green)} .sv-person-stats b.out{color:var(--red)}
+.sv-person-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.sv-btn{height:38px;border-radius:12px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;transition:transform .15s,filter .15s,background .2s}
+.sv-btn:active{transform:scale(.95)}
+.sv-btn-in{background:var(--c);color:#07160f;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.sv-btn-out{background:rgba(255,255,255,.04);color:var(--c);border:1px solid var(--c)}
+.sv-section{background:var(--s1);border:1px solid var(--border);border-radius:22px;padding:16px 14px}
+.sv-sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;padding:0 2px}
+.sv-sec-title{font-size:17px;font-weight:800}
+.sv-sec-count{font-size:12px;color:var(--muted);font-weight:700}
+.sv-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.sv-chips::-webkit-scrollbar{display:none}
+.sv-chips + .sv-chips{margin-top:8px}
+.sv-chip{flex:none;height:32px;padding:0 14px;border-radius:999px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:12.5px;font-weight:800;transition:all .2s}
+.sv-chip.on{background:var(--text);border-color:var(--text);color:#0a1f16}
+.sv-chip.on.anh{background:var(--anh);border-color:var(--anh)}
+.sv-chip.on.em{background:var(--em);border-color:var(--em)}
+.sv-chip.on.in{background:var(--green);border-color:var(--green)}
+.sv-chip.on.out{background:var(--red);border-color:var(--red);color:#fff}
+.sv-month{margin-top:18px}
+.sv-month-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sv-month-net{letter-spacing:0;font-size:12px;font-variant-numeric:tabular-nums}
+.sv-month-net.in{color:var(--green)} .sv-month-net.out{color:var(--red)}
+.sv-list{border-radius:18px;overflow:hidden;background:var(--s2);border:1px solid var(--border)}
+.sv-item{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.sv-item + .sv-item{border-top:1px solid rgba(31,80,53,.55)}
+.sv-item:active,.sv-item:hover{background:var(--s3)}
+.sv-item.anh{--cbg:rgba(45,212,160,.15)} .sv-item.em{--cbg:rgba(249,168,37,.15)}
+.sv-ico{position:relative;flex:none;width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;background:var(--cbg)}
+.sv-arrow{position:absolute;right:-4px;bottom:-4px;width:19px;height:19px;border-radius:50%;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--s2)}
+.sv-arrow.in{background:var(--green);color:#06140e} .sv-arrow.out{background:var(--red);color:#fff}
+.sv-item-main{flex:1;min-width:0}
+.sv-item-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-item-meta{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-item-note{font-size:11.5px;color:var(--dim);font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-item-amt{flex:none;text-align:right;font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.sv-item-amt.in{color:var(--green)} .sv-item-amt.out{color:var(--red)}
+.sv-empty{text-align:center;padding:38px 16px 26px;color:var(--muted);font-size:13px;font-weight:600}
+.sv-empty-ico{font-size:42px;margin-bottom:10px}
+.sv-empty .sv-btn{display:inline-flex;margin-top:16px;padding:0 18px;--c:var(--anh)}
+.sv-lock{max-width:420px;margin:32px auto;text-align:center;padding:34px 24px;border-radius:24px;background:var(--s1);border:1px solid var(--border)}
+.sv-lock-ico{font-size:44px}
+.sv-lock-title{margin-top:12px;font-size:18px;font-weight:800}
+.sv-lock-sub{margin-top:8px;font-size:13px;line-height:1.6;color:var(--muted);font-weight:600;word-break:break-word}
+.sv-lock-sub b{color:var(--text)}
+/* modal */
+.sv-label{display:block;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.sv-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--s1);border:1px solid var(--border);border-radius:15px}
+.sv-seg button{height:44px;border-radius:11px;background:transparent;color:var(--muted);font-size:14px;font-weight:800;transition:all .2s}
+.sv-seg button.on-anh{background:var(--anh);color:#06140e}
+.sv-seg button.on-em{background:var(--em);color:#1a1200}
+.sv-seg button.on-in{background:rgba(38,217,139,.18);color:var(--green);box-shadow:inset 0 0 0 1px rgba(38,217,139,.55)}
+.sv-seg button.on-out{background:rgba(255,82,82,.16);color:var(--red);box-shadow:inset 0 0 0 1px rgba(255,82,82,.55)}
+.sv-amount-box{margin-top:16px;padding:16px 14px 14px;border-radius:18px;background:var(--s1);border:1px solid var(--border);text-align:center}
+#modal-savings .sv-amount-input{width:100%;background:transparent;border:none;text-align:center;color:var(--text);font-size:34px!important;font-weight:800;font-variant-numeric:tabular-nums;padding:2px 0}
+#modal-savings .sv-amount-input::placeholder{color:var(--dim)}
+.sv-quick{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.sv-quick button{height:30px;padding:0 12px;border-radius:999px;background:var(--s3);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:800}
+.sv-quick button:active{transform:scale(.94)}
+.sv-field{margin-top:16px}
+.sv-field .field-input{width:100%}
+.sv-del{height:40px;padding:0 14px;border-radius:var(--r2);background:rgba(255,82,82,.12);color:var(--red);font-size:13px;font-weight:800;border:1px solid rgba(255,82,82,.35)}
+.sv-grabber{display:none}
+@media (max-width:700px){
+  #modal-savings{align-items:flex-end;padding:0}
+  #modal-savings .modal{max-width:100%;border-radius:24px 24px 0 0;max-height:92vh;transform:translateY(100%);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+  #modal-savings.open .modal{transform:translateY(0)}
+  #modal-savings .modal-header{border-radius:24px 24px 0 0;padding-top:22px}
+  #modal-savings .modal-body{padding:18px 18px}
+  #modal-savings .modal-footer{border-radius:0;padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+  #modal-savings .sv-grabber{display:block;position:sticky;top:0;z-index:6;height:0}
+  #modal-savings .sv-grabber::before{content:'';position:absolute;left:50%;top:8px;transform:translateX(-50%);width:40px;height:4px;border-radius:4px;background:var(--border2)}
+}
+@media (min-width:900px){ .sv-person{padding:20px} }
 </style>
 </head>
 <body>
@@ -2152,6 +2267,7 @@ select.field-input option{background:var(--s2)}
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item" id="nav-tongquan" onclick="navigateTo('tongquan')"><span class="nav-icon">📊</span> Tổng Quan</div>
+      <div class="nav-item" id="nav-tietkiem" onclick="navigateTo('tietkiem')"><span class="nav-icon">🐷</span> Tiết Kiệm</div>
       <div class="nav-section-label">Bảng dự tính</div>
       <div class="nav-item" id="nav-anh" onclick="navigateTo('anh')">
         <span class="nav-icon">👨</span> Của Anh
@@ -2209,6 +2325,7 @@ select.field-input option{background:var(--s2)}
 
     <div class="content">
       <div class="page" id="page-tongquan"></div>
+      <div class="page" id="page-tietkiem"></div>
       <div class="page" id="page-anh"></div>
       <div class="page" id="page-em"></div>
       <div class="page" id="page-henho"></div>
@@ -2223,6 +2340,63 @@ select.field-input option{background:var(--s2)}
 <!-- Sidebar overlay for mobile -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
 <div class="rf-toast" id="rf-toast"></div>
+
+<!-- Savings Modal -->
+<div class="modal-overlay" id="modal-savings" onclick="closeModal(event,'modal-savings')">
+  <div class="modal">
+    <div class="sv-grabber"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="sv-modal-title">Thêm giao dịch</div>
+      <button class="modal-close" onclick="closeModalById('modal-savings')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="sv-label">Của ai</label>
+      <div class="sv-seg" id="sv-owner-seg">
+        <button type="button" data-v="anh" onclick="svPick('owner','anh')">👨 Anh</button>
+        <button type="button" data-v="em" onclick="svPick('owner','em')">👩 Em</button>
+      </div>
+      <label class="sv-label" style="margin-top:16px">Loại giao dịch</label>
+      <div class="sv-seg" id="sv-type-seg">
+        <button type="button" data-v="in" onclick="svPick('type','in')">↓ Gửi vào</button>
+        <button type="button" data-v="out" onclick="svPick('type','out')">↑ Rút ra</button>
+      </div>
+      <div class="sv-amount-box">
+        <label class="sv-label" for="sv-amount" style="margin-bottom:2px">Số tiền (₫)</label>
+        <input id="sv-amount" class="sv-amount-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off" oninput="svAmountInput(this)">
+        <div class="sv-quick">
+          <button type="button" onclick="svQuick(100000)">+100K</button>
+          <button type="button" onclick="svQuick(500000)">+500K</button>
+          <button type="button" onclick="svQuick(1000000)">+1Tr</button>
+          <button type="button" onclick="svQuick(5000000)">+5Tr</button>
+          <button type="button" onclick="svQuick(0)">Xoá</button>
+        </div>
+      </div>
+      <div class="sv-field">
+        <label class="sv-label" for="sv-date">Ngày</label>
+        <input type="date" id="sv-date" class="field-input">
+      </div>
+      <div class="sv-field">
+        <label class="sv-label" for="sv-desc">Mô tả</label>
+        <input type="text" id="sv-desc" class="field-input" maxlength="120" placeholder="VD: Lương tháng này">
+      </div>
+      <div class="sv-field">
+        <label class="sv-label">Danh mục</label>
+        <div class="sv-chips" id="sv-cats"></div>
+      </div>
+      <div class="sv-field">
+        <label class="sv-label" for="sv-note">Ghi chú</label>
+        <textarea id="sv-note" class="field-input" rows="2" placeholder="Không bắt buộc"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="sv-del" id="sv-del-btn" onclick="deleteSavings(this)">Xoá</button>
+      <div style="flex:1"></div>
+      <button class="btn-cancel" onclick="closeModalById('modal-savings')">Huỷ</button>
+      <button class="btn-primary" id="sv-save-btn" onclick="saveSavings(this)">Lưu</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ════════════════ MODALS ════════════════ -->
 
@@ -2488,6 +2662,7 @@ const QUY_PAGES = ['henho','cuoi','tuthien','dulich','backup'];
 
 // ── AUTH ─────────────────────────────────────────────────
 sb.auth.onAuthStateChange((evt, session) => {
+  if(window.SV) window.SV.rows = null;
   if(session) initApp();
   else showLogin();
 });
@@ -2638,6 +2813,7 @@ function navigateTo(page) {
   document.getElementById('page-'+page).classList.add('active');
   // Topbar
   const titles = {
+    tietkiem:'🐷 Tiết Kiệm',
     tongquan:'📊 Tổng Quan',
     anh:'👨 Của Anh', em:'👩 Của Em',
     henho:'💕 Quỹ Hẹn Hò', cuoi:'💍 Quỹ Nhẫn Cưới',
@@ -2649,6 +2825,10 @@ function navigateTo(page) {
   if(BDT_PAGES.includes(page)) {
     addBtn.innerHTML = '<span class="btn-full-text">+ Thêm Tháng</span><span class="btn-short-text">+</span>';
     addBtn.className = 'btn-primary' + (page==='em' ? ' btn-em' : '');
+    addBtn.style.display = '';
+  } else if(page==='tietkiem') {
+    addBtn.innerHTML = '<span class="btn-full-text">+ Giao Dịch</span><span class="btn-short-text">+</span>';
+    addBtn.className = 'btn-primary';
     addBtn.style.display = '';
   } else {
     addBtn.style.display = 'none';
@@ -2682,6 +2862,7 @@ async function doRefresh() {
     // Xóa toàn bộ cache rồi load lại tất cả
     S.bdtCache = { anh: {}, em: {} };
     S.quyCache = {};
+    if(page==='tietkiem') await loadSavings();
     await Promise.all([
       loadBDTYear('anh', S.year),
       loadBDTYear('em',  S.year),
@@ -2699,7 +2880,8 @@ async function doRefresh() {
 }
 
 function topbarAddClick() {
-  if(BDT_PAGES.includes(S.page)) openMonthModal(null);
+  if(S.page==='tietkiem') openSavingsModal(null);
+  else if(BDT_PAGES.includes(S.page)) openMonthModal(null);
   else openTxModal(null, S.page);
 }
 
@@ -2795,7 +2977,8 @@ function renderPage(page) {
   if(page==='tongquan') {
     // Ensure both owners' data is loaded for the current year AND prev year (for % change)
     Promise.all([loadBDTYear('anh',S.year), loadBDTYear('em',S.year)]).then(() => renderTongQuan());
-  } else if(BDT_PAGES.includes(page)) renderBDT(page);
+  } else if(page==='tietkiem') renderSavings();
+  else if(BDT_PAGES.includes(page)) renderBDT(page);
   else renderQuy(page);
 }
 
@@ -4217,3 +4400,204 @@ function showLoadingToast(msg) {
 // ── END DUPLICATE MONTH FEATURE ──────────────────────────
 
 </script>
+
+<script>
+
+// ═══════════════ TIẾT KIỆM (savings_transactions) ═══════════════
+const SAVINGS_EMAIL = 'haiduachungminh@gmail.com';
+var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, form: { owner: 'anh', type: 'in', category: '' } };
+window.SV = SV;
+const SV_CATS = {
+  in:  ['Lương', 'Thưởng', 'Lãi tiết kiệm', 'Tiền mừng', 'Thu nhập phụ', 'Khác'],
+  out: ['Khẩn cấp', 'Mua sắm lớn', 'Đầu tư', 'Chuyển quỹ', 'Khác']
+};
+const svEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const svFmt = n => Math.round(Number(n) || 0).toLocaleString('vi-VN');
+const svParse = v => Number(String(v || '').replace(/\D/g, '')) || 0;
+const svSigned = r => (r.type === 'in' ? 1 : -1) * (Number(r.amount) || 0);
+
+async function loadSavings() {
+  const { data: { user } } = await sb.auth.getUser();
+  SV.allowed = !!user && (user.email || '').toLowerCase() === SAVINGS_EMAIL;
+  if (!SV.allowed) { SV.rows = []; return; }
+  const { data, error } = await sb.from('savings_transactions').select('*')
+    .order('date', { ascending: false }).order('created_at', { ascending: false });
+  if (error) throw error;
+  SV.rows = data || [];
+}
+
+function svTotals() {
+  const t = { anh: { in: 0, out: 0, n: 0 }, em: { in: 0, out: 0, n: 0 } };
+  SV.rows.forEach(r => { if (t[r.owner]) { t[r.owner][r.type] += Number(r.amount) || 0; t[r.owner].n++; } });
+  t.anh.bal = t.anh.in - t.anh.out;
+  t.em.bal = t.em.in - t.em.out;
+  t.total = t.anh.bal + t.em.bal;
+  const ym = new Date().toISOString().slice(0, 7);
+  t.month = SV.rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + svSigned(r), 0);
+  return t;
+}
+
+async function renderSavings() {
+  const el = document.getElementById('page-tietkiem');
+  if (SV.rows === null) {
+    el.innerHTML = '<div class="sv-page"><div class="sv-skel" style="height:196px"></div><div class="sv-people"><div class="sv-skel" style="height:230px"></div><div class="sv-skel" style="height:230px"></div></div><div class="sv-skel" style="height:280px"></div></div>';
+    try { await loadSavings(); }
+    catch (e) {
+      console.error(e);
+      el.innerHTML = `<div class="sv-lock sv-in"><div class="sv-lock-ico">⚠️</div><div class="sv-lock-title">Không tải được dữ liệu</div><div class="sv-lock-sub">${svEsc(e.message)}<br>Hãy kiểm tra bảng <b>savings_transactions</b> trên Supabase.</div><button class="btn-primary" style="margin-top:18px" onclick="SV.rows=null;renderSavings()">Thử lại</button></div>`;
+      return;
+    }
+  }
+  if (S.page !== 'tietkiem') return;
+  if (!SV.allowed) {
+    el.innerHTML = `<div class="sv-lock sv-in"><div class="sv-lock-ico">🔒</div><div class="sv-lock-title">Khu vực riêng tư</div><div class="sv-lock-sub">Chỉ tài khoản <b>${SAVINGS_EMAIL}</b> mới được xem và thêm tiền tiết kiệm.</div></div>`;
+    return;
+  }
+  const t = svTotals();
+  const pa = Math.max(t.anh.bal, 0), pe = Math.max(t.em.bal, 0);
+  const wa = pa + pe > 0 ? Math.round(pa / (pa + pe) * 100) : 50;
+  el.innerHTML = `
+<div class="sv-page">
+  <div class="sv-hero sv-in">
+    <div class="sv-hero-top"><div class="sv-hero-label">Tổng tiết kiệm của hai đứa</div><div class="sv-hero-pig">🐷</div></div>
+    <div class="sv-hero-amount">${svFmt(t.total)}<small>₫</small></div>
+    <div class="sv-delta ${t.month < 0 ? 'neg' : ''}">${t.month < 0 ? '▼' : '▲'} ${t.month < 0 ? '−' : '+'}${svFmt(Math.abs(t.month))} ₫ <span>tháng này</span></div>
+    <div class="sv-split">
+      <div class="sv-split-bar"><div class="sv-split-anh" style="width:${wa}%"></div><div class="sv-split-em" style="width:${100 - wa}%"></div></div>
+      <div class="sv-split-legend"><span><i class="sv-dot" style="background:var(--anh)"></i>Anh ${wa}%</span><span><i class="sv-dot" style="background:var(--em)"></i>Em ${100 - wa}%</span></div>
+    </div>
+  </div>
+  <div class="sv-people">${svPersonCard('anh', t)}${svPersonCard('em', t)}</div>
+  ${svHistory()}
+</div>`;
+}
+
+function svPersonCard(o, t) {
+  const d = t[o];
+  const name = o === 'anh' ? 'Của Anh' : 'Của Em';
+  return `<div class="sv-person ${o} sv-in" style="animation-delay:${o === 'anh' ? .06 : .12}s">
+    <div class="sv-person-head"><div class="sv-avatar">${o === 'anh' ? '👨' : '👩'}</div><div><div class="sv-person-name">${name}</div><div class="sv-person-sub">${d.n} giao dịch</div></div></div>
+    <div class="sv-person-cap">Số dư thực tế</div>
+    <div class="sv-person-bal">${svFmt(d.bal)} ₫</div>
+    <div class="sv-person-stats"><div><span>Đã gửi</span><b class="in">+${svFmt(d.in)}</b></div><div><span>Đã rút</span><b class="out">−${svFmt(d.out)}</b></div></div>
+    <div class="sv-person-actions"><button class="sv-btn sv-btn-in" onclick="openSavingsModal(null,'${o}','in')">＋ Gửi</button><button class="sv-btn sv-btn-out" onclick="openSavingsModal(null,'${o}','out')">− Rút</button></div>
+  </div>`;
+}
+
+function svHistory() {
+  const rows = SV.rows.filter(r => (!SV.fOwner || r.owner === SV.fOwner) && (!SV.fType || r.type === SV.fType));
+  const chip = (k, v, label, cls) => `<button class="sv-chip ${cls || ''} ${SV[k] === v ? 'on' : ''}" onclick="svSetFilter('${k}','${v}')">${label}</button>`;
+  let body;
+  if (!rows.length) {
+    body = SV.rows.length
+      ? '<div class="sv-empty"><div class="sv-empty-ico">🔍</div>Không có giao dịch phù hợp bộ lọc</div>'
+      : '<div class="sv-empty"><div class="sv-empty-ico">🌱</div>Chưa có giao dịch nào.<br>Bắt đầu gửi khoản tiết kiệm đầu tiên nhé!<br><button class="sv-btn sv-btn-in" onclick="openSavingsModal(null)">＋ Thêm giao dịch</button></div>';
+  } else {
+    const groups = {};
+    rows.forEach(r => { const k = (r.date || '').slice(0, 7); (groups[k] = groups[k] || []).push(r); });
+    body = Object.keys(groups).sort().reverse().map(k => {
+      const [y, m] = k.split('-');
+      const net = groups[k].reduce((s, r) => s + svSigned(r), 0);
+      return `<div class="sv-month"><div class="sv-month-head"><span>Tháng ${+m}/${y}</span><span class="sv-month-net ${net >= 0 ? 'in' : 'out'}">${net >= 0 ? '+' : '−'}${svFmt(Math.abs(net))} ₫</span></div><div class="sv-list">${groups[k].map(svItem).join('')}</div></div>`;
+    }).join('');
+  }
+  return `<div class="sv-section sv-in" style="animation-delay:.18s">
+    <div class="sv-sec-head"><div class="sv-sec-title">Lịch sử giao dịch</div><div class="sv-sec-count">${rows.length} giao dịch</div></div>
+    <div class="sv-chips">${chip('fOwner', '', 'Tất cả')}${chip('fOwner', 'anh', '👨 Anh', 'anh')}${chip('fOwner', 'em', '👩 Em', 'em')}</div>
+    <div class="sv-chips">${chip('fType', '', 'Mọi loại')}${chip('fType', 'in', '↓ Gửi vào', 'in')}${chip('fType', 'out', '↑ Rút ra', 'out')}</div>
+    ${body}
+  </div>`;
+}
+
+function svItem(r) {
+  const isIn = r.type === 'in';
+  const title = r.description || r.category || (isIn ? 'Gửi tiết kiệm' : 'Rút tiết kiệm');
+  const meta = [r.owner === 'anh' ? 'Anh' : 'Em', fmtDate(r.date), r.description && r.category ? r.category : null].filter(Boolean).join(' · ');
+  return `<div class="sv-item ${r.owner}" onclick="openSavingsModal('${r.id}')">
+    <div class="sv-ico">${r.owner === 'anh' ? '👨' : '👩'}<span class="sv-arrow ${r.type}">${isIn ? '↓' : '↑'}</span></div>
+    <div class="sv-item-main"><div class="sv-item-title">${svEsc(title)}</div><div class="sv-item-meta">${svEsc(meta)}</div>${r.note ? `<div class="sv-item-note">${svEsc(r.note)}</div>` : ''}</div>
+    <div class="sv-item-amt ${r.type}">${isIn ? '+' : '−'}${svFmt(r.amount)}</div>
+  </div>`;
+}
+
+function svSetFilter(k, v) { SV[k] = v; renderSavings(); }
+
+function openSavingsModal(id, owner, type) {
+  if (!SV.allowed) { toast('Chỉ tài khoản ' + SAVINGS_EMAIL + ' mới được thêm/sửa', 'error'); return; }
+  const r = id ? SV.rows.find(x => x.id === id) : null;
+  SV.edit = r ? r.id : null;
+  SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || '' };
+  document.getElementById('sv-modal-title').textContent = r ? 'Sửa giao dịch' : 'Thêm giao dịch';
+  document.getElementById('sv-amount').value = r ? svFmt(r.amount) : '';
+  document.getElementById('sv-date').value = r ? r.date : today();
+  document.getElementById('sv-desc').value = r ? (r.description || '') : '';
+  document.getElementById('sv-note').value = r ? (r.note || '') : '';
+  document.getElementById('sv-del-btn').style.display = r ? '' : 'none';
+  svSyncForm();
+  openModalById('modal-savings');
+}
+
+function svSyncForm() {
+  const f = SV.form;
+  document.querySelectorAll('#sv-owner-seg button').forEach(b => { b.className = b.dataset.v === f.owner ? 'on-' + f.owner : ''; });
+  document.querySelectorAll('#sv-type-seg button').forEach(b => { b.className = b.dataset.v === f.type ? 'on-' + f.type : ''; });
+  const list = SV_CATS[f.type].slice();
+  if (f.category && !list.includes(f.category)) list.push(f.category);
+  document.getElementById('sv-cats').innerHTML = list.map(c =>
+    `<button type="button" class="sv-chip ${f.category === c ? 'on ' + f.owner : ''}" data-c="${svEsc(c)}" onclick="svPickCat(this.dataset.c)">${svEsc(c)}</button>`).join('');
+  document.getElementById('sv-desc').placeholder = f.type === 'in' ? 'VD: Lương tháng này' : 'VD: Rút mua xe';
+}
+
+function svPick(k, v) {
+  SV.form[k] = v;
+  if (k === 'type' && !SV_CATS[v].includes(SV.form.category)) SV.form.category = '';
+  svSyncForm();
+}
+function svPickCat(c) { SV.form.category = SV.form.category === c ? '' : c; svSyncForm(); }
+function svAmountInput(el) { const d = el.value.replace(/\D/g, '').slice(0, 13); el.value = d ? Number(d).toLocaleString('vi-VN') : ''; }
+function svQuick(n) { const el = document.getElementById('sv-amount'); const v = n ? svParse(el.value) + n : 0; el.value = v ? svFmt(v) : ''; }
+
+async function saveSavings(btn) {
+  const f = SV.form;
+  const amount = svParse(document.getElementById('sv-amount').value);
+  const date = document.getElementById('sv-date').value;
+  if (!amount) { toast('Vui lòng nhập số tiền', 'error'); return; }
+  if (!date) { toast('Vui lòng chọn ngày', 'error'); return; }
+  if (f.type === 'out') {
+    const bal = SV.rows.filter(r => r.owner === f.owner && r.id !== SV.edit).reduce((s, r) => s + svSigned(r), 0);
+    if (amount > bal && !confirm('Số tiền rút (' + svFmt(amount) + ' ₫) lớn hơn số dư hiện tại (' + svFmt(bal) + ' ₫). Vẫn lưu?')) return;
+  }
+  const payload = {
+    owner: f.owner, type: f.type, amount, date,
+    description: document.getElementById('sv-desc').value.trim() || null,
+    category: f.category || null,
+    note: document.getElementById('sv-note').value.trim() || null
+  };
+  const editing = SV.edit;
+  await withLoading(btn, async () => {
+    const q = editing
+      ? sb.from('savings_transactions').update(payload).eq('id', editing)
+      : sb.from('savings_transactions').insert(payload);
+    const { error } = await q;
+    if (error) throw error;
+    closeModalById('modal-savings');
+    await loadSavings();
+    renderSavings();
+  }, editing ? '✅ Đã cập nhật giao dịch' : '✅ Đã thêm giao dịch');
+}
+
+async function deleteSavings(btn) {
+  if (!SV.edit || !confirm('Xoá giao dịch này?')) return;
+  const id = SV.edit;
+  await withLoading(btn, async () => {
+    const { error } = await sb.from('savings_transactions').delete().eq('id', id);
+    if (error) throw error;
+    closeModalById('modal-savings');
+    await loadSavings();
+    renderSavings();
+  }, '🗑️ Đã xoá giao dịch');
+}
+
+</script>
+</body>
+</html>
