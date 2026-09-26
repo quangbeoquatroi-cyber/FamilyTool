@@ -2259,6 +2259,47 @@ select.field-input option{background:var(--s2)}
     inset 0 1px 0 rgba(255,255,255,.07) !important;
 }
 
+/* ── FIX: chọn Anh/Em + gợi ý chuyển sổ ── */
+.sv-seg button.on-anh{background:rgba(0,230,118,.16);color:var(--anh);box-shadow:inset 0 0 0 1px rgba(0,230,118,.5)}
+.sv-seg button.on-em{background:rgba(255,179,0,.16);color:var(--em);box-shadow:inset 0 0 0 1px rgba(255,179,0,.5)}
+.sv-so-hint{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,202,40,.10);border:1px dashed rgba(255,202,40,.4);color:#ffd166;font-size:12.5px;font-weight:800;text-align:center;line-height:1.4}
+#modal-savings .sv-chips{flex-wrap:wrap;overflow:visible}
+
+/* ── FIX: tab Tiết Kiệm tràn màn hình trên điện thoại (tắt hiệu ứng 3D gây phóng to) ── */
+@keyframes svInFlat{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (max-width:700px){
+  #page-tietkiem{overflow-x:hidden;max-width:100%}
+  .sv-page,.sv-page *{box-sizing:border-box}
+  .sv-page{perspective:none;width:100%;max-width:100%;min-width:0;gap:14px;padding-bottom:40px}
+  .sv-page > *{min-width:0;max-width:100%}
+  .sv-deck,.sv-hero,.sv-wallets,.sv-wallet{transform-style:flat}
+  .sv-deck{transform:none!important;will-change:auto}
+  .sv-deck-card{display:none}
+  .sv-hero-top,.sv-hero-amount,.sv-delta,.sv-contrib,.sv-w-av,.sv-w-bal{transform:none}
+  .sv-hero-pig{transform:none;animation:none;width:42px;height:42px;font-size:22px}
+  .sv-in,.sv-so{animation-name:svInFlat}
+  .sv-wallet:hover,.sv-tx:hover{transform:none}
+  .sv-hero{padding:18px 16px 16px;border-radius:20px}
+  .sv-hero::after{display:none}
+  .sv-hero-amount{font-size:clamp(26px,8.5vw,38px);word-break:break-word}
+  .sv-contrib{gap:8px;margin-top:14px}
+  .sv-contrib-pill{padding:10px 11px;min-width:0}
+  .sv-contrib-top{font-size:11px;gap:6px}
+  .sv-contrib-av{width:22px;height:22px;font-size:13px}
+  .sv-contrib-amt{font-size:15px;word-break:break-word}
+  .sv-wallet,.sv-so,.sv-section{padding:14px 13px;border-radius:18px}
+  .sv-w-av,.sv-so-av{width:38px;height:38px;font-size:19px;border-radius:12px}
+  .sv-w-cap,.sv-so-cap{margin-top:12px}
+  .sv-w-bal,.sv-so-amt{font-size:clamp(20px,6.5vw,26px)}
+  .sv-w-actions{margin-top:12px}
+  .sv-btn{height:38px;font-size:13px}
+  .sv-so-stats{gap:6px 12px;font-size:11.5px}
+  .sv-tx{padding:11px;gap:10px}
+  .sv-tx-ico{width:38px;height:38px;font-size:17px}
+  .sv-tx-title{font-size:13.5px}
+  .sv-tx-amt{font-size:14px}
+}
+
 </style>
 </head>
 <body>
@@ -2391,6 +2432,11 @@ select.field-input option{background:var(--s2)}
         <button type="button" data-v="in" onclick="svPick('type','in')">↓ Gửi vào</button>
         <button type="button" data-v="out" onclick="svPick('type','out')">↑ Rút ra</button>
       </div>
+      <label class="sv-label" style="margin-top:16px" id="sv-owner-label">Ví của</label>
+      <div class="sv-seg" id="sv-owner-seg">
+        <button type="button" data-v="anh" onclick="svPickOwner('anh')">👨 Anh</button>
+        <button type="button" data-v="em" onclick="svPickOwner('em')">👩 Em</button>
+      </div>
       <div id="sv-so-field" style="display:none">
         <label class="sv-label" style="margin-top:16px">Ghi vào sổ tiết kiệm (ai đang giữ sổ)</label>
         <div class="sv-seg sv-so-seg" id="sv-so-seg">
@@ -2399,6 +2445,7 @@ select.field-input option{background:var(--s2)}
           <button type="button" data-v="em" onclick="svPickSo('em')">👩 Em giữ</button>
         </div>
       </div>
+      <div class="sv-so-hint" id="sv-so-hint" style="display:none"></div>
       <div class="sv-amount-box">
         <label class="sv-label" for="sv-amount" style="margin-bottom:2px">Số tiền (₫)</label>
         <input id="sv-amount" class="sv-amount-input" type="text" inputmode="numeric" placeholder="0" autocomplete="off" oninput="svAmountInput(this)">
@@ -4468,9 +4515,14 @@ function svTotals() {
   SV.rows.forEach(r => { if (t[r.owner]) { t[r.owner][r.type] += Number(r.amount) || 0; t[r.owner].n++; } });
   t.anh.bal = t.anh.in - t.anh.out;
   t.em.bal = t.em.in - t.em.out;
-  t.total = t.anh.bal + t.em.bal;
+  // tiền chuyển vào sổ vẫn là tiền tiết kiệm → cộng lại vào tổng
+  const soSign = r => (r.type === 'out' ? 1 : -1) * (Number(r.amount) || 0);
+  const soRows = SV.rows.filter(r => r.passbook_holder === 'anh' || r.passbook_holder === 'em');
+  t.anh.so = soRows.filter(r => r.owner === 'anh').reduce((s, r) => s + soSign(r), 0);
+  t.em.so = soRows.filter(r => r.owner === 'em').reduce((s, r) => s + soSign(r), 0);
+  t.total = t.anh.bal + t.em.bal + t.anh.so + t.em.so;
   const ym = new Date().toISOString().slice(0, 7);
-  t.month = SV.rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + svSigned(r), 0);
+  t.month = SV.rows.filter(r => !r.passbook_holder && (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + svSigned(r), 0);
   return t;
 }
 
@@ -4507,11 +4559,11 @@ async function renderSavings() {
       <div class="sv-contrib">
         <div class="sv-contrib-pill">
           <div class="sv-contrib-top"><div class="sv-contrib-av">👨</div> Anh đóng góp</div>
-          <div class="sv-contrib-amt">${svFmt(t.anh.bal)} ₫</div>
+          <div class="sv-contrib-amt">${svFmt(t.anh.bal + t.anh.so)} ₫</div>
         </div>
         <div class="sv-contrib-pill">
           <div class="sv-contrib-top"><div class="sv-contrib-av em">👩</div> Em đóng góp</div>
-          <div class="sv-contrib-amt">${svFmt(t.em.bal)} ₫</div>
+          <div class="sv-contrib-amt">${svFmt(t.em.bal + t.em.so)} ₫</div>
         </div>
       </div>
     </div>
@@ -4550,7 +4602,7 @@ function svSoCard() {
           <div class="sv-so-name">Sổ tiết kiệm</div>
         </div>
       </div>
-      <button class="sv-so-btn" onclick="openSavingsModal(null,'anh','out')">＋ Gửi vào sổ</button>
+      <button class="sv-so-btn" onclick="openPassbookModal()">＋ Gửi vào sổ</button>
     </div>
     <div class="sv-so-cap">Đã tích lũy vào sổ</div>
     <div class="sv-so-amt">${svFmt(total)} ₫</div>
@@ -4636,6 +4688,18 @@ function svSyncForm() {
   const f = SV.form;
   document.querySelectorAll('#sv-type-seg button').forEach(b => { b.className = b.dataset.v === f.type ? 'on-' + f.type : ''; });
   document.querySelectorAll('#sv-so-seg button').forEach(b => { b.className = b.dataset.v === f.so ? 'on-so' : ''; });
+  document.querySelectorAll('#sv-owner-seg button').forEach(b => { b.className = b.dataset.v === f.owner ? 'on-' + f.owner : ''; });
+  const nm = o => o === 'anh' ? 'Anh' : 'Em';
+  document.getElementById('sv-owner-label').textContent = f.so
+    ? (f.type === 'out' ? 'Lấy tiền từ ví của' : 'Trả tiền về ví của')
+    : (f.type === 'in' ? 'Gửi vào ví của' : 'Rút từ ví của');
+  const hint = document.getElementById('sv-so-hint');
+  if (f.so) {
+    hint.style.display = 'block';
+    hint.textContent = f.type === 'out'
+      ? '👛 Ví của ' + nm(f.owner) + '  →  📒 Sổ tiết kiệm (' + nm(f.so) + ' giữ)'
+      : '📒 Sổ tiết kiệm (' + nm(f.so) + ' giữ)  →  👛 Ví của ' + nm(f.owner);
+  } else hint.style.display = 'none';
   const soField = document.getElementById('sv-so-field');
   if (soField) soField.style.display = SV.hasSoCol ? 'block' : 'none';
   const list = SV_CATS[f.type].slice();
@@ -4651,6 +4715,16 @@ function svPick(k, v) {
   svSyncForm();
 }
 function svPickSo(v) { SV.form.so = v; svSyncForm(); }
+function svPickOwner(v) { if (SV.form.so && SV.form.so === SV.form.owner) SV.form.so = v; SV.form.owner = v; svSyncForm(); }
+function openPassbookModal() {
+  if (SV.allowed && !SV.hasSoCol) { toast('Chưa có cột passbook_holder trên Supabase — hãy chạy file SQL rồi tải lại trang', 'error'); return; }
+  openSavingsModal(null, SV.fOwner || 'anh', 'out', 'Mở sổ tiết kiệm');
+  if (!SV.allowed) return;
+  SV.form.so = SV.form.owner;
+  document.getElementById('sv-modal-title').textContent = 'Gửi vào sổ tiết kiệm';
+  document.getElementById('sv-desc').placeholder = 'VD: Gửi sổ kỳ hạn 6 tháng';
+  svSyncForm();
+}
 function svPickCat(c) { SV.form.category = SV.form.category === c ? '' : c; svSyncForm(); }
 function svAmountInput(el) { const d = el.value.replace(/\D/g, '').slice(0, 13); el.value = d ? Number(d).toLocaleString('vi-VN') : ''; }
 function svQuick(n) { const el = document.getElementById('sv-amount'); const v = n ? svParse(el.value) + n : 0; el.value = v ? svFmt(v) : ''; }
@@ -4661,6 +4735,7 @@ async function saveSavings(btn) {
   const date = document.getElementById('sv-date').value;
   if (!amount) { toast('Vui lòng nhập số tiền', 'error'); return; }
   if (!date) { toast('Vui lòng chọn ngày', 'error'); return; }
+  if (f.so && !SV.hasSoCol) { toast('Chưa có cột passbook_holder trên Supabase — hãy chạy file SQL rồi tải lại trang', 'error'); return; }
   if (f.type === 'out') {
     const bal = SV.rows.filter(r => r.owner === f.owner && r.id !== SV.edit).reduce((s, r) => s + svSigned(r), 0);
     if (amount > bal && !confirm('Số tiền rút (' + svFmt(amount) + ' ₫) lớn hơn số dư hiện tại (' + svFmt(bal) + ' ₫). Vẫn lưu?')) return;
