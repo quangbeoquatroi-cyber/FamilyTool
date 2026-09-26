@@ -2114,13 +2114,14 @@ select.field-input option{background:var(--s2)}
 .sv-so-id{display:flex;align-items:center;gap:10px;min-width:0}
 .sv-so-av{flex:none;width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,202,40,.14);border:1px solid rgba(255,202,40,.3);box-shadow:0 6px 16px rgba(255,179,0,.2)}
 .sv-so-name{font-size:15px;font-weight:800;line-height:1.25}
-.sv-so-sub{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
 .sv-so-btn{height:36px;padding:0 14px;border-radius:12px;border:none;font-size:12.5px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px;background:linear-gradient(180deg,#ffca3d,#e6a200);color:#1a1200;box-shadow:0 6px 16px rgba(255,179,0,.3);flex-shrink:0}
 .sv-so-btn:active{transform:scale(.95)}
 .sv-so-cap{margin-top:14px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .sv-so-amt{margin-top:3px;font-size:clamp(20px,5.6vw,30px);font-weight:800;font-variant-numeric:tabular-nums;color:#ffd166;letter-spacing:-.01em}
 .sv-so-stats{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,202,40,.22);display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;font-weight:700;color:var(--muted)}
 .sv-so-stats b{font-weight:800;color:var(--text)}
+.sv-seg.sv-so-seg{grid-template-columns:repeat(3,1fr)}
+.sv-seg button.on-so{background:rgba(255,202,40,.16);color:#ffd166;box-shadow:inset 0 0 0 1px rgba(255,202,40,.5)}
 
 /* history — redesigned */
 .sv-section{background:var(--s1);border:1px solid var(--border);border-radius:22px;padding:18px 16px;box-shadow:0 14px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
@@ -2389,6 +2390,14 @@ select.field-input option{background:var(--s2)}
       <div class="sv-seg" id="sv-type-seg">
         <button type="button" data-v="in" onclick="svPick('type','in')">↓ Gửi vào</button>
         <button type="button" data-v="out" onclick="svPick('type','out')">↑ Rút ra</button>
+      </div>
+      <div id="sv-so-field" style="display:none">
+        <label class="sv-label" style="margin-top:16px">Ghi vào sổ tiết kiệm (ai đang giữ sổ)</label>
+        <div class="sv-seg sv-so-seg" id="sv-so-seg">
+          <button type="button" data-v="" onclick="svPickSo('')">Không</button>
+          <button type="button" data-v="anh" onclick="svPickSo('anh')">👨 Anh giữ</button>
+          <button type="button" data-v="em" onclick="svPickSo('em')">👩 Em giữ</button>
+        </div>
       </div>
       <div class="sv-amount-box">
         <label class="sv-label" for="sv-amount" style="margin-bottom:2px">Số tiền (₫)</label>
@@ -4430,7 +4439,7 @@ function showLoadingToast(msg) {
 
 // ═══════════════ TIẾT KIỆM (savings_transactions) ═══════════════
 const SAVINGS_EMAIL = 'haiduachungminh@gmail.com';
-var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, form: { owner: 'anh', type: 'in', category: '' } };
+var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, hasSoCol: false, form: { owner: 'anh', type: 'in', category: '', so: '' } };
 window.SV = SV;
 const SV_CATS = {
   in:  ['Lương', 'Thưởng', 'Lãi tiết kiệm', 'Tiền mừng', 'Thu nhập phụ', 'Khác'],
@@ -4449,6 +4458,9 @@ async function loadSavings() {
     .order('date', { ascending: false }).order('created_at', { ascending: false });
   if (error) throw error;
   SV.rows = data || [];
+  // kiểm tra cột passbook_holder đã được thêm trong Supabase chưa
+  const { error: soErr } = await sb.from('savings_transactions').select('passbook_holder').limit(1);
+  SV.hasSoCol = !soErr;
 }
 
 function svTotals() {
@@ -4522,27 +4534,31 @@ async function renderSavings() {
 
 
 function svSoCard() {
-  const kw = 'sổ tiết kiệm';
-  const rows = SV.rows.filter(r => r.type === 'out' && (((r.category || '') + ' ' + (r.description || '')).toLowerCase().includes(kw)));
-  const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  // chỉ tính giao dịch được đánh dấu rõ ràng qua cột passbook_holder (không tự dò theo mô tả nữa)
+  const rows = SV.rows.filter(r => r.passbook_holder === 'anh' || r.passbook_holder === 'em');
+  const sign = r => (r.type === 'out' ? 1 : -1) * (Number(r.amount) || 0);
+  const total = rows.reduce((s, r) => s + sign(r), 0);
+  const anhHold = rows.filter(r => r.passbook_holder === 'anh').reduce((s, r) => s + sign(r), 0);
+  const emHold = rows.filter(r => r.passbook_holder === 'em').reduce((s, r) => s + sign(r), 0);
   const ym = new Date().toISOString().slice(0, 7);
-  const month = rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  const month = rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + sign(r), 0);
   return `<div class="sv-so">
     <div class="sv-so-top">
       <div class="sv-so-id">
         <div class="sv-so-av">📒</div>
         <div>
-          <div class="sv-so-name">Sổ tiết kiệm — Em iu giữ 💕</div>
-          <div class="sv-so-sub">Tiền giao em iu gửi ngân hàng, em đang giữ giúp</div>
+          <div class="sv-so-name">Sổ tiết kiệm</div>
         </div>
       </div>
-      <button class="sv-so-btn" onclick="openSavingsModal(null,'anh','out','Mở sổ tiết kiệm')">＋ Gửi vào sổ</button>
+      <button class="sv-so-btn" onclick="openSavingsModal(null,'anh','out')">＋ Gửi vào sổ</button>
     </div>
     <div class="sv-so-cap">Đã tích lũy vào sổ</div>
     <div class="sv-so-amt">${svFmt(total)} ₫</div>
     <div class="sv-so-stats">
-      <span>${rows.length} lần gửi</span>
-      <span>Tháng này: <b>+${svFmt(month)} ₫</b></span>
+      <span>${rows.length} lần ghi sổ</span>
+      <span>Tháng này: <b>${month >= 0 ? '+' : '−'}${svFmt(Math.abs(month))} ₫</b></span>
+      <span>👨 Anh giữ: <b>${svFmt(anhHold)} ₫</b></span>
+      <span>👩 Em giữ: <b>${svFmt(emHold)} ₫</b></span>
     </div>
   </div>`;
 }
@@ -4586,7 +4602,7 @@ function svHistory() {
 function svItem(r) {
   const isIn = r.type === 'in';
   const title = r.description || r.category || (isIn ? 'Gửi tiết kiệm' : 'Rút tiết kiệm');
-  const meta = [r.owner === 'anh' ? 'Anh' : 'Em', fmtDate(r.date), r.description && r.category ? r.category : null].filter(Boolean).join(' · ');
+  const meta = [r.owner === 'anh' ? 'Anh' : 'Em', fmtDate(r.date), r.description && r.category ? r.category : null, r.passbook_holder ? '📒 Sổ — ' + (r.passbook_holder === 'anh' ? 'Anh' : 'Em') + ' giữ' : null].filter(Boolean).join(' · ');
   return `<div class="sv-tx ${r.owner} ${r.type}" onclick="openSavingsModal('${r.id}')">
     <div class="sv-tx-ico">${r.owner === 'anh' ? '👨' : '👩'}<span class="sv-tx-arrow">${isIn ? '↓' : '↑'}</span></div>
     <div class="sv-tx-main"><div class="sv-tx-title">${svEsc(title)}</div><div class="sv-tx-meta">${svEsc(meta)}</div>${r.note ? `<div class="sv-tx-note">${svEsc(r.note)}</div>` : ''}</div>
@@ -4605,7 +4621,7 @@ function openSavingsModal(id, owner, type, cat) {
   if (!SV.allowed) { toast('Chỉ tài khoản ' + SAVINGS_EMAIL + ' mới được thêm/sửa', 'error'); return; }
   const r = id ? SV.rows.find(x => x.id === id) : null;
   SV.edit = r ? r.id : null;
-  SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || cat || '' };
+  SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || cat || '', so: (r && r.passbook_holder) || '' };
   document.getElementById('sv-modal-title').textContent = r ? 'Sửa giao dịch' : 'Thêm giao dịch';
   document.getElementById('sv-amount').value = r ? svFmt(r.amount) : '';
   document.getElementById('sv-date').value = r ? r.date : today();
@@ -4619,6 +4635,9 @@ function openSavingsModal(id, owner, type, cat) {
 function svSyncForm() {
   const f = SV.form;
   document.querySelectorAll('#sv-type-seg button').forEach(b => { b.className = b.dataset.v === f.type ? 'on-' + f.type : ''; });
+  document.querySelectorAll('#sv-so-seg button').forEach(b => { b.className = b.dataset.v === f.so ? 'on-so' : ''; });
+  const soField = document.getElementById('sv-so-field');
+  if (soField) soField.style.display = SV.hasSoCol ? 'block' : 'none';
   const list = SV_CATS[f.type].slice();
   if (f.category && !list.includes(f.category)) list.push(f.category);
   document.getElementById('sv-cats').innerHTML = list.map(c =>
@@ -4631,6 +4650,7 @@ function svPick(k, v) {
   if (k === 'type' && !SV_CATS[v].includes(SV.form.category)) SV.form.category = '';
   svSyncForm();
 }
+function svPickSo(v) { SV.form.so = v; svSyncForm(); }
 function svPickCat(c) { SV.form.category = SV.form.category === c ? '' : c; svSyncForm(); }
 function svAmountInput(el) { const d = el.value.replace(/\D/g, '').slice(0, 13); el.value = d ? Number(d).toLocaleString('vi-VN') : ''; }
 function svQuick(n) { const el = document.getElementById('sv-amount'); const v = n ? svParse(el.value) + n : 0; el.value = v ? svFmt(v) : ''; }
@@ -4651,6 +4671,7 @@ async function saveSavings(btn) {
     category: f.category || null,
     note: document.getElementById('sv-note').value.trim() || null
   };
+  if (SV.hasSoCol) payload.passbook_holder = f.so || null;
   const editing = SV.edit;
   await withLoading(btn, async () => {
     const q = editing
