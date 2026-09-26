@@ -2099,6 +2099,29 @@ select.field-input option{background:var(--s2)}
 .sv-wallet.anh .sv-btn-out:hover{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.4);color:var(--anh)}
 .sv-wallet.em .sv-btn-out:hover{background:rgba(255,179,0,.1);border-color:rgba(255,179,0,.4);color:var(--em)}
 
+/* ── SỔ TIẾT KIỆM (em iu giữ) ── */
+.sv-so{
+  position:relative;overflow:hidden;border-radius:22px;padding:18px 16px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255,202,40,.14) 0%, transparent 55%),
+    radial-gradient(120% 140% at 0% 100%, rgba(255,128,171,.10) 0%, transparent 55%),
+    linear-gradient(160deg, #1B4438 0%, #12352B 100%);
+  border:1px solid rgba(255,202,40,.28);
+  box-shadow:0 18px 42px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:svIn .6s cubic-bezier(.22,1,.36,1) .12s both;
+}
+.sv-so-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.sv-so-id{display:flex;align-items:center;gap:10px;min-width:0}
+.sv-so-av{flex:none;width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,202,40,.14);border:1px solid rgba(255,202,40,.3);box-shadow:0 6px 16px rgba(255,179,0,.2)}
+.sv-so-name{font-size:15px;font-weight:800;line-height:1.25}
+.sv-so-sub{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.sv-so-btn{height:36px;padding:0 14px;border-radius:12px;border:none;font-size:12.5px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px;background:linear-gradient(180deg,#ffca3d,#e6a200);color:#1a1200;box-shadow:0 6px 16px rgba(255,179,0,.3);flex-shrink:0}
+.sv-so-btn:active{transform:scale(.95)}
+.sv-so-cap{margin-top:14px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sv-so-amt{margin-top:3px;font-size:clamp(20px,5.6vw,30px);font-weight:800;font-variant-numeric:tabular-nums;color:#ffd166;letter-spacing:-.01em}
+.sv-so-stats{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,202,40,.22);display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;font-weight:700;color:var(--muted)}
+.sv-so-stats b{font-weight:800;color:var(--text)}
+
 /* history — redesigned */
 .sv-section{background:var(--s1);border:1px solid var(--border);border-radius:22px;padding:18px 16px;box-shadow:0 14px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
 .sv-sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding:0 2px}
@@ -2667,9 +2690,13 @@ const BDT_PAGES = ['anh','em'];
 
 // ── AUTH ─────────────────────────────────────────────────
 sb.auth.onAuthStateChange((evt, session) => {
-  if(window.SV) window.SV.rows = null;
-  if(session) initApp();
-  else showLogin();
+  // Chỉ khởi động lại khi đăng nhập/đăng xuất — TOKEN_REFRESHED không load lại trang nữa
+  if (evt === 'SIGNED_OUT') { showLogin(); return; }
+  if (evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') {
+    if(window.SV) window.SV.rows = null;
+    if(session) initApp();
+    else showLogin();
+  }
 });
 
 async function doLogin() {
@@ -2787,6 +2814,8 @@ document.getElementById('login-pass').addEventListener('keydown', e => {
 
 // ── INIT ─────────────────────────────────────────────────
 async function initApp() {
+  // đã vào app rồi thì không tự khởi động lại (chống reload khi quay lại tab)
+  if (document.getElementById('screen-app').classList.contains('active')) return;
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-app').classList.add('active');
   startIdleWatcher();
@@ -4405,7 +4434,7 @@ var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, form: 
 window.SV = SV;
 const SV_CATS = {
   in:  ['Lương', 'Thưởng', 'Lãi tiết kiệm', 'Tiền mừng', 'Thu nhập phụ', 'Khác'],
-  out: ['Khẩn cấp', 'Mua sắm lớn', 'Đầu tư', 'Chuyển quỹ', 'Khác']
+  out: ['Khẩn cấp', 'Mua sắm lớn', 'Đầu tư', 'Chuyển quỹ', 'Mở sổ tiết kiệm', 'Khác']
 };
 const svEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const svFmt = n => Math.round(Number(n) || 0).toLocaleString('vi-VN');
@@ -4476,7 +4505,8 @@ async function renderSavings() {
     </div>
   </div>
   <div class="sv-wallets">${svWallet('anh', t)}${svWallet('em', t)}</div>
-  ${svHistory()}
+  ${svSoCard()}
+  <div id="sv-history-wrap">${svHistory()}</div>
 </div>`;
   const deck = el.querySelector('.sv-deck');
   if (deck && window.matchMedia('(hover:hover)').matches) {
@@ -4490,6 +4520,32 @@ async function renderSavings() {
   }
 }
 
+
+function svSoCard() {
+  const kw = 'sổ tiết kiệm';
+  const rows = SV.rows.filter(r => r.type === 'out' && (((r.category || '') + ' ' + (r.description || '')).toLowerCase().includes(kw)));
+  const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  const ym = new Date().toISOString().slice(0, 7);
+  const month = rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  return `<div class="sv-so">
+    <div class="sv-so-top">
+      <div class="sv-so-id">
+        <div class="sv-so-av">📒</div>
+        <div>
+          <div class="sv-so-name">Sổ tiết kiệm — Em iu giữ 💕</div>
+          <div class="sv-so-sub">Tiền giao em iu gửi ngân hàng, em đang giữ giúp</div>
+        </div>
+      </div>
+      <button class="sv-so-btn" onclick="openSavingsModal(null,'anh','out','Mở sổ tiết kiệm')">＋ Gửi vào sổ</button>
+    </div>
+    <div class="sv-so-cap">Đã tích lũy vào sổ</div>
+    <div class="sv-so-amt">${svFmt(total)} ₫</div>
+    <div class="sv-so-stats">
+      <span>${rows.length} lần gửi</span>
+      <span>Tháng này: <b>+${svFmt(month)} ₫</b></span>
+    </div>
+  </div>`;
+}
 
 function svWallet(o, t) {
   const d = t[o];
@@ -4537,13 +4593,19 @@ function svItem(r) {
     <div class="sv-tx-amt">${isIn ? '+' : '−'}${svFmt(r.amount)}</div>
   </div>`;
 }
-function svSetFilter(k, v) { SV[k] = v; renderSavings(); }
+function svSetFilter(k, v) {
+  // chỉ vẽ lại khu lịch sử — không re-render cả trang (chống chớp chớp)
+  SV[k] = v;
+  const w = document.getElementById('sv-history-wrap');
+  if (w) w.innerHTML = svHistory();
+  else renderSavings();
+}
 
-function openSavingsModal(id, owner, type) {
+function openSavingsModal(id, owner, type, cat) {
   if (!SV.allowed) { toast('Chỉ tài khoản ' + SAVINGS_EMAIL + ' mới được thêm/sửa', 'error'); return; }
   const r = id ? SV.rows.find(x => x.id === id) : null;
   SV.edit = r ? r.id : null;
-  SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || '' };
+  SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || cat || '' };
   document.getElementById('sv-modal-title').textContent = r ? 'Sửa giao dịch' : 'Thêm giao dịch';
   document.getElementById('sv-amount').value = r ? svFmt(r.amount) : '';
   document.getElementById('sv-date').value = r ? r.date : today();
