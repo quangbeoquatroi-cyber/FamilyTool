@@ -2268,35 +2268,64 @@ select.field-input option{background:var(--s2)}
 /* ── FIX: tab Tiết Kiệm tràn màn hình trên điện thoại (tắt hiệu ứng 3D gây phóng to) ── */
 @keyframes svInFlat{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media (max-width:700px){
+  /* Tiết Kiệm — căn chỉnh khớp với month-card ở các tab khác (padding 12px, radius 16px) */
   #page-tietkiem{overflow-x:hidden;max-width:100%}
   .sv-page,.sv-page *{box-sizing:border-box}
-  .sv-page{perspective:none;width:100%;max-width:100%;min-width:0;gap:14px;padding-bottom:40px}
-  .sv-page > *{min-width:0;max-width:100%}
+  .sv-page{perspective:none;width:100%;max-width:100%;min-width:0;gap:12px;padding:0 0 40px}
+  .sv-page > *{min-width:0;max-width:100%;width:100%}
+
+  /* tắt hiệu ứng 3D gây phóng to/tràn ngang */
   .sv-deck,.sv-hero,.sv-wallets,.sv-wallet{transform-style:flat}
   .sv-deck{transform:none!important;will-change:auto}
   .sv-deck-card{display:none}
   .sv-hero-top,.sv-hero-amount,.sv-delta,.sv-contrib,.sv-w-av,.sv-w-bal{transform:none}
-  .sv-hero-pig{transform:none;animation:none;width:42px;height:42px;font-size:22px}
+  .sv-hero-pig{transform:none;animation:none;width:40px;height:40px;font-size:22px}
   .sv-in,.sv-so{animation-name:svInFlat}
   .sv-wallet:hover,.sv-tx:hover{transform:none}
-  .sv-hero{padding:18px 16px 16px;border-radius:20px}
+
+  /* hero — đồng bộ padding/radius với month-card */
+  .sv-hero{padding:12px;border-radius:16px}
   .sv-hero::after{display:none}
-  .sv-hero-amount{font-size:clamp(26px,8.5vw,38px);word-break:break-word}
-  .sv-contrib{gap:8px;margin-top:14px}
-  .sv-contrib-pill{padding:10px 11px;min-width:0}
+  .sv-hero-amount{font-size:clamp(24px,8vw,34px);word-break:break-word}
+  .sv-contrib{gap:8px;margin-top:12px}
+  .sv-contrib-pill{padding:10px 12px;min-width:0}
   .sv-contrib-top{font-size:11px;gap:6px}
   .sv-contrib-av{width:22px;height:22px;font-size:13px}
   .sv-contrib-amt{font-size:15px;word-break:break-word}
-  .sv-wallet,.sv-so,.sv-section{padding:14px 13px;border-radius:18px}
-  .sv-w-av,.sv-so-av{width:38px;height:38px;font-size:19px;border-radius:12px}
-  .sv-w-cap,.sv-so-cap{margin-top:12px}
+
+  /* các thẻ đều dùng padding 12px, radius 16px — giống month-card */
+  .sv-wallet,.sv-so,.sv-section{padding:12px;border-radius:16px}
+  .sv-wallets{grid-template-columns:1fr;gap:12px}
+
+  /* header 2 thẻ giống hệt nhau: avatar 40px, gap 11px, 1 dòng không wrap */
+  .sv-wallet-top,.sv-so-top{display:flex;align-items:center;gap:11px;flex-wrap:nowrap}
+  .sv-w-av,.sv-so-av{width:40px;height:40px;font-size:20px;border-radius:12px;flex:none}
+  .sv-w-name,.sv-so-name{font-size:14px;line-height:1.2}
+  .sv-w-sub{font-size:11px;margin-top:2px}
+  .sv-so-id{flex:1;min-width:0}
+  .sv-so-btn{height:34px;padding:0 12px;font-size:12px;flex:none}
+
+  .sv-w-cap,.sv-so-cap{margin-top:12px;font-size:10px}
   .sv-w-bal,.sv-so-amt{font-size:clamp(20px,6.5vw,26px)}
-  .sv-w-actions{margin-top:12px}
-  .sv-btn{height:38px;font-size:13px}
-  .sv-so-stats{gap:6px 12px;font-size:11.5px}
-  .sv-tx{padding:11px;gap:10px}
-  .sv-tx-ico{width:38px;height:38px;font-size:17px}
+  .sv-w-stats,.sv-so-stats{margin-top:10px;padding-top:10px;gap:5px;font-size:11.5px}
+
+  .sv-w-actions{grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .sv-btn{height:38px;font-size:13px;border-radius:12px}
+
+  .sv-sec-head{margin-bottom:10px;padding:0}
+  .sv-sec-title{font-size:15px}
+  .sv-sec-count{font-size:11px}
+  .sv-filter{gap:6px;margin-bottom:6px}
+  .sv-chips{gap:6px}
+  .sv-chip{height:30px;padding:0 12px;font-size:12px}
+
+  .sv-month{margin-top:14px}
+  .sv-month-head{padding:0 0 8px;font-size:10px}
+  .sv-month-list{gap:8px}
+  .sv-tx{padding:10px;gap:10px;border-radius:12px}
+  .sv-tx-ico{width:38px;height:38px;font-size:18px;border-radius:12px}
   .sv-tx-title{font-size:13.5px}
+  .sv-tx-meta,.sv-tx-note{font-size:11px}
   .sv-tx-amt{font-size:14px}
 }
 
