@@ -2251,6 +2251,72 @@ select.field-input option{background:var(--s2)}
   .sv-wallets{grid-template-columns:1fr}
 }
 @media (min-width:900px){ .sv-wallet{padding:22px 20px} }
+
+/* ══════════════════════════════════════════════════════════
+   ✨ UNIFIED DARK EMERALD GLASS CARD SYSTEM
+   Đồng bộ phong cách nền "Tổng tiết kiệm chung" cho toàn bộ card.
+   Chỉ thay đổi background + border + box-shadow (không đổi layout).
+   ══════════════════════════════════════════════════════════ */
+
+/* Tier 1 — card chính: emerald đậm + glow góc trên */
+.month-card,
+.quy-hero,
+.tq-card,
+.modal,
+.sv-wallet,
+.sv-section,
+.sv-lock,
+.stat-card,
+.skeleton-card,
+.quy-tx-section,
+.dup-source-banner{
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(45,212,160,.12) 0%, transparent 50%),
+    radial-gradient(120% 140% at 0% 100%, rgba(20,80,55,.14) 0%, transparent 50%),
+    linear-gradient(160deg, #173D32 0%, #0B241D 100%) !important;
+  border: 1px solid rgba(90,150,125,.25) !important;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.45),
+    0 6px 16px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+/* Tier 2 — card phụ: xanh đậm hơn, glow nhẹ */
+.quy-stat,
+.tx-card,
+.sv-contrib-pill,
+.sv-tx,
+.sv-amount-box,
+.item-row,
+.dup-month-btn,
+.dtv-card,
+.toast{
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(45,212,160,.07) 0%, transparent 55%),
+    linear-gradient(160deg, #1B4438 0%, #12352B 100%) !important;
+  border: 1px solid rgba(90,150,125,.22) !important;
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+/* Hover — viền sáng hơn, glow nâng nhẹ */
+.month-card:hover,
+.quy-hero:hover,
+.tq-card:hover,
+.sv-wallet:hover,
+.sv-section:hover,
+.quy-stat:hover,
+.tx-card:hover,
+.sv-tx:hover,
+.dup-month-btn:hover:not(:disabled){
+  border-color: rgba(90,150,125,.42) !important;
+  box-shadow:
+    0 24px 56px rgba(0,0,0,.5),
+    0 0 0 1px rgba(45,212,160,.18),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
 </style>
 </head>
 <body>
@@ -2382,12 +2448,7 @@ select.field-input option{background:var(--s2)}
       <button class="modal-close" onclick="closeModalById('modal-savings')">✕</button>
     </div>
     <div class="modal-body">
-      <label class="sv-label">Của ai</label>
-      <div class="sv-seg" id="sv-owner-seg">
-        <button type="button" data-v="anh" onclick="svPick('owner','anh')">👨 Anh</button>
-        <button type="button" data-v="em" onclick="svPick('owner','em')">👩 Em</button>
-      </div>
-      <label class="sv-label" style="margin-top:16px">Loại giao dịch</label>
+      <label class="sv-label">Loại giao dịch</label>
       <div class="sv-seg" id="sv-type-seg">
         <button type="button" data-v="in" onclick="svPick('type','in')">↓ Gửi vào</button>
         <button type="button" data-v="out" onclick="svPick('type','out')">↑ Rút ra</button>
