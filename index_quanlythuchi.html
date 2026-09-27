@@ -1264,7 +1264,7 @@ a{text-decoration:none;color:inherit}
 .modal{
   background:var(--s2);border:1px solid var(--border2);
   border-radius:18px;width:100%;max-width:600px;
-  max-height:90vh;overflow-y:auto;
+  max-height:90vh;max-height:90dvh;overflow-y:auto;
   transform:translateY(16px) scale(.97);
   transition:transform .25s cubic-bezier(0.4,0,0.2,1);
   box-shadow:0 40px 100px rgba(0,0,0,.6);
@@ -1477,14 +1477,16 @@ min-width:220px;max-width:320px;
   .topbar-title{font-size:14px}
   .year-label{font-size:13px;min-width:40px}
   .btn-primary{font-size:12px;padding:7px 11px}
-  .btn-primary span{display:none}
+  /* CHÚ Ý: không dùng "span{display:none}" chung ở đây vì nó sẽ nuốt luôn
+     .btn-short-text (dấu "+") — việc ẩn .btn-full-text đã được xử lý riêng
+     bên dưới (@media max-width:700px, .btn-full-text{display:none}). */
 
   /* Content */
   .content{padding:10px;overflow-x:hidden;}
 
   /* Month cards */
   .mc-header{padding:10px 12px;gap:6px}
-  .mc-title{font-size:14px}
+  .mc-title{font-size:14px;white-space:nowrap}
   .mc-btn{padding:4px 8px;font-size:11px}
   .mc-sum-col{padding:10px 12px}
   .mc-sum-amount{font-size:16px}
@@ -1616,10 +1618,11 @@ min-width:220px;max-width:320px;
     transform:translateX(-100%);
     transition:transform .25s ease;
     flex-direction:column;
-    width:240px!important;height:100vh!important;
+    width:240px!important;height:100vh!important;height:100dvh!important;
     bottom:auto!important;left:0;top:0;
     overflow-y:auto;overflow-x:hidden;
     position:fixed;
+    padding-bottom:env(safe-area-inset-bottom,0px);
   }
   .sidebar.mobile-open{transform:translateX(0)}
   .sidebar-brand{display:flex!important;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 16px}
@@ -2310,7 +2313,7 @@ select.field-input option{background:var(--s2)}
   .sv-w-stats,.sv-so-stats{margin-top:10px;padding-top:10px;gap:5px;font-size:11.5px}
 
   .sv-w-actions{grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-  .sv-btn{height:38px;font-size:13px;border-radius:12px}
+  .sv-btn{min-height:44px;height:auto;font-size:13px;border-radius:12px}
 
   .sv-sec-head{margin-bottom:10px;padding:0}
   .sv-sec-title{font-size:15px}
@@ -2329,6 +2332,34 @@ select.field-input option{background:var(--s2)}
   .sv-tx-amt{font-size:14px}
 }
 
+/* ══════════════════════════════════════════════════════════
+   MOBILE TOUCH TARGET PATCH
+   — Không đổi kích thước/visual của các nút, chỉ MỞ RỘNG vùng
+     bấm (hit area) bằng pseudo-element vô hình (::after), đạt
+     tối thiểu ~44px theo khuyến nghị, không gây overflow ngang
+     vì pseudo-element dùng position:absolute (không chiếm layout).
+   ══════════════════════════════════════════════════════════ */
+@media(max-width:700px){
+  .menu-toggle,.year-btn,.btn-refresh,.mc-btn,
+  .sv-so-btn,.quy-btn-cfg,.quy-btn-add,.tx-act-btn{
+    position:relative;
+  }
+  .menu-toggle::after,.year-btn::after,.btn-refresh::after,.mc-btn::after,
+  .sv-so-btn::after,.quy-btn-cfg::after,.quy-btn-add::after,.tx-act-btn::after{
+    content:'';
+    position:absolute;
+    /* vùng bấm mở rộng, trong suốt, không ảnh hưởng hiển thị */
+    left:0;right:0;top:0;bottom:0;
+  }
+  .menu-toggle::after{ inset:-10px -6px; }
+  .year-btn::after{ inset:-7px; }
+  .btn-refresh::after{ inset:-6px; }
+  .mc-btn::after{ inset:-11px -2px; }
+  .sv-so-btn::after{ inset:-5px -2px; }
+  .quy-btn-cfg::after{ inset:-7px; }
+  .quy-btn-add::after{ inset:-7px -2px; }
+  .tx-act-btn::after{ inset:-10px; }
+}
 </style>
 </head>
 <body>
