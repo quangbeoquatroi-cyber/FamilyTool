@@ -2330,6 +2330,13 @@ select.field-input option{background:var(--s2)}
   .sv-tx-title{font-size:13.5px}
   .sv-tx-meta,.sv-tx-note{font-size:11px}
   .sv-tx-amt{font-size:14px}
+
+  /* FIX overflow ngang: text nowrap trong .sv-tx không được "đẩy" min-content lên tới .main
+     (flex item min-width:auto). width:0 + min-width:100% => đóng góp min-content = 0,
+     nhưng khi layout vẫn rộng 100% cột nên ellipsis hoạt động bình thường. */
+  #page-tietkiem .sv-tx-title,
+  #page-tietkiem .sv-tx-meta,
+  #page-tietkiem .sv-tx-note{width:0;min-width:100%}
 }
 
 /* ══════════════════════════════════════════════════════════
