@@ -3230,7 +3230,6 @@ function renderMonthCard(owner, year, month) {
   const isOpen       = S.expandedCards.has(`${owner}-${year}-${month}`);
   const badgeCls     = remaining >= 0 ? 'mc-badge-ok' : 'mc-badge-over';
   const badgeTxt     = remaining >= 0 ? '✓ Ổn' : '⚠ Vượt';
-  const usedPct      = totalIncome > 0 ? Math.round(totalExpense / totalIncome * 100) : (totalExpense > 0 ? 100 : 0);
 
   // Kiểm tra còn tháng trống không → để quyết định disable nút Duplicate
   const availableMonths = getAvailableMonths(owner, year);
@@ -3251,32 +3250,28 @@ function renderMonthCard(owner, year, month) {
     </div>`).join('');
 
   return `
-  <div class="month-card ${remaining>=0?'is-ok':'is-over'}" id="mc-${owner}-${year}-${month}">
+  <div class="month-card" id="mc-${owner}-${year}-${month}">
     <div class="mc-header">
-      <div class="mc-head-row">
-        <span class="mc-title"><i class="mc-mnum">${month}</i><span>Tháng ${month}${month===13?' 🎁':''}</span></span>
-        <span class="mc-badge ${badgeCls}">${badgeTxt}</span>
-      </div>
-      <div class="mc-actions">
-        <button class="mc-btn" onclick="openMonthModal('${owner}',${year},${month})">✏️ Sửa</button>
-        <button
-          class="mc-btn mc-btn-duplicate"
-          onclick="showDuplicateModal('${owner}',${year},${month})"
-          ${!canDuplicate ? 'disabled' : ''}
-          title="${dupTitle}"
-        >📑 Duplicate</button>
-        <button class="mc-btn" onclick="toggleMonthDetail('${owner}',${year},${month})">
-          ${isOpen ? '✕ Ẩn bớt' : '☰ Chi tiết'}
-        </button>
-      </div>
+      <span class="mc-title">Tháng ${month}${month===13?' 🎁':''}</span>
+      <span class="mc-badge ${badgeCls}">${badgeTxt}</span>
+      <button class="mc-btn" onclick="openMonthModal('${owner}',${year},${month})">✏️ Sửa</button>
+      <button
+        class="mc-btn mc-btn-duplicate"
+        onclick="showDuplicateModal('${owner}',${year},${month})"
+        ${!canDuplicate ? 'disabled' : ''}
+        title="${dupTitle}"
+      >📑 Duplicate</button>
+      <button class="mc-btn" onclick="toggleMonthDetail('${owner}',${year},${month})">
+        ${isOpen ? '✕ Ẩn bớt' : '☰ Chi tiết'}
+      </button>
     </div>
     <div class="mc-summary">
-      <div class="mc-sum-col inc">
+      <div class="mc-sum-col">
         <div class="mc-sum-label">💚 Thu Ròng</div>
         <div class="mc-sum-amount income font-mono">${fmtVND(totalIncome)}</div>
         <div class="mc-sum-count">${incomes.length} khoản</div>
       </div>
-      <div class="mc-sum-col exp">
+      <div class="mc-sum-col">
         <div class="mc-sum-label">🔴 Khoản Chi</div>
         <div class="mc-sum-amount expense font-mono">${fmtVND(totalExpense)}</div>
         <div class="mc-sum-count">${expenses.length} khoản</div>
@@ -3301,11 +3296,8 @@ function renderMonthCard(owner, year, month) {
       </div>
     </div>
     <div class="mc-footer">
-      <div class="mc-foot-row">
-        <span class="mc-footer-stat">Đã chi <span>${usedPct}%</span> thu nhập</span>
-        <span class="mc-footer-stat mc-remain">Còn lại <span style="color:${remaining>=0?'var(--green)':'var(--red)'}">${fmtVNDSign(remaining)}</span></span>
-      </div>
-      <div class="mc-bar"><i style="width:${Math.min(100,usedPct)}%"></i></div>
+      <span class="mc-footer-stat">Thu ròng: <span>${fmtVND(netIncome)}</span></span>
+      <span class="mc-footer-stat">Còn lại: <span style="color:${remaining>=0?'var(--green)':'var(--red)'}">${fmtVNDSign(remaining)}</span></span>
     </div>
   </div>`;
 }
@@ -3965,89 +3957,6 @@ function openTxDetail(txId, quyKey) {
 .mc-footer{border-top:1px solid var(--line)!important;background:rgba(0,0,0,.14)}
 @media(max-width:600px){ .mc-sum-col:first-child{border-right:none!important;border-bottom:1px solid var(--line)!important} }
 @media(max-width:400px){ .mc-sum-col:first-child{border-bottom:1px solid var(--line)!important} }
-
-/* ══════════════════════════════════════════════════════════
-   ✨ MONTH-CARD v3 — nổi bật, rõ đường kẻ, tối ưu mobile
-   (đặt cuối cùng + selector kép để thắng các override cũ)
-   ══════════════════════════════════════════════════════════ */
-:root{ --line:rgba(160,225,195,.55); --line-soft:rgba(160,225,195,.30); }
-
-.month-card.month-card{
-  --mc-accent:var(--green);
-  border:1.5px solid rgba(140,215,180,.55) !important;
-  border-radius:18px !important;
-  background:linear-gradient(170deg,#1c4a3b 0%,#0f2d24 100%) !important;
-  box-shadow:0 14px 34px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.10) !important;
-}
-.month-card.is-over{--mc-accent:var(--red);border-color:rgba(255,120,120,.6) !important}
-.month-card.month-card::before{ /* dải màu trạng thái bên trái */
-  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;height:auto;right:auto;
-  background:var(--mc-accent);opacity:1;z-index:2;
-}
-.month-card.month-card:hover{transform:none !important}
-
-/* header: tiêu đề + badge / hàng nút bên dưới */
-.month-card .mc-header{display:block;padding:14px 16px 14px 20px;background:rgba(0,0,0,.20);border-bottom:1.5px solid var(--line) !important}
-.mc-head-row{display:flex;align-items:center;gap:12px}
-.month-card .mc-title{flex:1;display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;letter-spacing:-.01em}
-.mc-mnum{font-style:normal;flex:none;min-width:34px;height:34px;padding:0 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#06140e;background:var(--mc-accent)}
-.month-card .mc-badge{font-size:11px;padding:5px 11px}
-.mc-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.month-card .mc-actions .mc-btn{justify-content:center;height:38px;padding:0 6px;font-size:13px;white-space:nowrap;
-  background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--text)}
-.month-card .mc-actions .mc-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(190,240,215,.8)}
-.month-card .mc-actions .mc-btn:disabled{opacity:.4}
-
-/* tổng thu / chi: 2 cột, vạch chia rõ, số to */
-.month-card .mc-summary{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid var(--line) !important}
-.month-card .mc-sum-col{padding:16px 16px 16px 20px;min-width:0}
-.month-card .mc-sum-col + .mc-sum-col{padding-left:16px;border-left:1.5px solid var(--line) !important}
-.month-card .mc-sum-col:first-child{border-right:0 !important}
-.month-card .mc-sum-label{font-size:11px;letter-spacing:.06em;color:#b7d9c8;margin-bottom:8px}
-.month-card .mc-sum-amount{font-size:clamp(17px,5.4vw,24px);letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.month-card .mc-sum-count{font-size:12px;color:#a9cdbb;margin-top:5px}
-
-/* chi tiết: mỗi mục có tiêu đề gạch chân, dòng kẻ rõ, zebra */
-.month-card .mc-detail-inner{border-top:0 !important}
-.month-card .mc-section{padding:14px 16px 8px 20px}
-.month-card .mc-section + .mc-section{border-top:1.5px solid var(--line) !important}
-.month-card .mc-section-title{margin:0 0 4px !important;padding:0 0 10px;border-bottom:1.5px solid var(--line);font-size:12px;color:#d3ebde}
-.month-card .mc-section-title .section-total{font-size:14px;font-weight:800}
-.month-card .mc-row{padding:11px 8px !important;margin:0;border-radius:0;font-size:14px;border-bottom:1px solid var(--line-soft) !important}
-.month-card .mc-row:nth-child(odd){background:rgba(255,255,255,.035)}
-.month-card .mc-row:last-child{border-bottom:0 !important}
-.month-card .mc-row-name{color:#e3f1e9}
-.month-card .mc-row-amount{font-variant-numeric:tabular-nums;font-size:14px}
-
-/* footer: còn lại + thanh tiến độ chi tiêu */
-.month-card .mc-footer{display:block;padding:12px 16px 14px 20px;border-top:1.5px solid var(--line) !important;background:rgba(0,0,0,.24)}
-.mc-foot-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-.month-card .mc-footer-stat{font-size:12.5px;color:#b7d9c8}
-.month-card .mc-remain{font-size:14px;font-weight:700;color:var(--text)}
-.month-card .mc-remain span{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
-.mc-bar{margin-top:10px;height:7px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
-.mc-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#7dffb0)}
-.month-card.is-over .mc-bar i{background:linear-gradient(90deg,#ff8a65,var(--red))}
-
-/* mobile */
-@media(max-width:600px){
-  .months-grid{gap:18px}
-  .month-card .mc-header{padding:12px 12px 12px 17px}
-  .month-card .mc-title{font-size:17px}
-  .month-card .mc-actions .mc-btn{height:42px;font-size:13px;border-radius:10px}
-  .month-card .mc-summary{grid-template-columns:1fr 1fr}
-  .month-card .mc-sum-col{padding:14px 10px 14px 17px}
-  .month-card .mc-sum-col + .mc-sum-col{padding-left:14px;padding-right:10px;border-left:1.5px solid var(--line) !important;border-top:0 !important}
-  .month-card .mc-section{padding:12px 10px 6px 17px}
-  .month-card .mc-row{padding:12px 6px !important;font-size:13.5px}
-  .month-card .mc-footer{padding:12px 12px 14px 17px}
-}
-@media(max-width:400px){
-  .month-card .mc-summary{grid-template-columns:1fr 1fr}
-  .month-card .mc-sum-col:first-child{border-bottom:0 !important}
-  .month-card .mc-actions .mc-btn{font-size:12px}
-}
-@media(prefers-reduced-motion:reduce){.month-card.month-card::after{display:none}}
 </style>
 
     <div class="${variantClass}">
