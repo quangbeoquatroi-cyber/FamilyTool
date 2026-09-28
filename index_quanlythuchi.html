@@ -3892,6 +3892,71 @@ function openTxDetail(txId, quyKey) {
   .nav-item.active-em::before { display:none; }
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   ✨ LỊCH SỬ TIẾT KIỆM v2 + ĐƯỜNG KẺ MONTH-CARD (override cuối cùng)
+   ══════════════════════════════════════════════════════════ */
+:root{ --line:rgba(150,215,185,.34); --line-soft:rgba(150,215,185,.20); }
+
+/* --- Header tháng: tên tháng + 3 số liệu có nhãn --- */
+.sv-month{margin-top:22px}
+.sv-month-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 16px;padding:0 4px 12px;text-transform:none;letter-spacing:0;font-size:inherit;color:var(--text)}
+.sv-month-name{font-size:16px;font-weight:800;display:flex;align-items:baseline;gap:8px}
+.sv-month-name small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.sv-month-sum{display:flex;gap:6px;flex-wrap:wrap}
+.sv-ms{display:flex;flex-direction:column;gap:1px;padding:6px 11px;border-radius:12px;background:rgba(0,0,0,.22);border:1px solid var(--line-soft);min-width:0}
+.sv-ms span{font-size:10.5px;font-weight:700;color:var(--muted)}
+.sv-ms b{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.sv-ms.in b{color:var(--green)} .sv-ms.out b{color:var(--red)}
+.sv-ms.net{background:rgba(0,200,83,.12);border-color:rgba(0,200,83,.45)}
+.sv-ms.net.out{background:rgba(255,82,82,.12);border-color:rgba(255,82,82,.45)}
+.sv-ms.net b{font-size:14px}
+
+/* --- Danh sách: 1 khối liền, dòng phân cách thay vì từng thẻ rời --- */
+.sv-month-list{display:flex;flex-direction:column;gap:0;border-radius:18px;overflow:hidden;background:rgba(4,20,14,.42);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.sv-day{padding:8px 16px 6px;font-size:11px;font-weight:800;color:var(--muted);background:rgba(255,255,255,.035);border-bottom:1px solid var(--line-soft)}
+.sv-day:not(:first-child){border-top:1px solid var(--line)}
+.sv-month-list .sv-tx{position:relative;gap:13px;padding:13px 16px 13px 19px;border-radius:0;background:transparent!important;border:0!important;border-bottom:1px solid var(--line-soft)!important;box-shadow:none!important;transform:none}
+.sv-month-list .sv-tx:last-child{border-bottom:0!important}
+.sv-month-list .sv-tx::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--green)}
+.sv-month-list .sv-tx.out::before{background:var(--red)}
+.sv-month-list .sv-tx:hover{background:rgba(255,255,255,.05)!important;transform:none;border-color:transparent!important;border-bottom:1px solid var(--line-soft)!important;box-shadow:none!important}
+.sv-month-list .sv-tx:last-child:hover{border-bottom:0!important}
+.sv-month-list .sv-tx-ico{width:42px;height:42px;border-radius:50%;background:var(--cbg);border:1.5px solid var(--ring,transparent)}
+.sv-month-list .sv-tx.anh{--ring:rgba(0,230,118,.55)} .sv-month-list .sv-tx.em{--ring:rgba(255,179,0,.6)}
+.sv-month-list .sv-tx-arrow{right:-4px;bottom:-4px;border-color:#12352B}
+.sv-month-list .sv-tx-title{font-size:14.5px;font-weight:700;color:var(--text)}
+.sv-tx-meta{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;margin-top:4px}
+.sv-who{flex:none;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.sv-who.anh{background:rgba(0,230,118,.16);color:var(--anh)} .sv-who.em{background:rgba(255,179,0,.16);color:var(--em)}
+.sv-tag{flex:none;font-size:11px;font-weight:700;color:var(--muted);padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);white-space:nowrap}
+.sv-tag.so{color:#ffd166;background:rgba(255,202,40,.12)}
+.sv-tx-right{flex:none;text-align:right}
+.sv-tx-kind{margin-top:3px;font-size:10.5px;font-weight:700;color:var(--muted)}
+.sv-month-list .sv-tx-amt{font-size:16px}
+@media(max-width:600px){
+  .sv-month-head{flex-direction:column;align-items:stretch}
+  .sv-month-sum{display:grid;grid-template-columns:1fr 1fr 1fr}
+  .sv-ms{padding:6px 9px}
+  .sv-ms b{font-size:12px} .sv-ms.net b{font-size:12.5px}
+  .sv-month-list .sv-tx{padding:12px 12px 12px 15px;gap:10px}
+  .sv-month-list .sv-tx-ico{width:38px;height:38px}
+  .sv-month-list .sv-tx-amt{font-size:14px}
+  .sv-tag{display:none} .sv-tag.so{display:inline-block}
+}
+
+/* --- Month-card (Của Anh / Của Em): đường kẻ rõ hơn --- */
+.mc-header{border-bottom:1px solid var(--line)!important}
+.mc-summary{border-bottom:1px solid var(--line)!important}
+.mc-sum-col:first-child{border-right:1px solid var(--line)!important}
+.mc-detail-inner{border-top:1px solid var(--line)!important}
+.mc-section+.mc-section{border-top:1px solid var(--line)!important}
+.mc-section-title{padding-bottom:9px;margin-bottom:6px!important;border-bottom:1px solid var(--line)}
+.mc-row{border-bottom:1px solid var(--line-soft)!important}
+.mc-row:last-child{border-bottom:none!important}
+.mc-footer{border-top:1px solid var(--line)!important;background:rgba(0,0,0,.14)}
+@media(max-width:600px){ .mc-sum-col:first-child{border-right:none!important;border-bottom:1px solid var(--line)!important} }
+@media(max-width:400px){ .mc-sum-col:first-child{border-bottom:1px solid var(--line)!important} }
 </style>
 
     <div class="${variantClass}">
@@ -4707,8 +4772,24 @@ function svHistory() {
     rows.forEach(r => { const k = (r.date || '').slice(0, 7); (groups[k] = groups[k] || []).push(r); });
     body = Object.keys(groups).sort().reverse().map(k => {
       const [y, m] = k.split('-');
-      const net = groups[k].reduce((s, r) => s + svSigned(r), 0);
-      return `<div class="sv-month"><div class="sv-month-head"><span>Tháng ${+m}/${y}</span><span class="sv-month-net ${net >= 0 ? 'in' : 'out'}">${net >= 0 ? '+' : '−'}${svFmt(Math.abs(net))} ₫</span></div><div class="sv-month-list">${groups[k].map(svItem).join('')}</div></div>`;
+      const list = groups[k];
+      const sumIn = list.filter(r => r.type === 'in').reduce((s, r) => s + (Number(r.amount) || 0), 0);
+      const sumOut = list.filter(r => r.type === 'out').reduce((s, r) => s + (Number(r.amount) || 0), 0);
+      const net = sumIn - sumOut;
+      const days = {};
+      list.forEach(r => { (days[r.date || ''] = days[r.date || ''] || []).push(r); });
+      const dayHtml = Object.keys(days).map(d => `<div class="sv-day">${fmtDate(d)}</div>${days[d].map(svItem).join('')}`).join('');
+      return `<div class="sv-month">
+        <div class="sv-month-head">
+          <div class="sv-month-name">Tháng ${+m}/${y}<small>${list.length} giao dịch</small></div>
+          <div class="sv-month-sum">
+            <div class="sv-ms in"><span>Đã gửi</span><b>+${svFmt(sumIn)}</b></div>
+            <div class="sv-ms out"><span>Đã rút</span><b>−${svFmt(sumOut)}</b></div>
+            <div class="sv-ms net ${net >= 0 ? 'in' : 'out'}" title="Chênh lệch = Đã gửi − Đã rút trong tháng"><span>Chênh lệch</span><b>${net >= 0 ? '+' : '−'}${svFmt(Math.abs(net))} ₫</b></div>
+          </div>
+        </div>
+        <div class="sv-month-list">${dayHtml}</div>
+      </div>`;
     }).join('');
   }
   return `<div class="sv-section sv-in" style="animation-delay:.18s">
@@ -4721,11 +4802,16 @@ function svHistory() {
 function svItem(r) {
   const isIn = r.type === 'in';
   const title = r.description || r.category || (isIn ? 'Gửi tiết kiệm' : 'Rút tiết kiệm');
-  const meta = [r.owner === 'anh' ? 'Anh' : 'Em', fmtDate(r.date), r.description && r.category ? r.category : null, r.passbook_holder ? '📒 Sổ — ' + (r.passbook_holder === 'anh' ? 'Anh' : 'Em') + ' giữ' : null].filter(Boolean).join(' · ');
+  const who = r.owner === 'anh' ? 'Anh' : 'Em';
+  const tags = [
+    `<span class="sv-who ${r.owner}">${who}</span>`,
+    r.description && r.category ? `<span class="sv-tag">${svEsc(r.category)}</span>` : '',
+    r.passbook_holder ? `<span class="sv-tag so">📒 Sổ · ${r.passbook_holder === 'anh' ? 'Anh' : 'Em'} giữ</span>` : ''
+  ].join('');
   return `<div class="sv-tx ${r.owner} ${r.type}" onclick="openSavingsModal('${r.id}')">
     <div class="sv-tx-ico">${r.owner === 'anh' ? '👨' : '👩'}<span class="sv-tx-arrow">${isIn ? '↓' : '↑'}</span></div>
-    <div class="sv-tx-main"><div class="sv-tx-title">${svEsc(title)}</div><div class="sv-tx-meta">${svEsc(meta)}</div>${r.note ? `<div class="sv-tx-note">${svEsc(r.note)}</div>` : ''}</div>
-    <div class="sv-tx-amt">${isIn ? '+' : '−'}${svFmt(r.amount)}</div>
+    <div class="sv-tx-main"><div class="sv-tx-title">${svEsc(title)}</div><div class="sv-tx-meta">${tags}</div>${r.note ? `<div class="sv-tx-note">${svEsc(r.note)}</div>` : ''}</div>
+    <div class="sv-tx-right"><div class="sv-tx-amt">${isIn ? '+' : '−'}${svFmt(r.amount)}</div><div class="sv-tx-kind">${isIn ? 'Gửi vào' : 'Rút ra'}</div></div>
   </div>`;
 }
 function svSetFilter(k, v) {
