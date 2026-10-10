@@ -2,7 +2,11 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Thu Chi Gia Đình — quản lý thu chi, quỹ chung và tiết kiệm cho vợ chồng.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <title>💕Thu Chi Gia Đình💕</title>
 <link rel="icon" type="image/png" href="assets/icon_quanlythuchi.png">
 <link rel="apple-touch-icon" href="assets/icon_quanlythuchi.png">
@@ -337,7 +341,7 @@ a{text-decoration:none;color:inherit}
 }
 .main{
   margin-left:var(--sidebar);
-  flex:1;display:flex;flex-direction:column;min-height:100%;
+  flex:1;display:flex;flex-direction:column;min-height:100%;min-width:0;
 }
 
 /* ── SIDEBAR ────────────────────────────────────────────── */
@@ -384,7 +388,7 @@ a{text-decoration:none;color:inherit}
 
 /* ── TOPBAR ─────────────────────────────────────────────── */
 .topbar{
-  height:var(--topbar);
+  min-height:var(--topbar);
   background:linear-gradient(180deg, rgba(13,35,24,.98) 0%, rgba(10,26,18,.99) 100%);
   border-bottom:1px solid rgba(45,212,160,.11);
   box-shadow:0 2px 16px rgba(0,0,0,.45), 0 4px 32px rgba(0,0,0,.22), 0 1px 0 rgba(45,212,160,.07);
@@ -429,12 +433,12 @@ a{text-decoration:none;color:inherit}
 /* ── CONTENT ────────────────────────────────────────────── */
 .content{flex:1;padding:24px;overflow-y:auto;overflow-x:hidden;
   /* ngăn bất kỳ child nào tràn ngang */
-  max-width:100%;box-sizing:border-box;}
+  max-width:100%;box-sizing:border-box;min-width:0;}
 .page{display:none;width:100%;max-width:100%;box-sizing:border-box;overflow-x:hidden;}
 .page.active{display:block}
 
 /* ── MONTH CARDS ────────────────────────────────────────── */
-.months-grid{display:flex;flex-direction:column;gap:16px}
+.months-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:1440px;margin-left:auto;margin-right:auto}
 .month-card{
   background:var(--s1);border:1px solid var(--border);
   border-radius:var(--r);overflow:hidden;
@@ -1385,7 +1389,7 @@ min-width:220px;max-width:320px;
 .tq-page-header{padding:16px 16px 12px}
 .tq-page-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:3px}
 .tq-page-sub{font-size:12px;color:var(--muted)}
-.tq-cards-area{display:flex;flex-direction:column;gap:14px;padding:0 12px}
+.tq-cards-area{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:0 12px}
 .tq-card{background:var(--s2);border-radius:16px;border:1px solid var(--border);overflow:hidden}
 .tq-card-anh{border-top:3px solid var(--anh)}
 .tq-card-em{border-top:3px solid var(--em)}
@@ -2366,6 +2370,234 @@ select.field-input option{background:var(--s2)}
   .quy-btn-cfg::after{ inset:-7px; }
   .quy-btn-add::after{ inset:-7px -2px; }
   .tx-act-btn::after{ inset:-10px; }
+}
+</style>
+
+<style id="premium-responsive">
+
+/* ══════════════════════════════════════════════════════════════
+   PREMIUM RESPONSIVE SYSTEM v2 — Thu Chi Gia Đình
+   Lớp nâng cấp chạy SAU toàn bộ CSS cũ.
+   Không xoá rule cũ, không đổi tên class/id, không đổi logic.
+   1) Design tokens bổ sung
+   2) Nền tảng: zoom, focus bàn phím, giảm chuyển động
+   3) Khung ứng dụng: sidebar / topbar / content
+   4) Bố cục thích ứng: ultra-wide, desktop, tablet (dọc + ngang), mobile
+   5) Thẻ dữ liệu tài chính & danh sách giao dịch
+   6) Biểu mẫu, modal, toast
+   7) Tương tác cảm ứng (chống "dính" hover, vùng chạm)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. TOKENS ─────────────────────────────────────────────── */
+:root{
+  --sp-1:4px;  --sp-2:8px;  --sp-3:12px; --sp-4:16px;
+  --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --dur-fast:.15s; --dur-base:.24s; --dur-slow:.38s;
+  --pad-x:clamp(12px,2.4vw,32px);
+  --touch-min:44px;
+}
+
+/* ── 2. NỀN TẢNG & KHẢ NĂNG TRUY CẬP ──────────────────────── */
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  scroll-behavior:smooth;
+}
+body{ -webkit-tap-highlight-color:transparent; }
+button, .nav-item, .sv-chip, .dup-month-btn, .qf-select,
+input, select, textarea{ touch-action:manipulation; }
+img{ max-width:100%; height:auto; }
+
+/* Reset ở đầu file đã bỏ outline → bù lại quầng sáng focus khi dùng bàn phím */
+:focus{ outline:none; }
+:focus-visible{
+  outline:2px solid rgba(45,212,160,.9);
+  outline-offset:2px;
+}
+/* Ô nhập liệu đã có viền + quầng sáng riêng khi focus nên không cần outline */
+input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:none; }
+::selection{ background:rgba(45,212,160,.3); color:#eaf2ec; }
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  .quy-progress-fill::after,
+  .month-card::after{ animation:none !important; }
+  .login-box-wrap,
+  .login-box-wrap::before,
+  .login-box-wrap::after{ animation:none !important; }
+}
+
+/* ── 3. KHUNG ỨNG DỤNG ────────────────────────────────────── */
+.main{ min-width:0; }
+.content{ min-width:0; scroll-padding-top:12px; }
+.page > *{ min-width:0; }
+
+.topbar{
+  min-height:var(--topbar);
+  height:auto;
+  gap:var(--sp-3);
+}
+.topbar-title{
+  flex:1 1 auto; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.topbar-right, .year-nav{ flex:0 0 auto; }
+
+/* Không để nội dung bị kéo giãn quá mức trên màn hình rộng */
+.quy-page-wrap{ max-width:1180px; margin-left:auto; margin-right:auto; }
+.tq-page{ max-width:1080px; margin-left:auto; margin-right:auto; }
+.sv-page{ margin-left:auto; margin-right:auto; }
+
+/* ── 4. BỐ CỤC THÍCH ỨNG THEO KHÔNG GIAN THỰC ─────────────── */
+
+/* 4.1 Desktop & laptop (≥1280px) */
+@media (min-width:1280px){
+  :root{ --sidebar:240px; }
+  .content{ padding:var(--sp-8) var(--pad-x) var(--sp-10); }
+  .months-grid{ grid-template-columns:repeat(auto-fill,minmax(390px,1fr)); }
+  .quy-stats-grid{ grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+  .quy-tx-scroll{ height:min(58vh,560px); }
+  .dup-month-grid{ grid-template-columns:repeat(6,1fr); }
+}
+
+/* 4.2 Laptop nhỏ / tablet ngang (1024–1279px) */
+@media (min-width:1024px) and (max-width:1279px){
+  .content{ padding:var(--sp-6) var(--pad-x) 36px; }
+  .months-grid{ grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); }
+  .quy-stats-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .quy-tx-scroll{ height:min(56vh,520px); }
+  .dup-month-grid{ grid-template-columns:repeat(5,1fr); }
+}
+
+/* 4.3 Tablet (768–1023px) — dọc và ngang */
+@media (min-width:768px) and (max-width:1023px){
+  :root{ --sidebar:196px; }
+  .content{ padding:18px 20px 36px; }
+  .months-grid{ grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); }
+  .tq-cards-area{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .quy-stats-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .quy-tx-scroll{ height:min(54vh,480px); }
+  .dup-month-grid{ grid-template-columns:repeat(5,1fr); }
+  .modal-overlay{ padding:26px; }
+}
+
+/* 4.4 Máy tính bảng nhỏ / điện thoại nằm ngang (600–767px) */
+@media (min-width:600px) and (max-width:767px){
+  .content{ padding:14px 16px 34px; }
+  .tq-cards-area{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .quy-tx-scroll{ height:min(60vh,440px); }
+  .dup-month-grid{ grid-template-columns:repeat(4,1fr); }
+}
+
+/* 4.5 Màn hình lớn & siêu rộng (≥1600px) */
+@media (min-width:1600px){
+  .content{ padding-left:var(--sp-10); padding-right:var(--sp-10); }
+  .months-grid{ grid-template-columns:repeat(auto-fill,minmax(420px,1fr)); gap:20px; }
+  .quy-tx-scroll{ height:min(60vh,640px); }
+}
+
+/* 4.6 Điện thoại (≤700px) — giữ nguyên cấu trúc gốc, chỉ tinh chỉnh */
+@media (max-width:700px){
+  .content{ padding-top:12px; padding-left:12px; padding-right:12px; }
+  .topbar{ gap:var(--sp-2); padding-left:10px; padding-right:10px; }
+  .topbar-title{ font-size:14px; }
+  /* Nút hành động chính đủ lớn để chạm chính xác */
+  .btn-primary{
+    min-height:40px;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 14px;
+  }
+  .quy-tx-scroll{ height:min(66vh,520px); }
+  .modal-footer{ padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
+  .dup-month-grid{ gap:8px; }
+  .dup-month-btn{ padding:13px 6px; font-size:12.5px; min-height:50px; }
+  .sv-chip{ min-height:34px; }
+  #screen-login{ padding-left:18px; padding-right:18px; }
+  .login-box{ padding:34px 22px 30px; }
+}
+
+/* 4.7 Điện thoại nhỏ (≤430px) */
+@media (max-width:430px){
+  .quy-stats-grid{ gap:6px; }
+  .quy-stat{ padding:9px 8px; }
+  .mc-sum-amount{ font-size:16px; }
+  #toast-container{ left:10px; right:10px; }
+}
+
+/* 4.8 Rất nhỏ (≤380px): ưu tiên đọc trọn số liệu thay vì cắt bớt */
+@media (max-width:380px){
+  .quy-stat-value{
+    white-space:normal; overflow-wrap:break-word;
+    line-height:1.15; letter-spacing:-.01em;
+  }
+  .quy-stat-label{ font-size:8.5px; white-space:normal; line-height:1.15; }
+  .topbar{ padding-left:8px; padding-right:8px; }
+  .topbar-title{ font-size:13px; }
+  .year-label{ font-size:12px; min-width:34px; }
+  .btn-primary{ padding:8px 10px; }
+  .tx-card-note{ max-width:64px; }
+}
+
+/* 4.9 Điện thoại nằm ngang (màn hình thấp) */
+@media (max-height:520px) and (orientation:landscape){
+  .topbar{ min-height:48px; }
+  .quy-tx-scroll{ height:auto; max-height:64vh; }
+  .modal{ max-height:94vh; max-height:94dvh; }
+  #screen-login{ align-items:flex-start; padding-top:20px; }
+  .login-box-wrap{ animation:none !important; }
+  .login-box{ padding:28px 24px 24px; }
+}
+
+/* ── 5. THẺ DỮ LIỆU TÀI CHÍNH & DANH SÁCH ─────────────────── */
+/* Số tiền dùng chữ số đều nhau → dễ so sánh theo cột */
+.mc-sum-amount, .mc-row-amount, .quy-stat-value, .tx-card-amt,
+.tq-stat-value, .sv-w-bal, .sv-tx-amt, .sv-ms b, .sv-hero-amount,
+.dtv-amount, .dtv-bal-amt{ font-variant-numeric:tabular-nums; }
+
+.mc-header{ row-gap:8px; }
+.mc-title{ min-width:0; }
+
+/* Hàng tiêu đề thẻ giao dịch quỹ: cho phép co lại, không đẩy tràn cột số tiền */
+.tx-card-body{ min-width:0; }
+.tx-card-right{ max-width:52%; }
+
+/* Mô tả dài trong lịch sử tiết kiệm: xuống dòng thay vì bị cắt cụt */
+.sv-tx-title{ white-space:normal; overflow-wrap:anywhere; }
+
+/* ── 6. BIỂU MẪU, MODAL, TOAST ────────────────────────────── */
+/* Chặn thao tác cuộn trong modal "lọt" ra trang phía sau */
+.modal-overlay{ overscroll-behavior:contain; }
+.modal{ overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+.modal-body{ overscroll-behavior:contain; }
+.modal{ max-height:90vh; max-height:90dvh; }
+.modal-footer{ gap:10px; }
+.field-group{ margin-bottom:14px; }
+.field-input{ min-height:42px; }
+
+#toast-container{ gap:10px; max-width:min(360px,calc(100vw - 24px)); }
+.toast{ max-width:100%; align-items:flex-start; }
+.toast-msg{ min-width:0; }
+
+@media (min-width:701px){
+  .modal-overlay{ padding:24px; }
+}
+
+/* ── 7. TƯƠNG TÁC CẢM ỨNG ─────────────────────────────────── */
+/* Thiết bị không có hover thật: bỏ hiệu ứng dịch chuyển để trạng thái không bị "dính" sau khi chạm */
+@media (hover:none){
+  .nav-item:hover,
+  .nav-item.active,
+  .nav-item.active-anh,
+  .nav-item.active-em,
+  .tx-card:hover,
+  .month-card:hover,
+  .quy-stat:hover,
+  .sv-tx:hover,
+  .dup-month-btn:hover:not(:disabled){ transform:none !important; }
+  .nav-item:active{ background:rgba(45,212,160,.14) !important; }
+  .tx-card:active{ background:rgba(22,56,38,.96) !important; }
+  .mc-btn:active, .year-btn:active{ background:var(--s4) !important; color:var(--text) !important; }
 }
 </style>
 </head>
@@ -3885,7 +4117,7 @@ function openTxDetail(txId, quyKey) {
   }
   /* padding-bottom phải đặt trên .content (overflow-y:auto) thì mới có tác dụng khi scroll */
   .content {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .nav-item.active::before,
   .nav-item.active-anh::before,
@@ -4925,6 +5157,30 @@ async function deleteSavings(btn) {
   }, '🗑️ Đã xoá giao dịch');
 }
 
+</script>
+
+<script id="premium-ux-patch">
+/* ── PREMIUM UX PATCH (chỉ bổ sung, không đổi logic tài chính) ──
+   1. Esc đóng modal đang mở (giống hệt hành vi bấm ra ngoài vùng modal)
+   2. Không cho trang cuộn ngang ngoài ý muốn
+   ─────────────────────────────────────────────────────────────── */
+(function(){
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape' && e.key !== 'Esc') return;
+    var open = document.querySelectorAll('.modal-overlay.open');
+    if(!open.length) return;
+    open[open.length - 1].classList.remove('open');
+  }, false);
+
+  var guard = function(){
+    if(document.documentElement.scrollWidth > window.innerWidth + 1){
+      document.documentElement.style.overflowX = 'hidden';
+    }
+  };
+  window.addEventListener('resize', guard, { passive:true });
+  window.addEventListener('orientationchange', function(){ setTimeout(guard, 250); }, { passive:true });
+  document.addEventListener('DOMContentLoaded', guard);
+})();
 </script>
 </body>
 </html>
