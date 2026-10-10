@@ -1364,6 +1364,51 @@ a{text-decoration:none;color:inherit}
   padding:12px 0 6px;border-top:1px solid var(--border);margin-top:8px;
 }
 
+/* ══════════════════════════════════════════════════════════
+   SỬA THÁNG — BẢNG TỔNG KẾT REALTIME
+   Chỉ ĐỌC các dòng đang nhập để hiển thị tổng.
+   Không ghi dữ liệu, không tham gia logic lưu tháng.
+   ══════════════════════════════════════════════════════════ */
+#modal-month .modal-footer{
+  flex-direction:column;align-items:stretch;gap:12px;
+}
+.mm-actions{display:flex;justify-content:flex-end;gap:10px}
+.mm-sum{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  padding:10px 14px 9px;border-radius:var(--r2);
+  background:radial-gradient(120% 140% at 100% 0%,rgba(45,212,160,.10) 0%,transparent 55%),linear-gradient(160deg,#1B4438 0%,#12352B 100%);
+  border:1px solid rgba(90,150,125,.22);
+  box-shadow:0 8px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.mm-sum-item{min-width:0;padding:0 10px}
+.mm-sum-item:first-child{padding-left:0}
+.mm-sum-item:last-child{padding-right:0}
+.mm-sum-item + .mm-sum-item{border-left:1px solid rgba(90,150,125,.18)}
+.mm-sum-lbl{
+  font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mm-sum-val{
+  font-size:clamp(12px,3.4vw,15px);font-weight:800;line-height:1.2;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:color .2s ease;
+}
+.mm-sum-in .mm-sum-val{color:var(--green)}
+.mm-sum-out .mm-sum-val{color:var(--red)}
+.mm-sum-left .mm-sum-val{color:var(--anh)}
+.mm-sum.neg .mm-sum-left .mm-sum-val{color:var(--red)}
+.mm-bar{
+  grid-column:1/-1;height:4px;border-radius:4px;margin-top:10px;
+  background:rgba(0,200,83,.16);overflow:hidden;
+}
+.mm-bar > span{
+  display:block;height:100%;width:0;border-radius:4px;
+  background:linear-gradient(90deg,#ff7043,var(--red));
+  transition:width .35s cubic-bezier(.22,1,.36,1);
+}
+
 /* ── TOAST ──────────────────────────────────────────────── */
 #toast-container{
   position:fixed;bottom:24px;right:24px;
@@ -3041,10 +3086,27 @@ input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:none;
       <button class="add-item-btn" onclick="addItemRow('expense')">+ Thêm khoản chi</button>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModalById('modal-month')">Hủy</button>
-      <button class="btn-save" id="btn-save-month" onclick="saveMonth()">
-        <span>💾 Lưu tháng</span>
-      </button>
+      <div class="mm-sum" id="mm-sum">
+        <div class="mm-sum-item mm-sum-in">
+          <div class="mm-sum-lbl">💚 Tổng thu</div>
+          <div class="mm-sum-val" id="mm-total-in">0 ₫</div>
+        </div>
+        <div class="mm-sum-item mm-sum-out">
+          <div class="mm-sum-lbl">🔴 Tổng chi</div>
+          <div class="mm-sum-val" id="mm-total-out">0 ₫</div>
+        </div>
+        <div class="mm-sum-item mm-sum-left">
+          <div class="mm-sum-lbl">💰 Còn lại</div>
+          <div class="mm-sum-val" id="mm-total-left">0 ₫</div>
+        </div>
+        <div class="mm-bar"><span id="mm-bar-fill"></span></div>
+      </div>
+      <div class="mm-actions">
+        <button class="btn-cancel" onclick="closeModalById('modal-month')">Hủy</button>
+        <button class="btn-save" id="btn-save-month" onclick="saveMonth()">
+          <span>💾 Lưu tháng</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -3982,6 +4044,7 @@ function openMonthModal(owner, year, month) {
       d.items.filter(i=>i.type==='expense').forEach(i => addItemRow('expense', i.name, i.amount));
     }
   }
+  updateMonthSummary();
   openModalById('modal-month');
 }
 
@@ -3995,6 +4058,39 @@ function parseAmountInput(val) {
   return parseFloat(String(val).replace(/\./g,'').replace(/,/g,'.').replace(/[^0-9.]/g,'')) || 0;
 }
 
+// ── TỔNG KẾT REALTIME CHO MODAL SỬA THÁNG ─────────────────
+// Chỉ đọc giá trị đang có trên các dòng thu/chi để hiển thị.
+// Không ghi dữ liệu, không tham gia vào quá trình lưu tháng.
+function readMonthAmounts(type) {
+  return Array.from(document.querySelectorAll(`#${type}-items .item-row`))
+    .map(row => parseAmountInput(row.querySelector('.item-amount').value));
+}
+
+function updateMonthSummary() {
+  const box = document.getElementById('mm-sum');
+  if(!box) return;
+
+  const totalIn  = readMonthAmounts('income').reduce((a,b) => a + b, 0);
+  const totalOut = readMonthAmounts('expense').reduce((a,b) => a + b, 0);
+  const left     = totalIn - totalOut;
+
+  document.getElementById('mm-total-in').textContent   = fmtVND(totalIn);
+  document.getElementById('mm-total-out').textContent  = fmtVND(totalOut);
+  document.getElementById('mm-total-left').textContent = fmtVNDSign(left);
+
+  box.classList.toggle('neg', left < 0);
+
+  // Thanh tỉ lệ: nền xanh = tổng thu, phần đỏ = phần đã chi
+  const pct = totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : (totalOut > 0 ? 100 : 0);
+  document.getElementById('mm-bar-fill').style.width = pct + '%';
+}
+
+function removeItemRow(btn) {
+  const row = btn.parentElement;
+  if(row) row.remove();
+  updateMonthSummary();
+}
+
 function addItemRow(type, name='', amount='') {
   const container = document.getElementById(type+'-items');
   const row = document.createElement('div');
@@ -4003,7 +4099,7 @@ function addItemRow(type, name='', amount='') {
   row.innerHTML = `
     <input class="item-name" placeholder="Tên khoản..." value="${name}">
     <input class="item-amount" type="text" inputmode="numeric" placeholder="0" value="${displayVal}" style="color:${type==='income'?'var(--green)':'var(--red)'}">
-    <button class="item-del" onclick="this.parentElement.remove()">✕</button>`;
+    <button class="item-del" onclick="removeItemRow(this)">✕</button>`;
   container.appendChild(row);
 
   const amtInput = row.querySelector('.item-amount');
@@ -4017,7 +4113,9 @@ function addItemRow(type, name='', amount='') {
     // Preserve cursor at end
     this.value = formatted;
   });
+  amtInput.addEventListener('input', updateMonthSummary);
   row.querySelector('.item-name').focus();
+  updateMonthSummary();
 }
 
 async function saveMonth() {
