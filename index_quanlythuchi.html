@@ -2873,6 +2873,72 @@ input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:none;
   font-variant-numeric:tabular-nums;
 }
 </style>
+<style id="features-1-5">
+body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.privacy .mc-footer-stat span,body.privacy .quy-stat-value,body.privacy .quy-progress-amt,body.privacy .tx-card-amt,body.privacy .sv-hero-amount,body.privacy .sv-contrib-amt,body.privacy .sv-w-bal,body.privacy .sv-w-stats b,body.privacy .sv-so-amt,body.privacy .sv-so-stats b,body.privacy .sv-ms b,body.privacy .sv-tx-amt,body.privacy .dtv-amount,body.privacy .dtv-bal-amt,body.privacy .mm-sum-val,body.privacy .tq-stat-value,body.privacy .tq-compare-val,body.privacy .tq-hbar-val,body.privacy .tq-fund-val,body.privacy .tq-sv-val,body.privacy .tq-fund-total,body.privacy .tq-sv-total{filter:blur(7px);user-select:none;transition:filter .2s ease}
+.tq-chart-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 12px 14px;overflow:hidden}
+.tq-chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.tq-chart-title{font-size:14px;font-weight:800}
+.tq-chart-toggle{display:flex;gap:4px;background:var(--s1);border-radius:10px;padding:3px}
+.tq-chart-toggle button{background:transparent;border:none;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit}
+.tq-chart-toggle button.on{background:var(--s3);color:var(--text)}
+.tq-chart-toggle button.on-anh{background:rgba(0,230,118,.15);color:var(--anh)}
+.tq-chart-toggle button.on-em{background:rgba(255,179,0,.15);color:var(--em)}
+.tq-chart-bars{display:flex;align-items:flex-end;gap:2px;height:150px;padding-top:24px;position:relative}
+.tq-chart-month{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;position:relative;cursor:pointer}
+.tq-chart-bar-group{display:flex;align-items:flex-end;gap:1px;height:100%;width:100%;justify-content:center}
+.tq-chart-bar{width:5px;min-height:2px;max-width:14px;border-radius:2px 2px 0 0;transition:height .4s cubic-bezier(.22,1,.36,1)}
+.tq-chart-bar.inc{background:linear-gradient(180deg,#26d98b,#00c853)}
+.tq-chart-bar.exp{background:linear-gradient(180deg,#ff5252,#d32f2f)}
+.tq-chart-bar.prev{opacity:.25;width:3px}
+.tq-chart-label{font-size:9px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.tq-chart-month:hover .tq-chart-bar{opacity:.8}
+.tq-chart-tooltip{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;white-space:nowrap;display:none;z-index:10;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4);text-align:center;line-height:1.4}
+.tq-chart-month:hover .tq-chart-tooltip{display:block}
+.tq-chart-tooltip .tt-inc{color:var(--green)}.tq-chart-tooltip .tt-exp{color:var(--red)}
+.tq-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:8px;border-radius:10px;overflow:hidden}
+.tq-compare-block{background:var(--s2);padding:10px 12px}
+.tq-compare-label{font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.tq-compare-val{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.tq-compare-val.up{color:var(--green)}.tq-compare-val.down{color:var(--red)}.tq-compare-val.neutral{color:var(--muted)}
+.tq-compare-toggle{display:flex;gap:4px;margin:0 12px 14px}
+.tq-compare-toggle button{background:var(--s1);border:1px solid var(--border);padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.tq-compare-toggle button.on{background:var(--s3);color:var(--text);border-color:var(--border2)}
+.tq-fund-card,.tq-sv-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 12px 14px}
+.tq-fund-header,.tq-sv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tq-fund-title,.tq-sv-title{font-size:14px;font-weight:800}
+.tq-fund-total{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:8px;color:var(--blue)}
+.tq-sv-total{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:8px;color:#aef5d0}
+.tq-fund-list{display:flex;flex-direction:column;gap:0}
+.tq-fund-item{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:7px 0;border-top:1px solid var(--border)}
+.tq-fund-item-name{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.tq-fund-item-val{font-weight:700;font-variant-numeric:tabular-nums}
+.tq-top-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 12px 14px}
+.tq-top-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;cursor:pointer;user-select:none}
+.tq-top-title{font-size:14px;font-weight:800}
+.tq-top-section{margin-bottom:16px}.tq-top-section:last-child{margin-bottom:0}
+.tq-top-subtitle{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.tq-top-body{max-height:600px;overflow:hidden;transition:max-height .3s ease}
+.tq-top-body.collapsed{max-height:0}
+.tq-hbar-row{margin-bottom:10px}.tq-hbar-row.clickable{cursor:pointer}.tq-hbar-row.clickable:hover .tq-hbar-fill{opacity:.8}
+.tq-hbar-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;gap:6px}
+.tq-hbar-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.tq-hbar-right{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tq-hbar-val{font-weight:700;font-variant-numeric:tabular-nums;color:var(--red)}
+.tq-hbar-pct{font-size:10px;color:var(--muted)}
+.tq-hbar-track{height:8px;background:var(--s1);border-radius:4px;overflow:hidden}
+.tq-hbar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff5252,#d32f2f);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.tq-top-empty{text-align:center;padding:16px;color:var(--muted);font-size:13px}
+.qf-search{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;font-family:inherit;min-width:70px;max-width:110px;flex-shrink:1;transition:border-color .15s}
+.qf-search:focus{border-color:var(--anh);outline:none}.qf-search::placeholder{color:var(--dim)}
+.qf-date{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:6px 6px;color:var(--text);font-size:10px;font-family:inherit;flex-shrink:0;color-scheme:dark;width:36px}
+.qf-date:focus{border-color:var(--anh);outline:none}
+.sv-search-row{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.sv-search{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;flex:1;min-width:100px}
+.sv-search:focus{border-color:var(--anh);outline:none}.sv-search::placeholder{color:var(--dim)}
+.sv-date{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;color-scheme:dark}
+.sv-date:focus{border-color:var(--anh);outline:none}
+@media(max-width:400px){.tq-chart-bars{height:120px}.tq-chart-bar{width:4px}.tq-chart-bar.prev{width:2px}.tq-chart-label{font-size:8px}.qf-search{max-width:80px;font-size:11px}.qf-date{width:32px;font-size:9px}.tq-fund-total,.tq-sv-total{font-size:18px}}
+</style>
 </head>
 <body>
 
@@ -2965,6 +3031,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:none;
           <svg id="rf-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">
             <path d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.76-4.24L9 6h6V0l-1.35 2.35Z" fill="currentColor"/>
           </svg>
+        </button>
+        <button class="btn-refresh" id="topbar-privacy-btn" onclick="togglePrivacy()" title="Ẩn/hiện số dư">
+          <span id="privacy-icon" style="font-size:15px">👁</span>
         </button>
         <button class="btn-primary" id="topbar-add-btn" onclick="topbarAddClick()">
           <span class="btn-full-text">+ Thêm Tháng</span><span class="btn-short-text">+</span>
@@ -3322,25 +3391,39 @@ editTxId: null,
 };
 
 function getFilter(key) {
-  if(!S.filters[key]) S.filters[key] = { type: '', cat: '', year: '', month: '' };
+  if(!S.filters[key]) S.filters[key] = { type: '', cat: '', year: '', month: '', q: '', from: '', to: '' };
   return S.filters[key];
 }
 
+
 function setFilter(key, field, value) {
   getFilter(key)[field] = value;
-  renderQuy(key);
+  updateQuyList(key);
+}
+let _quySearchTimer = null;
+function setFilterQ(key, value) {
+  getFilter(key).q = value;
+  clearTimeout(_quySearchTimer);
+  _quySearchTimer = setTimeout(function() { updateQuyList(key); }, 200);
+}
+function setFilterDate(key, field, value) {
+  getFilter(key)[field] = value;
+  updateQuyList(key);
 }
 
+
 function clearFilter(key) {
-  S.filters[key] = { type: '', cat: '', year: '', month: '' };
-  // reset DOM inputs (new quy filter row)
+  S.filters[key] = { type: '', cat: '', year: '', month: '', q: '', from: '', to: '' };
   const wrap = document.getElementById('page-'+key);
   if(wrap) {
-    const selects = wrap.querySelectorAll('.qf-select');
-    selects.forEach(s => { s.value = ''; });
+    wrap.querySelectorAll('.qf-select').forEach(function(s) { s.value = ''; });
+    var si = wrap.querySelector('.qf-search'); if(si) si.value = '';
+    var df = wrap.querySelector('.qf-date-from'); if(df) df.value = '';
+    var dt = wrap.querySelector('.qf-date-to'); if(dt) dt.value = '';
   }
-  renderQuy(key);
+  updateQuyList(key);
 }
+
 
 // ── HELPERS ──────────────────────────────────────────────
 const fmtVND = n => {
@@ -3637,13 +3720,19 @@ async function saveBDTMonth(owner, year, month, incomeItems, expenseItems) {
     ...incomeItems.map((i,idx) => ({ month_id: mo.id, type:'income', name: i.name, amount: i.amount, sort_order: idx })),
     ...expenseItems.map((i,idx) => ({ month_id: mo.id, type:'expense', name: i.name, amount: i.amount, sort_order: idx })),
   ];
+  let _newIds = [];
   if(items.length) {
-    const { error: ie } = await sb.from('bdt_items').insert(items);
+    const { data: insData, error: ie } = await sb.from('bdt_items').insert(items).select('id');
     if(ie) throw ie;
+    _newIds = (insData || []).map(function(i) { return i.id; });
   }
-  // Chỉ xoá dữ liệu cũ SAU khi ghi xong dữ liệu mới → không bao giờ mất trắng một tháng
-  if(_prevIds.length) {
-    const { error: de } = await sb.from('bdt_items').delete().in('id', _prevIds);
+  // FIX: Xoá theo month_id (loại trừ id vừa chèn) → chống dòng trùng khi 2 máy cùng sửa
+  if(_newIds.length > 0) {
+    var _idList = _newIds.map(function(id) { return "'" + id + "'"; }).join(',');
+    const { error: de } = await sb.from('bdt_items').delete().eq('month_id', mo.id).not('id', 'in', '(' + _idList + ')');
+    if(de) throw de;
+  } else {
+    const { error: de } = await sb.from('bdt_items').delete().eq('month_id', mo.id);
     if(de) throw de;
   }
   // Update cache
@@ -3699,66 +3788,120 @@ function renderPage(page) {
 
 // ── TỔNG QUAN ─────────────────────────────────────────────
 function renderTongQuan() {
-  const el = document.getElementById('page-tongquan');
-  const year = S.year;
-
-  function getYearTotals(owner) {
-    const yearData = S.bdtCache[owner][year] || {};
-    let income = 0, expense = 0;
-    Object.values(yearData).forEach(d => {
-      if(!d || !d.items) return;
-      d.items.forEach(i => {
-        if(i.type === 'income')  income  += (i.amount || 0);
-        if(i.type === 'expense') expense += (i.amount || 0);
-      });
-    });
-    return { income, expense };
+  var el = document.getElementById('page-tongquan');
+  var year = S.year;
+  var prevYear = year - 1;
+  if(!S.tqState) {
+    var monthsWithData = new Set();
+    ['anh','em'].forEach(function(o) { var yd = (S.bdtCache[o] || {})[year] || {}; Object.keys(yd).forEach(function(m) { monthsWithData.add(Number(m)); }); });
+    var hasAll12 = [1,2,3,4,5,6,7,8,9,10,11,12].every(function(m) { return monthsWithData.has(m); });
+    S.tqState = { chartMode: 'both', compareMode: hasAll12 ? 'year' : 'period', topCollapsed: false };
   }
-
-  const anhCur = getYearTotals('anh');
-  const emCur  = getYearTotals('em');
-  const fmt = n => n ? n.toLocaleString('vi-VN') + ' ₫' : '0 ₫';
-
-  function renderPersonCard(owner, cur) {
-    const isAnh = owner === 'anh';
-    const color     = isAnh ? 'var(--anh)' : 'var(--em)';
-    const cardCls   = isAnh ? 'tq-card-anh' : 'tq-card-em';
-    const personLabel = isAnh ? '👨 Của Anh' : '👩 Của Em';
-    const net = cur.income - cur.expense;
-
-    return `
-<div class="tq-card ${cardCls}">
-  <div class="tq-card-header">
-    <span class="tq-card-person" style="color:${color}">${personLabel}</span>
-    <span class="tq-card-year">Năm ${year}</span>
-  </div>
-
-  <div class="tq-card-body">
-    <div class="tq-stat-block tq-stat-inc">
-      <div class="tq-stat-label">📈 Tổng Thu Ròng (12 tháng)</div>
-      <div class="tq-stat-value" style="color:#26d98b">${fmt(cur.income)}</div>
-    </div>
-    <div class="tq-stat-block tq-stat-exp">
-      <div class="tq-stat-label">📉 Tổng Khoản Chi (12 tháng)</div>
-      <div class="tq-stat-value" style="color:#ff5252">${fmt(cur.expense)}</div>
-    </div>
-  </div>
-
-</div>`;
+  var ts = S.tqState;
+  function getYearTotals(owner, yr) {
+    var yd = (S.bdtCache[owner] || {})[yr] || {};
+    var income = 0, expense = 0;
+    Object.values(yd).forEach(function(d) { if(!d || !d.items) return; d.items.forEach(function(i) { if(i.type === 'income') income += (i.amount || 0); if(i.type === 'expense') expense += (i.amount || 0); }); });
+    return { income: income, expense: expense };
   }
-
-  el.innerHTML = `
-<div class="tq-page">
-  <div class="tq-page-header">
-    <div class="tq-page-title">Tổng quan tài chính</div>
-    <div class="tq-page-sub">Theo dõi tổng thu chi của bạn và người ấy trong 12 tháng</div>
-  </div>
-  <div class="tq-cards-area">
-    ${renderPersonCard('anh', anhCur)}
-    ${renderPersonCard('em',  emCur)}
-  </div>
-</div>`;
+  function getMonthData(owners, yr) {
+    var result = [];
+    for(var m = 1; m <= 13; m++) {
+      var income = 0, expense = 0, hasData = false;
+      owners.forEach(function(o) { var d = ((S.bdtCache[o] || {})[yr] || {})[m]; if(d && d.items) { hasData = true; d.items.forEach(function(i) { if(i.type === 'income') income += (i.amount || 0); if(i.type === 'expense') expense += (i.amount || 0); }); } });
+      if(m <= 12 || hasData) result.push({ month: m, income: income, expense: expense, hasData: hasData });
+    }
+    return result;
+  }
+  var chartOwners = ts.chartMode === 'anh' ? ['anh'] : ts.chartMode === 'em' ? ['em'] : ['anh', 'em'];
+  var monthData = getMonthData(chartOwners, year);
+  var prevLoaded = chartOwners.every(function(o) { return (S.bdtCache[o] || {})[prevYear] !== undefined; });
+  var prevMonthData = prevLoaded ? getMonthData(chartOwners, prevYear) : [];
+  var maxVal = 1;
+  monthData.forEach(function(m) { maxVal = Math.max(maxVal, m.income, m.expense); });
+  prevMonthData.forEach(function(m) { maxVal = Math.max(maxVal, m.income, m.expense); });
+  var bars = monthData.map(function(m) {
+    var incH = Math.round((m.income / maxVal) * 100);
+    var expH = Math.round((m.expense / maxVal) * 100);
+    var prevM = prevMonthData.find(function(p) { return p.month === m.month; });
+    var prevIncH = prevM ? Math.round((prevM.income / maxVal) * 100) : 0;
+    var prevExpH = prevM ? Math.round((prevM.expense / maxVal) * 100) : 0;
+    var label = 'T' + m.month + (m.month === 13 ? '🎁' : '');
+    var tooltip = _privacyMode ? label : (label + '<br><span class="tt-inc">Thu: ' + fmtVND(m.income) + '</span><br><span class="tt-exp">Chi: ' + fmtVND(m.expense) + '</span>');
+    return '<div class="tq-chart-month" onclick="tqChartTooltip(this)"><div class="tq-chart-tooltip">' + tooltip + '</div><div class="tq-chart-bar-group">' + (prevM ? '<div class="tq-chart-bar inc prev" style="height:' + prevIncH + '%"></div><div class="tq-chart-bar exp prev" style="height:' + prevExpH + '%"></div>' : '') + '<div class="tq-chart-bar inc" style="height:' + incH + '%"></div><div class="tq-chart-bar exp" style="height:' + expH + '%"></div></div><div class="tq-chart-label">' + label + '</div></div>';
+  }).join('');
+  function renderCompare(owner) {
+    var cur = getYearTotals(owner, year);
+    var prev = prevLoaded ? getYearTotals(owner, prevYear) : null;
+    if(ts.compareMode === 'period' && prevLoaded) {
+      var curMonths = new Set();
+      Object.keys((S.bdtCache[owner] || {})[year] || {}).forEach(function(m) { curMonths.add(Number(m)); });
+      var prevYd = (S.bdtCache[owner] || {})[prevYear] || {};
+      var pInc = 0, pExp = 0;
+      Object.keys(prevYd).forEach(function(m) { if(curMonths.has(Number(m))) { var d = prevYd[m]; if(d && d.items) { d.items.forEach(function(i) { if(i.type === 'income') pInc += (i.amount || 0); if(i.type === 'expense') pExp += (i.amount || 0); }); } } });
+      prev = { income: pInc, expense: pExp };
+    }
+    function pctChange(curV, prevV) { if(!prevV || prevV === 0) return null; return ((curV - prevV) / prevV) * 100; }
+    function savingsRate(inc, exp) { if(!inc || inc === 0) return null; return ((inc - exp) / inc) * 100; }
+    var incPct = (prev && prev.income > 0) ? pctChange(cur.income, prev.income) : null;
+    var expPct = (prev && prev.expense > 0) ? pctChange(cur.expense, prev.expense) : null;
+    var curRate = savingsRate(cur.income, cur.expense);
+    var prevRate = prev ? savingsRate(prev.income, prev.expense) : null;
+    function fmtPct(p, isIncome) { if(p === null) return '<span class="tq-compare-val neutral">—</span>'; var arrow = p >= 0 ? '▲' : '▼'; var cls = isIncome ? (p >= 0 ? 'up' : 'down') : (p >= 0 ? 'down' : 'up'); return '<span class="tq-compare-val ' + cls + '">' + arrow + ' ' + Math.abs(p).toFixed(1) + '%</span>'; }
+    function fmtRate(r) { if(r === null) return '<span class="tq-compare-val neutral">—</span>'; var sign = r >= 0 ? '+' : ''; var cls = r >= 0 ? 'up' : 'down'; return '<span class="tq-compare-val ' + cls + '">' + sign + r.toFixed(1) + '%</span>'; }
+    return '<div class="tq-compare-grid"><div class="tq-compare-block"><div class="tq-compare-label">Thu vs ' + prevYear + '</div>' + fmtPct(incPct, true) + '</div><div class="tq-compare-block"><div class="tq-compare-label">Chi vs ' + prevYear + '</div>' + fmtPct(expPct, false) + '</div><div class="tq-compare-block"><div class="tq-compare-label">Tỷ lệ tiết kiệm (thu − chi)</div>' + fmtRate(curRate) + '</div><div class="tq-compare-block"><div class="tq-compare-label">Tỷ lệ tiết kiệm ' + prevYear + '</div>' + fmtRate(prevRate) + '</div></div>';
+  }
+  function renderPersonCard(owner) {
+    var isAnh = owner === 'anh'; var color = isAnh ? 'var(--anh)' : 'var(--em)'; var cardCls = isAnh ? 'tq-card-anh' : 'tq-card-em';
+    var personLabel = isAnh ? '👨 Của Anh' : '👩 Của Em'; var cur = getYearTotals(owner, year);
+    return '<div class="tq-card ' + cardCls + '"><div class="tq-card-header"><span class="tq-card-person" style="color:' + color + '">' + personLabel + '</span><span class="tq-card-year">Năm ' + year + '</span></div><div class="tq-card-body"><div class="tq-stat-block tq-stat-inc"><div class="tq-stat-label">📈 Tổng Thu Ròng</div><div class="tq-stat-value pv" style="color:#26d98b">' + fmtVNDSign(cur.income) + '</div></div><div class="tq-stat-block tq-stat-exp"><div class="tq-stat-label">📉 Tổng Khoản Chi</div><div class="tq-stat-value pv" style="color:#ff5252">' + fmtVNDSign(cur.expense) + '</div></div></div>' + renderCompare(owner) + '</div>';
+  }
+  function renderFundTotal() {
+    var totalBalance = 0; var fundList = [];
+    Object.values(S.quyCache).forEach(function(q) { var txs = q.transactions || []; var inAmt = txs.filter(function(t) { return t.type === 'in'; }).reduce(function(s,t) { return s + (t.amount_anh || 0) + (t.amount_em || 0); }, 0); var outAmt = txs.filter(function(t) { return t.type === 'out'; }).reduce(function(s,t) { return s + (t.amount_anh || 0) + (t.amount_em || 0); }, 0); var bal = inAmt - outAmt; totalBalance += bal; fundList.push({ name: q.name, icon: q.icon || '💰', balance: bal, color: q.color || 'var(--anh)' }); });
+    var fundItems = fundList.map(function(f) { return '<div class="tq-fund-item"><span class="tq-fund-item-name">' + f.icon + ' ' + escHtml(f.name) + '</span><span class="tq-fund-item-val pv" style="color:' + f.color + '">' + fmtVNDSign(f.balance) + '</span></div>'; }).join('');
+    return '<div class="tq-fund-card"><div class="tq-fund-header"><span class="tq-fund-title">💰 Tổng Quỹ Chung</span><span style="font-size:11px;color:var(--muted)">' + fundList.length + ' quỹ</span></div><div class="tq-fund-total pv">' + fmtVNDSign(totalBalance) + '</div><div class="tq-fund-list">' + fundItems + '</div></div>';
+  }
+  function renderSavingsTotal() {
+    if(!SV.allowed) return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span><span style="font-size:18px">🔒</span></div><div style="color:var(--muted);font-size:13px;padding:8px 0">Chỉ tài khoản ' + escHtml(SAVINGS_EMAIL) + ' mới xem được</div></div>';
+    if(SV.rows === null) { if(!S._svLoading) { S._svLoading = true; loadSavings().then(function() { S._svLoading = false; if(S.page === 'tongquan') renderTongQuan(); }).catch(function() { S._svLoading = false; }); } return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span></div><div style="color:var(--muted);font-size:13px;padding:8px 0">Đang tải...</div></div>'; }
+    var t = svTotals();
+    return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span><span style="font-size:11px;color:var(--muted)">Anh + Em + Sổ</span></div><div class="tq-sv-total pv">' + svFmt(t.total) + ' ₫</div><div style="display:flex;gap:12px;font-size:12px;margin-top:8px"><span style="color:var(--anh)">👨 <span class="pv">' + svFmt(t.anh.bal + t.anh.so) + ' ₫</span></span><span style="color:var(--em)">👩 <span class="pv">' + svFmt(t.em.bal + t.em.so) + ' ₫</span></span></div></div>';
+  }
+  function renderTopExpenses() {
+    var bdtMap = {};
+    chartOwners.forEach(function(owner) { var yd = (S.bdtCache[owner] || {})[year] || {}; Object.values(yd).forEach(function(d) { if(!d || !d.items) return; d.items.forEach(function(i) { if(i.type !== 'expense' || !i.amount) return; var norm = normalizeStr(i.name); if(!bdtMap[norm]) bdtMap[norm] = { name: i.name, amount: 0, count: 0 }; bdtMap[norm].amount += (i.amount || 0); bdtMap[norm].count++; }); }); });
+    var bdtSorted = Object.values(bdtMap).sort(function(a,b) { return b.amount - a.amount; });
+    var bdtTotal = bdtSorted.reduce(function(s,i) { return s + i.amount; }, 0);
+    var bdtTop = bdtSorted.slice(0, 5); var bdtRest = bdtSorted.slice(5); var bdtRestAmt = bdtRest.reduce(function(s,i) { return s + i.amount; }, 0);
+    if(bdtRest.length) bdtTop.push({ name: 'Khác', amount: bdtRestAmt, count: bdtRest.length });
+    var catMap = {};
+    Object.values(S.quyCache).forEach(function(q) { var txs = q.transactions || []; txs.forEach(function(t) { if(t.type !== 'out') return; var amt = (t.amount_anh || 0) + (t.amount_em || 0); if(!amt) return; var cat = t.category || 'Chưa phân loại'; if(!catMap[cat]) catMap[cat] = { name: cat, amount: 0, count: 0, quyKey: q.key }; catMap[cat].amount += amt; catMap[cat].count++; }); });
+    if(SV.allowed && SV.rows) { SV.rows.forEach(function(r) { if(r.type !== 'out') return; var amt = Number(r.amount) || 0; if(!amt) return; var cat = r.category || 'Tiết kiệm'; if(!catMap[cat]) catMap[cat] = { name: cat, amount: 0, count: 0, quyKey: null }; catMap[cat].amount += amt; catMap[cat].count++; }); }
+    var catSorted = Object.values(catMap).sort(function(a,b) { return b.amount - a.amount; });
+    var catTotal = catSorted.reduce(function(s,i) { return s + i.amount; }, 0);
+    var catTop = catSorted.slice(0, 5); var catRest = catSorted.slice(5); var catRestAmt = catRest.reduce(function(s,i) { return s + i.amount; }, 0);
+    if(catRest.length) catTop.push({ name: 'Khác', amount: catRestAmt, count: catRest.length, quyKey: null });
+    function renderHBars(items, total, clickable) {
+      if(!items.length || !total) return '<div class="tq-top-empty">Chưa có khoản chi trong năm này</div>';
+      return items.map(function(item) {
+        var pct = total > 0 ? (item.amount / total * 100) : 0;
+        var name = item.name.length > 20 ? item.name.slice(0, 18) + '…' : item.name;
+        var titleAttr = _privacyMode ? escHtml(item.name) : (escHtml(item.name) + ': ' + fmtVND(item.amount));
+        var clickAttr = (clickable && item.quyKey) ? 'onclick="tqTopCategoryClick(\'' + escHtml(item.name).replace(/'/g, '&#39;') + '\',\'' + item.quyKey + '\')" class="tq-hbar-row clickable"' : 'class="tq-hbar-row"';
+        return '<div ' + clickAttr + ' title="' + titleAttr + '"><div class="tq-hbar-label"><span class="tq-hbar-name">' + escHtml(name) + '</span><span class="tq-hbar-right"><span class="tq-hbar-val pv">' + fmtVND(item.amount) + '</span><span class="tq-hbar-pct">' + pct.toFixed(1) + '%</span></span></div><div class="tq-hbar-track"><div class="tq-hbar-fill" style="width:' + pct + '%"></div></div></div>';
+      }).join('');
+    }
+    return '<div class="tq-top-card"><div class="tq-top-header" onclick="toggleTopCollapse()"><span class="tq-top-title">🔴 Top Khoản Chi Lớn</span><span id="top-collapse-icon" style="font-size:14px;color:var(--muted)">' + (ts.topCollapsed ? '▼' : '▲') + '</span></div><div class="tq-top-body ' + (ts.topCollapsed ? 'collapsed' : '') + '" id="top-expenses-body"><div class="tq-top-section"><div class="tq-top-subtitle">📋 Theo khoản chi (bảng dự tính)</div>' + renderHBars(bdtTop, bdtTotal, false) + '</div><div class="tq-top-section"><div class="tq-top-subtitle">🏷️ Theo danh mục (giao dịch quỹ)</div>' + renderHBars(catTop, catTotal, true) + '</div></div></div>';
+  }
+  var toggleBtns = [{ v: 'both', label: 'Cả hai', cls: '' }, { v: 'anh', label: '👨 Anh', cls: 'on-anh' }, { v: 'em', label: '👩 Em', cls: 'on-em' }].map(function(b) { return '<button class="' + (ts.chartMode === b.v ? 'on ' + b.cls : '') + '" onclick="setTQChartMode(\'' + b.v + '\')">' + b.label + '</button>'; }).join('');
+  var compareToggle = '<div class="tq-compare-toggle"><button class="' + (ts.compareMode === 'period' ? 'on' : '') + '" onclick="setTQCompareMode(\'period\')">Cùng kỳ</button><button class="' + (ts.compareMode === 'year' ? 'on' : '') + '" onclick="setTQCompareMode(\'year\')">Cả năm</button></div>';
+  el.innerHTML = '<div class="tq-page"><div class="tq-page-header"><div class="tq-page-title">Tổng quan tài chính</div><div class="tq-page-sub">Năm ' + year + ' · Theo dõi thu chi, quỹ chung và tiết kiệm</div></div><div class="tq-chart-card"><div class="tq-chart-header"><span class="tq-chart-title">📊 Thu/Chi theo tháng</span><div class="tq-chart-toggle">' + toggleBtns + '</div></div><div class="tq-chart-bars">' + bars + '</div></div><div class="tq-cards-area">' + renderPersonCard('anh') + renderPersonCard('em') + '</div>' + compareToggle + renderFundTotal() + renderSavingsTotal() + renderTopExpenses() + '</div>';
+  if(!prevLoaded) { Promise.all(chartOwners.map(function(o) { return loadBDTYear(o, prevYear); })).then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function() {}); }
+  if(SV.rows === null && !SV.allowed) { loadSavings().then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function() {}); }
 }
+
+
 
 
 function showSkeletons(owner) {
@@ -3884,179 +4027,53 @@ function toggleMonthDetail(owner, year, month) {
 
 // ── QUY RENDER ───────────────────────────────────────────
 function renderQuy(key) {
-  const el  = document.getElementById('page-'+key);
-  const q   = S.quyCache[key];
-  if(!q) {
-    el.innerHTML = `<div class="empty-state"><span class="empty-icon">⏳</span><h3>Đang tải...</h3></div>`;
-    return;
-  }
-
-  const txs     = q.transactions || [];
-  const totalIn  = txs.filter(t=>t.type==='in').reduce((s,t)=>s+(t.amount_anh||0)+(t.amount_em||0),0);
-  const totalOut = txs.filter(t=>t.type==='out').reduce((s,t)=>s+(t.amount_anh||0)+(t.amount_em||0),0);
-  const balance  = totalIn - totalOut;
-  const target   = q.target || 0;
-  const pct      = target > 0 ? Math.min(100, Math.round(balance/target*100)) : 0;
-  const anhIn    = txs.filter(t=>t.type==='in').reduce((s,t)=>s+(t.amount_anh||0),0);
-  const emIn     = txs.filter(t=>t.type==='in').reduce((s,t)=>s+(t.amount_em||0),0);
-  const lacking  = Math.max(0, target - balance);
-  const qColor   = q.color || 'var(--anh)';
-
-  const cats  = [...new Set(txs.map(t=>t.category||'').filter(Boolean))].sort();
-  const years = [...new Set(txs.map(t=>(t.date||'').slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
-
-  const f = getFilter(key);
-  const hasFilter = !!(f.type || f.cat || f.year || f.month);
-
-  let filtered = [...txs];
-  if(f.type)  filtered = filtered.filter(t => t.type === f.type);
-  if(f.cat)   filtered = filtered.filter(t => (t.category||'') === f.cat);
-  if(f.year)  filtered = filtered.filter(t => (t.date||'').startsWith(f.year));
-  if(f.month) filtered = filtered.filter(t => { const p=(t.date||'').split('-'); return p[1]===f.month; });
-
-  const sorted = [...filtered].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-
-  const txHTML = (() => {
-    if(!sorted.length) {
-      if(hasFilter) return `<div class="quy-tx-empty"><span class="ei">🔍</span><div class="et">Không tìm thấy kết quả</div><div class="es">Thử thay đổi bộ lọc</div></div>`;
-      return `<div class="quy-tx-empty"><span class="ei">💸</span><div class="et">Chưa có giao dịch nào</div><div class="es">Nhấn "+ Giao dịch" để thêm</div></div>`;
-    }
-    const groups = {};
-    sorted.forEach(t => { const d=t.date||''; if(!groups[d]) groups[d]=[]; groups[d].push(t); });
-    return Object.keys(groups).sort((a,b)=>b.localeCompare(a)).map(date => {
-      const [y,m,d2] = date ? date.split('-') : ['','',''];
-      const label = date ? `${d2}/${m}/${y}` : '—';
-      const cards = groups[date].map(t => {
-        const isIn = t.type==='in';
-        const totalAmt = (t.amount_anh||0)+(t.amount_em||0);
-        const accent = isIn?'var(--green)':'var(--red)';
-        const emoji  = isIn?'📥':'📤';
-        const catOrType = (t.category||'') ? `<span class="tx-card-badge tx-badge-cat">${escHtml(t.category)}</span>` : `<span class="tx-card-badge ${isIn?'tx-badge-in':'tx-badge-out'}">${isIn?'Nạp':'Chi'}</span>`;
-        return `<div class="tx-card" style="--tx-accent:${accent}">
-          <div class="tx-card-icon">${emoji}</div>
-          <div class="tx-card-body">
-            <div class="tx-card-title">${escHtml(t.description||'—')}</div>
-            <div class="tx-card-meta">
-              ${catOrType}
-              ${t.note?`<span class="tx-card-note">· ${escHtml(t.note)}</span>`:''}
-            </div>
-          </div>
-          <div class="tx-card-right">
-            <div class="tx-card-amt ${isIn?'tx-type-in':'tx-type-out'}">${totalAmt?fmtVND(totalAmt):'—'}</div>
-            <div class="tx-card-actions">
-              <button class="tx-act-btn" onclick="openTxDetail('${t.id}','${key}')" title="Xem chi tiết">🔍</button>
-              <button class="tx-act-btn" onclick="openTxModal('${t.id}','${key}')" title="Sửa">✏️</button>
-              <button class="tx-act-btn del" onclick="confirmDeleteTx('${t.id}','${key}')" title="Xóa">🗑</button>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-      return `<div class="tx-day-group"><div class="tx-day-label">${label}</div><div class="tx-cards">${cards}</div></div>`;
-    }).join('');
-  })();
-
-  const catOptions   = cats.map(c => `<option value="${escHtml(c)}" ${f.cat===c?'selected':''}>${escHtml(c)}</option>`).join('');
-  const yearOptions  = years.map(y => `<option value="${y}" ${f.year===y?'selected':''}>${y}</option>`).join('');
-  const monthOptions = Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,'0');return `<option value="${m}" ${f.month===m?'selected':''}>T${i+1}</option>`;}).join('');
-
-  const progressHTML = target > 0 ? `
-    <div class="quy-progress-wrap">
-      <div class="quy-progress-track">
-        <div class="quy-progress-fill" style="width:${pct}%"></div>
-      </div>
-      <div class="quy-progress-labels">
-        <span class="quy-progress-pct">${pct}% đạt mục tiêu</span>
-        <span class="quy-progress-amt">${fmtVND(balance)} / ${fmtVND(target)}</span>
-      </div>
-    </div>` : '';
-
-  const lackingDisplay = lacking > 0 ? fmtVND(lacking) : '✅ Đủ';
-
-  el.innerHTML = `
-  <div class="quy-page-wrap" style="--quy-color:${qColor}">
-
-    <!-- Hero Card -->
-    <div class="quy-hero">
-      <div class="quy-hero-top">
-        <div class="quy-identity">
-          <div class="quy-icon-pill">${q.icon||'💰'}</div>
-          <div class="quy-name-wrap">
-            <div class="quy-name">${escHtml(q.name)}</div>
-            ${target>0?`<div class="quy-subtitle">Mục tiêu: ${fmtVND(target)}</div>`:'<div class="quy-subtitle">Quỹ chung</div>'}
-          </div>
-        </div>
-        <div class="quy-hero-actions">
-          <button class="quy-btn-cfg" onclick="openQuyConfig('${key}')" title="Cài đặt">⚙️</button>
-          <button class="quy-btn-add" onclick="openTxModal(null,'${key}')">+ Giao dịch</button>
-        </div>
-      </div>
-      ${progressHTML}
-    </div>
-
-    <!-- Stats Grid -->
-    <div class="quy-stats-grid">
-      <div class="quy-stat">
-        <div class="quy-stat-label">📥 Đã nạp</div>
-        <div class="quy-stat-value sv-green">${fmtVND(totalIn)}</div>
-      </div>
-      <div class="quy-stat">
-        <div class="quy-stat-label">📤 Đã chi</div>
-        <div class="quy-stat-value sv-red">${fmtVND(totalOut)}</div>
-      </div>
-      <div class="quy-stat">
-        <div class="quy-stat-label">💰 Còn lại</div>
-        <div class="quy-stat-value sv-quy">${fmtVND(balance)}</div>
-      </div>
-      <div class="quy-stat">
-        <div class="quy-stat-label">👨 Anh đóng</div>
-        <div class="quy-stat-value sv-anh">${fmtVND(anhIn)}</div>
-      </div>
-      <div class="quy-stat">
-        <div class="quy-stat-label">👩 Em đóng</div>
-        <div class="quy-stat-value sv-em">${fmtVND(emIn)}</div>
-      </div>
-      <div class="quy-stat">
-        <div class="quy-stat-label">⚠️ Còn thiếu</div>
-        <div class="quy-stat-value ${lacking>0?'sv-muted':'sv-green'}">${lackingDisplay}</div>
-      </div>
-    </div>
-
-    <!-- Filter Row -->
-    <div class="quy-filter-row" id="qfr-${key}">
-      <select class="qf-select qf-year" onchange="setFilter('${key}','year',this.value)">
-        <option value="" ${!f.year?'selected':''}>Năm</option>
-        ${yearOptions}
-      </select>
-      <select class="qf-select qf-month" onchange="setFilter('${key}','month',this.value)">
-        <option value="" ${!f.month?'selected':''}>Tháng</option>
-        ${monthOptions}
-      </select>
-      <select class="qf-select qf-type" onchange="setFilter('${key}','type',this.value)">
-        <option value="" ${!f.type?'selected':''}>Loại</option>
-        <option value="in" ${f.type==='in'?'selected':''}>📥 Nạp</option>
-        <option value="out" ${f.type==='out'?'selected':''}>📤 Chi</option>
-      </select>
-      ${cats.length?`<select class="qf-select qf-cat" onchange="setFilter('${key}','cat',this.value)">
-        <option value="" ${!f.cat?'selected':''}>Danh mục</option>
-        ${catOptions}
-      </select>`:''}
-      <button class="qf-btn-clear ${hasFilter?'qf-visible':''}" onclick="clearFilter('${key}')">✕ Xóa</button>
-      ${hasFilter?`<span class="qf-count">${filtered.length} kết quả</span>`:''}
-    </div>
-
-    <!-- Transaction Container -->
-    <div class="quy-tx-section">
-      <div class="quy-tx-header">
-        <span class="quy-tx-title">📋 Lịch sử giao dịch</span>
-        <span class="quy-tx-count">${sorted.length} giao dịch</span>
-      </div>
-      <div class="quy-tx-scroll" id="qtx-${key}">
-        ${txHTML}
-      </div>
-    </div>
-
-  </div>`;
+  var el = document.getElementById('page-'+key);
+  var q = S.quyCache[key];
+  if(!q) { el.innerHTML = '<div class="empty-state"><span class="empty-icon">⏳</span><h3>Đang tải...</h3></div>'; return; }
+  var txs = q.transactions || [];
+  var totalIn = txs.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_anh||0)+(t.amount_em||0); }, 0);
+  var totalOut = txs.filter(function(t) { return t.type==='out'; }).reduce(function(s,t) { return s+(t.amount_anh||0)+(t.amount_em||0); }, 0);
+  var balance = totalIn - totalOut;
+  var target = q.target || 0;
+  var pct = target > 0 ? Math.min(100, Math.round(balance/target*100)) : 0;
+  var anhIn = txs.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_anh||0); }, 0);
+  var emIn = txs.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_em||0); }, 0);
+  var lacking = Math.max(0, target - balance);
+  var qColor = q.color || 'var(--anh)';
+  var cats = [];
+  txs.forEach(function(t) { if(t.category && cats.indexOf(t.category) === -1) cats.push(t.category); });
+  cats.sort();
+  var years = [];
+  txs.forEach(function(t) { var y = (t.date||'').slice(0,4); if(y && years.indexOf(y) === -1) years.push(y); });
+  years.sort(function(a,b) { return b.localeCompare(a); });
+  var f = getFilter(key);
+  var hasFilter = !!(f.type || f.cat || f.year || f.month || f.q || f.from || f.to);
+  var filtered = txs.slice();
+  if(f.type) filtered = filtered.filter(function(t) { return t.type === f.type; });
+  if(f.cat) filtered = filtered.filter(function(t) { return (t.category||'') === f.cat; });
+  if(f.year) filtered = filtered.filter(function(t) { return (t.date||'').startsWith(f.year); });
+  if(f.month) filtered = filtered.filter(function(t) { var p=(t.date||'').split('-'); return p[1]===f.month; });
+  if(f.q) { var nq = normalizeStr(f.q); filtered = filtered.filter(function(t) { return normalizeStr(t.description||'').includes(nq) || normalizeStr(t.note||'').includes(nq) || normalizeStr(t.category||'').includes(nq); }); }
+  if(f.from) filtered = filtered.filter(function(t) { return (t.date||'') >= f.from; });
+  if(f.to) filtered = filtered.filter(function(t) { return (t.date||'') <= f.to; });
+  var sorted = filtered.slice().sort(function(a,b) { return (b.date||'').localeCompare(a.date||''); });
+  var sumIn = sorted.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_anh||0)+(t.amount_em||0); }, 0);
+  var sumOut = sorted.filter(function(t) { return t.type==='out'; }).reduce(function(s,t) { return s+(t.amount_anh||0)+(t.amount_em||0); }, 0);
+  var txHTML = buildQuyTxHTML(sorted, hasFilter, key);
+  var catOptions = cats.map(function(c) { return '<option value="'+escHtml(c)+'"'+(f.cat===c?' selected':'')+'>'+escHtml(c)+'</option>'; }).join('');
+  var yearOptions = years.map(function(y) { return '<option value="'+y+'"'+(f.year===y?' selected':'')+'>'+y+'</option>'; }).join('');
+  var monthOptions = '';
+  for(var i=0; i<12; i++) { var m = String(i+1).padStart(2,'0'); monthOptions += '<option value="'+m+'"'+(f.month===m?' selected':'')+'>T'+(i+1)+'</option>'; }
+  var progressHTML = target > 0 ? '<div class="quy-progress-wrap"><div class="quy-progress-track"><div class="quy-progress-fill" style="width:'+pct+'%"></div></div><div class="quy-progress-labels"><span class="quy-progress-pct">'+pct+'% đạt mục tiêu</span><span class="quy-progress-amt">'+fmtVNDSign(balance)+' / '+fmtVND(target)+'</span></div></div>' : '';
+  var lackingDisplay = lacking > 0 ? fmtVND(lacking) : '✅ Đủ';
+  var catSelect = cats.length ? '<select class="qf-select qf-cat" onchange="setFilter(\''+key+'\',\'cat\',this.value)"><option value=""'+(!f.cat?' selected':'')+'>Danh mục</option>'+catOptions+'</select>' : '';
+  el.innerHTML = '<div class="quy-page-wrap" style="--quy-color:'+qColor+'">'+
+    '<div class="quy-hero"><div class="quy-hero-top"><div class="quy-identity"><div class="quy-icon-pill">'+(q.icon||'💰')+'</div><div class="quy-name-wrap"><div class="quy-name">'+escHtml(q.name)+'</div>'+(target>0?'<div class="quy-subtitle">Mục tiêu: '+fmtVND(target)+'</div>':'<div class="quy-subtitle">Quỹ chung</div>')+'</div></div><div class="quy-hero-actions"><button class="quy-btn-cfg" onclick="openQuyConfig(\''+key+'\')" title="Cài đặt">⚙️</button><button class="quy-btn-add" onclick="openTxModal(null,\''+key+'\')">+ Giao dịch</button></div></div>'+progressHTML+'</div>'+
+    '<div class="quy-stats-grid"><div class="quy-stat"><div class="quy-stat-label">📥 Đã nạp</div><div class="quy-stat-value sv-green">'+fmtVND(totalIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">📤 Đã chi</div><div class="quy-stat-value sv-red">'+fmtVND(totalOut)+'</div></div><div class="quy-stat"><div class="quy-stat-label">💰 Còn lại</div><div class="quy-stat-value sv-quy">'+fmtVNDSign(balance)+'</div></div><div class="quy-stat"><div class="quy-stat-label">👨 Anh đóng</div><div class="quy-stat-value sv-anh">'+fmtVND(anhIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">👩 Em đóng</div><div class="quy-stat-value sv-em">'+fmtVND(emIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">⚠️ Còn thiếu</div><div class="quy-stat-value '+(lacking>0?'sv-muted':'sv-green')+'">'+lackingDisplay+'</div></div></div>'+
+    '<div class="quy-filter-row" id="qfr-'+key+'"><input class="qf-search" type="text" placeholder="🔍 Tìm..." value="'+escHtml(f.q||'')+'" oninput="setFilterQ(\''+key+'\',this.value)"><input class="qf-date qf-date-from" type="date" value="'+(f.from||'')+'" onchange="setFilterDate(\''+key+'\',\'from\',this.value)" title="Từ ngày"><input class="qf-date qf-date-to" type="date" value="'+(f.to||'')+'" onchange="setFilterDate(\''+key+'\',\'to\',this.value)" title="Đến ngày"><select class="qf-select qf-year" onchange="setFilter(\''+key+'\',\'year\',this.value)"><option value=""'+(!f.year?' selected':'')+'>Năm</option>'+yearOptions+'</select><select class="qf-select qf-month" onchange="setFilter(\''+key+'\',\'month\',this.value)"><option value=""'+(!f.month?' selected':'')+'>Tháng</option>'+monthOptions+'</select><select class="qf-select qf-type" onchange="setFilter(\''+key+'\',\'type\',this.value)"><option value=""'+(!f.type?' selected':'')+'>Loại</option><option value="in"'+(f.type==='in'?' selected':'')+'>📥 Nạp</option><option value="out"'+(f.type==='out'?' selected':'')+'>📤 Chi</option></select>'+catSelect+'<button class="qf-btn-clear '+(hasFilter?'qf-visible':'')+'" onclick="clearFilter(\''+key+'\')">✕ Xóa</button>'+(hasFilter?'<span class="qf-count">'+sorted.length+' kết quả · <span style="color:var(--green)">+'+fmtVND(sumIn)+'</span> · <span style="color:var(--red)">−'+fmtVND(sumOut)+'</span></span>':'')+'</div>'+
+    '<div class="quy-tx-section"><div class="quy-tx-header"><span class="quy-tx-title">📋 Lịch sử giao dịch</span><span class="quy-tx-count">'+sorted.length+' giao dịch</span></div><div class="quy-tx-scroll" id="qtx-'+key+'">'+txHTML+'</div></div></div>';
 }
+
 
 // ── MONTH MODAL ──────────────────────────────────────────
 function openMonthModal(owner, year, month) {
@@ -4359,7 +4376,7 @@ async function downloadReceipt(txId, quyKey, btn) {
   try {
     const q  = S.quyCache[quyKey];
     const tx = (q?.transactions||[]).find(t => t.id === txId);
-    if(!tx) throw new Error('Không tìm thấy giao dịch');
+    if(!tx) throw new Error('Không tìm thấy giao d���ch');
 
     const isIn     = tx.type === 'in';
     const anhAmt   = tx.amount_anh || 0;
@@ -4504,6 +4521,7 @@ function attachMoneyInputs() {
   });
 }
 document.addEventListener('DOMContentLoaded', attachMoneyInputs);
+document.addEventListener('DOMContentLoaded', initPrivacy);
 
 // ── LOGIN PARTICLES ───────────────────────────────────────
 (function(){
@@ -5046,44 +5064,36 @@ function svWallet(o, t) {
 }
 
 function svHistory() {
-  const rows = SV.rows.filter(r => (!SV.fOwner || r.owner === SV.fOwner) && (!SV.fType || r.type === SV.fType));
-  const chip = (k, v, label, cls) => `<button class="sv-chip ${cls || ''} ${SV[k] === v ? 'on' : ''}" onclick="svSetFilter('${k}','${v}')">${label}</button>`;
-  let body;
-  if (!rows.length) {
-    body = SV.rows.length
-      ? '<div class="sv-empty"><div class="sv-empty-ico">🔍</div>Không có giao dịch phù hợp bộ lọc</div>'
-      : '<div class="sv-empty"><div class="sv-empty-ico">🌱</div>Chưa có giao dịch nào.<br>Bắt đầu gửi khoản tiết kiệm đầu tiên nhé!<br><button class="sv-btn sv-btn-in" onclick="openSavingsModal(null)">＋ Thêm giao dịch</button></div>';
+  var rows = (SV.rows || []).filter(function(r) {
+    if(SV.fOwner && r.owner !== SV.fOwner) return false;
+    if(SV.fType && r.type !== SV.fType) return false;
+    if(SV.fQ) { var nq = normalizeStr(SV.fQ); if(!normalizeStr(r.description||'').includes(nq) && !normalizeStr(r.note||'').includes(nq) && !normalizeStr(r.category||'').includes(nq)) return false; }
+    if(SV.fFrom && (r.date||'') < SV.fFrom) return false;
+    if(SV.fTo && (r.date||'') > SV.fTo) return false;
+    return true;
+  });
+  function chip(k, v, label, cls) { return '<button class="sv-chip '+(cls||'')+' '+(SV[k]===v?'on':'')+'" onclick="svSetFilter(\''+k+'\',\''+v+'\')">'+label+'</button>'; }
+  var searchRow = '<div class="sv-search-row"><input class="sv-search" type="text" placeholder="🔍 Tìm theo mô tả, ghi chú, danh mục..." value="'+svEsc(SV.fQ||'')+'" oninput="svSetSearch(this.value)"><input class="sv-date" type="date" value="'+(SV.fFrom||'')+'" onchange="svSetDate(\'from\',this.value)" title="Từ ngày"><input class="sv-date" type="date" value="'+(SV.fTo||'')+'" onchange="svSetDate(\'to\',this.value)" title="Đến ngày"></div>';
+  var body;
+  if(!rows.length) {
+    body = (SV.rows && SV.rows.length) ? '<div class="sv-empty"><div class="sv-empty-ico">🔍</div>Không có giao dịch phù hợp bộ lọc</div>' : '<div class="sv-empty"><div class="sv-empty-ico">🌱</div>Chưa có giao dịch nào.<br>Bắt đầu gửi khoản tiết kiệm đầu tiên nhé!<br><button class="sv-btn sv-btn-in" onclick="openSavingsModal(null)">＋ Thêm giao dịch</button></div>';
   } else {
-    const groups = {};
-    rows.forEach(r => { const k = (r.date || '').slice(0, 7); (groups[k] = groups[k] || []).push(r); });
-    body = Object.keys(groups).sort().reverse().map(k => {
-      const [y, m] = k.split('-');
-      const list = groups[k];
-      const sumIn = list.filter(r => r.type === 'in').reduce((s, r) => s + (Number(r.amount) || 0), 0);
-      const sumOut = list.filter(r => r.type === 'out').reduce((s, r) => s + (Number(r.amount) || 0), 0);
-      const net = sumIn - sumOut;
-      const days = {};
-      list.forEach(r => { (days[r.date || ''] = days[r.date || ''] || []).push(r); });
-      const dayHtml = Object.keys(days).map(d => `<div class="sv-day">${fmtDate(d)}</div>${days[d].map(svItem).join('')}`).join('');
-      return `<div class="sv-month">
-        <div class="sv-month-head">
-          <div class="sv-month-name">Tháng ${+m}/${y}<small>${list.length} giao dịch</small></div>
-          <div class="sv-month-sum">
-            <div class="sv-ms in"><span>Đã gửi</span><b>+${svFmt(sumIn)}</b></div>
-            <div class="sv-ms out"><span>Đã rút</span><b>−${svFmt(sumOut)}</b></div>
-            <div class="sv-ms net ${net >= 0 ? 'in' : 'out'}" title="Chênh lệch = Đã gửi − Đã rút trong tháng"><span>Chênh lệch</span><b>${net >= 0 ? '+' : '−'}${svFmt(Math.abs(net))} ₫</b></div>
-          </div>
-        </div>
-        <div class="sv-month-list">${dayHtml}</div>
-      </div>`;
+    var groups = {};
+    rows.forEach(function(r) { var k = (r.date||'').slice(0,7); (groups[k] = groups[k] || []).push(r); });
+    body = Object.keys(groups).sort().reverse().map(function(k) {
+      var parts = k.split('-'); var y = parts[0], m = parts[1]; var list = groups[k];
+      var sumIn = list.filter(function(r) { return r.type==='in'; }).reduce(function(s,r) { return s+(Number(r.amount)||0); }, 0);
+      var sumOut = list.filter(function(r) { return r.type==='out'; }).reduce(function(s,r) { return s+(Number(r.amount)||0); }, 0);
+      var net = sumIn - sumOut;
+      var days = {};
+      list.forEach(function(r) { (days[r.date||''] = days[r.date||''] || []).push(r); });
+      var dayHtml = Object.keys(days).map(function(d) { return '<div class="sv-day">'+fmtDate(d)+'</div>'+days[d].map(svItem).join(''); }).join('');
+      return '<div class="sv-month"><div class="sv-month-head"><div class="sv-month-name">Tháng '+(+m)+'/'+y+'<small>'+list.length+' giao dịch</small></div><div class="sv-month-sum"><div class="sv-ms in"><span>Đã gửi</span><b>+'+svFmt(sumIn)+'</b></div><div class="sv-ms out"><span>Đã rút</span><b>−'+svFmt(sumOut)+'</b></div><div class="sv-ms net '+(net>=0?'in':'out')+'" title="Chênh lệch = Đã gửi − Đã rút trong tháng"><span>Chênh lệch</span><b>'+(net>=0?'+':'−')+svFmt(Math.abs(net))+' ₫</b></div></div></div><div class="sv-month-list">'+dayHtml+'</div></div>';
     }).join('');
   }
-  return `<div class="sv-section sv-in" style="animation-delay:.18s">
-    <div class="sv-sec-head"><div class="sv-sec-title">Lịch sử giao dịch</div><div class="sv-sec-count">${rows.length} giao dịch</div></div>
-    <div class="sv-filter"><div class="sv-chips">${chip('fOwner', '', 'Tất cả')}${chip('fOwner', 'anh', '👨 Anh', 'anh')}${chip('fOwner', 'em', '👩 Em', 'em')}</div><div class="sv-chips">${chip('fType', '', 'Mọi loại')}${chip('fType', 'in', '↓ Gửi vào', 'in')}${chip('fType', 'out', '↑ Rút ra', 'out')}</div></div>
-    ${body}
-  </div>`;
+  return '<div class="sv-section sv-in" style="animation-delay:.18s"><div class="sv-sec-head"><div class="sv-sec-title">Lịch sử giao dịch</div><div class="sv-sec-count">'+rows.length+' giao dịch</div></div><div class="sv-filter">'+searchRow+'<div class="sv-chips">'+chip('fOwner','','Tất cả')+chip('fOwner','anh','👨 Anh','anh')+chip('fOwner','em','👩 Em','em')+'</div><div class="sv-chips">'+chip('fType','','Mọi loại')+chip('fType','in','↓ Gửi vào','in')+chip('fType','out','↑ Rút ra','out')+'</div></div>'+body+'</div>';
 }
+
 
 function svItem(r) {
   const isIn = r.type === 'in';
@@ -5211,6 +5221,88 @@ async function deleteSavings(btn) {
   }, '🗑️ Đã xoá giao dịch');
 }
 
+var _privacyMode = false;
+
+var _svSearchTimer = null;
+
+function normalizeStr(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'd').trim();
+}
+
+function initPrivacy() { try { _privacyMode = localStorage.getItem('tcgd_privacy') === '1'; } catch(e) {} applyPrivacy(); }
+
+function togglePrivacy() { _privacyMode = !_privacyMode; try { localStorage.setItem('tcgd_privacy', _privacyMode ? '1' : '0'); } catch(e) {} applyPrivacy(); }
+
+function applyPrivacy() { document.body.classList.toggle('privacy', _privacyMode); var icon = document.getElementById('privacy-icon'); if(icon) icon.textContent = _privacyMode ? '🙈' : '👁'; }
+
+function buildQuyTxHTML(sorted, hasFilter, key) {
+  if(!sorted.length) {
+    if(hasFilter) return '<div class="quy-tx-empty"><span class="ei">🔍</span><div class="et">Không tìm thấy kết quả</div><div class="es">Thử thay đổi bộ lọc</div></div>';
+    return '<div class="quy-tx-empty"><span class="ei">💸</span><div class="et">Chưa có giao dịch nào</div><div class="es">Nhấn "+ Giao dịch" để thêm</div></div>';
+  }
+  var groups = {};
+  sorted.forEach(function(t) { var d = t.date || ''; if(!groups[d]) groups[d] = []; groups[d].push(t); });
+  return Object.keys(groups).sort(function(a,b) { return b.localeCompare(a); }).map(function(date) {
+    var parts = date ? date.split('-') : ['','',''];
+    var label = date ? (parts[2] + '/' + parts[1] + '/' + parts[0]) : '—';
+    var cards = groups[date].map(function(t) {
+      var isIn = t.type === 'in';
+      var totalAmt = (t.amount_anh || 0) + (t.amount_em || 0);
+      var accent = isIn ? 'var(--green)' : 'var(--red)';
+      var emoji = isIn ? '📥' : '📤';
+      var catOrType = (t.category || '') 
+        ? '<span class="tx-card-badge tx-badge-cat">' + escHtml(t.category) + '</span>'
+        : '<span class="tx-card-badge ' + (isIn ? 'tx-badge-in' : 'tx-badge-out') + '">' + (isIn ? 'Nạp' : 'Chi') + '</span>';
+      return '<div class="tx-card" style="--tx-accent:' + accent + '"><div class="tx-card-icon">' + emoji + '</div><div class="tx-card-body"><div class="tx-card-title">' + escHtml(t.description || '—') + '</div><div class="tx-card-meta">' + catOrType + (t.note ? '<span class="tx-card-note">· ' + escHtml(t.note) + '</span>' : '') + '</div></div><div class="tx-card-right"><div class="tx-card-amt ' + (isIn ? 'tx-type-in' : 'tx-type-out') + '">' + (totalAmt ? fmtVND(totalAmt) : '—') + '</div><div class="tx-card-actions"><button class="tx-act-btn" onclick="openTxDetail(\'' + t.id + '\',\'' + key + '\')" title="Xem chi tiết">🔍</button><button class="tx-act-btn" onclick="openTxModal(\'' + t.id + '\',\'' + key + '\')" title="Sửa">✏️</button><button class="tx-act-btn del" onclick="confirmDeleteTx(\'' + t.id + '\',\'' + key + '\')" title="Xóa">🗑</button></div></div></div>';
+    }).join('');
+    return '<div class="tx-day-group"><div class="tx-day-label">' + label + '</div><div class="tx-cards">' + cards + '</div></div>';
+  }).join('');
+}
+
+function updateQuyList(key) {
+  var q = S.quyCache[key]; if(!q) return;
+  var txs = q.transactions || [];
+  var f = getFilter(key);
+  var filtered = txs.slice();
+  if(f.type) filtered = filtered.filter(function(t) { return t.type === f.type; });
+  if(f.cat) filtered = filtered.filter(function(t) { return (t.category || '') === f.cat; });
+  if(f.year) filtered = filtered.filter(function(t) { return (t.date || '').startsWith(f.year); });
+  if(f.month) filtered = filtered.filter(function(t) { var p = (t.date || '').split('-'); return p[1] === f.month; });
+  if(f.q) { var nq = normalizeStr(f.q); filtered = filtered.filter(function(t) { return normalizeStr(t.description || '').includes(nq) || normalizeStr(t.note || '').includes(nq) || normalizeStr(t.category || '').includes(nq); }); }
+  if(f.from) filtered = filtered.filter(function(t) { return (t.date || '') >= f.from; });
+  if(f.to) filtered = filtered.filter(function(t) { return (t.date || '') <= f.to; });
+  var sorted = filtered.slice().sort(function(a,b) { return (b.date || '').localeCompare(a.date || ''); });
+  var hasFilter = !!(f.type || f.cat || f.year || f.month || f.q || f.from || f.to);
+  var listEl = document.getElementById('qtx-' + key);
+  if(listEl) listEl.innerHTML = buildQuyTxHTML(sorted, hasFilter, key);
+  var countEl = document.querySelector('#qfr-' + key + ' .qf-count');
+  if(countEl) {
+    if(hasFilter) {
+      var sumIn = sorted.filter(function(t) { return t.type === 'in'; }).reduce(function(s,t) { return s + (t.amount_anh || 0) + (t.amount_em || 0); }, 0);
+      var sumOut = sorted.filter(function(t) { return t.type === 'out'; }).reduce(function(s,t) { return s + (t.amount_anh || 0) + (t.amount_em || 0); }, 0);
+      countEl.innerHTML = sorted.length + ' kết quả · <span style="color:var(--green)">+' + fmtVND(sumIn) + '</span> · <span style="color:var(--red)">−' + fmtVND(sumOut) + '</span>';
+      countEl.style.display = '';
+    } else { countEl.style.display = 'none'; }
+  }
+  var clearBtn = document.querySelector('#qfr-' + key + ' .qf-btn-clear');
+  if(clearBtn) clearBtn.classList.toggle('qf-visible', hasFilter);
+  var txCountEl = document.querySelector('#page-' + key + ' .quy-tx-count');
+  if(txCountEl) txCountEl.textContent = sorted.length + ' giao dịch';
+}
+
+function setTQChartMode(mode) { if(!S.tqState) S.tqState = {}; S.tqState.chartMode = mode; renderTongQuan(); }
+
+function setTQCompareMode(mode) { if(!S.tqState) S.tqState = {}; S.tqState.compareMode = mode; renderTongQuan(); }
+
+function toggleTopCollapse() { if(!S.tqState) S.tqState = {}; S.tqState.topCollapsed = !S.tqState.topCollapsed; var body = document.getElementById('top-expenses-body'); var icon = document.getElementById('top-collapse-icon'); if(body) body.classList.toggle('collapsed', S.tqState.topCollapsed); if(icon) icon.textContent = S.tqState.topCollapsed ? '▼' : '▲'; }
+
+function tqChartTooltip(el) { var tip = el.querySelector('.tq-chart-tooltip'); if(tip) { document.querySelectorAll('.tq-chart-tooltip').forEach(function(t) { if(t !== tip) t.style.display = 'none'; }); tip.style.display = tip.style.display === 'block' ? 'none' : 'block'; } }
+
+function tqTopCategoryClick(cat, quyKey) { if(!quyKey) return; var f = getFilter(quyKey); f.cat = cat; f.year = String(S.year); navigateTo(quyKey); }
+
+function svSetSearch(value) { SV.fQ = value; clearTimeout(_svSearchTimer); _svSearchTimer = setTimeout(function() { var w = document.getElementById('sv-history-wrap'); if(w) w.innerHTML = svHistory(); else renderSavings(); }, 200); }
+
+function svSetDate(field, value) { if(field === 'from') SV.fFrom = value; if(field === 'to') SV.fTo = value; var w = document.getElementById('sv-history-wrap'); if(w) w.innerHTML = svHistory(); else renderSavings(); }
 </script>
 
 <script id="premium-ux-patch">
