@@ -3442,7 +3442,16 @@ const BDT_PAGES = ['anh','em'];
 
 // ── AUTH ─────────────────────────────────────────────────
 var _authCheckInProgress = false;
+const _isPopup = !!window.opener && new URLSearchParams(window.location.search).get('popup') === '1';
+
 if (sb) sb.auth.onAuthStateChange((evt, session) => {
+  // Đang chạy trong popup: lưu session xong thì tự đóng, không khởi động app
+  if (_isPopup) {
+    if ((evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') && session) {
+      setTimeout(() => window.close(), 300);
+    }
+    return;
+  }
   if (evt === 'SIGNED_OUT') { showLogin(); return; }
   if (evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') {
     if(window.SV) window.SV.rows = null;
@@ -3480,15 +3489,56 @@ function doGoogleLogin() {
   const btn = document.getElementById('login-btn');
   const err = document.getElementById('login-error');
   if(err) err.classList.remove('show');
+  const resetBtn = function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } };
   if(btn) { btn.disabled = true; btn.style.opacity = '.7'; }
-  if(window.top && window.top !== window) {
-    sb.auth.signInWithOAuth({ provider: 'google', options: { skipBrowserRedirect: true, queryParams: { prompt: 'select_account' } } }).then(function(res) {
-      if(res.data && res.data.url) { try { window.top.location.href = res.data.url; } catch(e) { window.location.href = res.data.url; } }
-      else { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); }
-    }).catch(function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); });
+
+  // Mở popup NGAY trong lúc click để trình duyệt không chặn
+  const w = 520, h = 640;
+  const left = window.screenX + (window.outerWidth - w) / 2;
+  const top  = window.screenY + (window.outerHeight - h) / 2;
+  const popup = window.open('', 'google_login',
+    'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+
+  if(!popup) {
+    resetBtn();
+    showLoginError('Trình duyệt đang chặn popup. Hãy cho phép popup rồi thử lại.');
     return;
   }
-  sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname, queryParams: { prompt: 'select_account' } } }).catch(function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); });
+  try {
+    popup.document.write('<body style="background:#0a1310;color:#eaf2ec;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">Đang chuyển tới Google...</body>');
+  } catch(e) {}
+
+  sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + window.location.pathname + '?popup=1',
+      skipBrowserRedirect: true,
+      queryParams: { prompt: 'select_account' }
+    }
+  }).then(function(res) {
+    const data = res.data, error = res.error;
+    if(error || !data || !data.url) {
+      try { popup.close(); } catch(e) {}
+      resetBtn();
+      showLoginError('Không thể khởi tạo đăng nhập' + (error ? ': ' + error.message : ''));
+      return;
+    }
+    popup.location.href = data.url;
+
+    // Khi popup đóng thì kiểm tra đã có session chưa
+    const timer = setInterval(async function() {
+      if(!popup.closed) return;
+      clearInterval(timer);
+      const r = await sb.auth.getSession();
+      const session = r && r.data ? r.data.session : null;
+      if(session) checkAllowedAndInit(session);
+      else resetBtn();
+    }, 500);
+  }).catch(function() {
+    try { popup.close(); } catch(e) {}
+    resetBtn();
+    showLoginError('Không thể khởi tạo đăng nhập');
+  });
 }
 
 function checkOAuthError() {
@@ -4971,8 +5021,8 @@ const svParse = v => Number(String(v || '').replace(/\D/g, '')) || 0;
 const svSigned = r => (r.type === 'in' ? 1 : -1) * (Number(r.amount) || 0);
 
 async function loadSavings() {
-  const { data, error } = await sb.rpc('is_allowed');
-  SV.allowed = !error && data === true;
+  const { data: allowedData, error: allowedErr } = await sb.rpc('is_allowed');
+  SV.allowed = !allowedErr && allowedData === true;
   if (!SV.allowed) { SV.rows = []; return; }
   const { data, error } = await sb.from('savings_transactions').select('*')
     .order('date', { ascending: false }).order('created_at', { ascending: false });
