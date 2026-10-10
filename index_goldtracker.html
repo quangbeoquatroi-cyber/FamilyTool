@@ -382,6 +382,136 @@
   }
   .ls-footer span { display:block; margin-top:4px; color:rgba(201,146,42,0.4); }
 
+  /* ── NÚT ĐĂNG NHẬP GOOGLE ── */
+  .ls-google {
+    width:100%; display:flex; align-items:center; justify-content:center; gap:11px;
+    background:#FFFFFF; color:#1F1F1F; border:none; padding:15px 18px; border-radius:11px;
+    font-family:var(--font-label); font-size:14px; font-weight:600; letter-spacing:.2px;
+    cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,.45);
+    transition:transform .15s,box-shadow .25s,opacity .2s;
+  }
+  .ls-google:hover  { transform:translateY(-1px); box-shadow:0 12px 34px rgba(201,146,42,.32); }
+  .ls-google:active { transform:scale(.985); }
+  .ls-google:disabled { opacity:.62; cursor:wait; transform:none; }
+  .ls-google svg { width:19px; height:19px; flex:0 0 19px; }
+  .ls-google-spinner {
+    display:none; width:14px; height:14px; border-radius:50%;
+    border:2px solid rgba(15,14,10,.25); border-top-color:#1F1F1F;
+    animation:ls-spin .7s linear infinite;
+  }
+  .ls-allow {
+    display:flex; align-items:center; justify-content:center; gap:7px; margin-top:18px;
+    font-size:10px; letter-spacing:.7px; color:var(--text3); text-transform:uppercase;
+  }
+  .ls-allow-dot {
+    width:6px; height:6px; border-radius:50%; background:var(--gold);
+    box-shadow:0 0 8px rgba(201,146,42,.8); animation:ls-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes ls-pulse { 0%,100% { opacity:.3; } 50% { opacity:1; } }
+  .ls-msg {
+    display:none; margin-bottom:16px; padding:11px 14px; border-radius:9px;
+    font-size:12px; line-height:1.6; font-family:var(--font-label);
+    border:1px solid rgba(201,146,42,.28); background:rgba(201,146,42,.08); color:#E8C77E;
+  }
+  .ls-msg.show { display:block; animation:ls-rise .35s ease both; }
+  .ls-msg.err  { border-color:rgba(226,75,74,.35); background:rgba(226,75,74,.1); color:var(--red); }
+
+  /* ══════════════════════════════════════════════
+     OVERLAY: XÁC THỰC THÀNH CÔNG / TỪ CHỐI
+  ══════════════════════════════════════════════ */
+  #auth-success, #auth-denied, #auth-bridge {
+    display:none; position:fixed; inset:0; z-index:10000; background:#0F0E0A;
+    align-items:center; justify-content:center; padding:24px;
+    font-family:var(--font-label); -webkit-font-smoothing:antialiased;
+  }
+  #auth-success.active, #auth-denied.active, #auth-bridge.active { display:flex; }
+  .ov-aura {
+    position:absolute; width:min(680px,140vw); height:min(680px,140vw); border-radius:50%;
+    background:radial-gradient(circle, rgba(201,146,42,.16) 0%, rgba(201,146,42,.05) 38%, transparent 68%);
+    filter:blur(10px); animation:ov-breathe 4.5s ease-in-out infinite; pointer-events:none;
+  }
+  @keyframes ov-breathe { 0%,100% { transform:scale(.94); opacity:.75; } 50% { transform:scale(1.06); opacity:1; } }
+
+  .as-card, .ad-card {
+    position:relative; z-index:2; width:100%; text-align:center;
+    animation:ls-rise .8s cubic-bezier(.22,1,.36,1) both;
+  }
+  .as-card { max-width:380px; }
+  .ad-card { max-width:390px; }
+
+  .as-avatar-outer { position:relative; width:118px; height:118px; margin:0 auto 26px; }
+  .as-avatar-wrap {
+    position:absolute; inset:0; border-radius:50%; padding:3px;
+    background:conic-gradient(from 0deg,#A97020,#E8B455,#FFF0C9,#C9922A,#A97020);
+    box-shadow:0 0 0 1px rgba(201,146,42,.25), 0 0 46px rgba(201,146,42,.28);
+    animation:as-ring-spin 6s linear infinite;
+  }
+  @keyframes as-ring-spin { to { transform:rotate(360deg); } }
+  .as-avatar-inner {
+    width:100%; height:100%; border-radius:50%; overflow:hidden; background:#181509;
+    display:flex; align-items:center; justify-content:center;
+    animation:as-ring-spin 6s linear infinite reverse;
+  }
+  #as-avatar { width:100%; height:100%; object-fit:cover; border-radius:50%; display:none; }
+  #as-initial { font-family:var(--font-display); font-size:48px; line-height:1; color:var(--gold); }
+  .as-check-badge {
+    position:absolute; right:-3px; bottom:-3px; width:40px; height:40px; border-radius:50%;
+    background:linear-gradient(140deg,#E8B455,#C9922A);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 20px rgba(201,146,42,.5), 0 0 0 4px #0F0E0A;
+    animation:as-pop .5s cubic-bezier(.34,1.56,.64,1) .35s both;
+  }
+  @keyframes as-pop { from { transform:scale(0); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .as-check-badge svg { width:19px; height:19px; }
+  .as-check-badge path {
+    fill:none; stroke:#0F0E0A; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:32; stroke-dashoffset:32; animation:as-draw .45s ease-out .7s forwards;
+  }
+  @keyframes as-draw { to { stroke-dashoffset:0; } }
+
+  .as-title { font-family:var(--font-display); font-size:30px; font-weight:600; color:var(--gold);
+    letter-spacing:.5px; margin-bottom:9px; text-shadow:0 0 30px rgba(201,146,42,.3); }
+  .as-name  { font-size:15px; color:var(--text); letter-spacing:.3px; margin-bottom:5px; }
+  .as-email { font-size:11.5px; color:var(--text3); font-family:var(--font-mono); letter-spacing:.4px; word-break:break-all; }
+  .as-progress { height:3px; border-radius:99px; background:rgba(201,146,42,.14); overflow:hidden;
+    margin:30px auto 12px; max-width:230px; }
+  .as-progress-fill { height:100%; width:0; border-radius:99px;
+    background:linear-gradient(90deg,#A97020,#E8B455,#FFF0C9); }
+  .as-hint { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); }
+
+  .ad-icon {
+    width:96px; height:96px; margin:0 auto 26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle, rgba(226,75,74,.16), rgba(226,75,74,.04) 60%, transparent 72%);
+    border:1px solid rgba(226,75,74,.32); box-shadow:0 0 44px rgba(226,75,74,.16);
+    animation:ad-shake .6s ease-out .25s both;
+  }
+  @keyframes ad-shake {
+    0%,100% { transform:translateX(0); } 20% { transform:translateX(-7px); }
+    40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(2px); }
+  }
+  .ad-icon svg { width:42px; height:42px; fill:none; stroke:#E24B4A; stroke-width:2.2;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .ad-title { font-family:var(--font-display); font-size:27px; font-weight:600; color:#E8776F; margin-bottom:12px; }
+  .ad-text  { font-size:13px; color:var(--text3); line-height:1.75; }
+  .ad-email { display:inline-block; margin:14px 0 4px; padding:8px 14px; border-radius:8px;
+    font-family:var(--font-mono); font-size:12px; color:#E8C77E; word-break:break-all;
+    background:rgba(201,146,42,.08); border:1px solid rgba(201,146,42,.22); }
+  .ad-btn {
+    width:100%; margin-top:26px; background:#FFFFFF; color:#1F1F1F; border:none;
+    padding:14px 18px; border-radius:11px; cursor:pointer;
+    font-family:var(--font-label); font-size:14px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    box-shadow:0 8px 26px rgba(0,0,0,.45); transition:transform .15s,box-shadow .25s;
+  }
+  .ad-btn:hover { transform:translateY(-1px); box-shadow:0 12px 34px rgba(201,146,42,.3); }
+  .ad-note { margin-top:22px; font-size:10px; line-height:1.8; letter-spacing:.5px; color:var(--text3); }
+
+  #auth-bridge { flex-direction:column; gap:18px; }
+  .ab-spinner { width:34px; height:34px; border-radius:50%;
+    border:2.5px solid rgba(201,146,42,.2); border-top-color:var(--gold); animation:ls-spin .8s linear infinite; }
+  .ab-text { font-size:12px; letter-spacing:1.3px; text-transform:uppercase; color:var(--text3); }
+
 </style>
 </head>
 <body>
@@ -398,29 +528,92 @@
       <div class="ls-logo">
         <span class="ls-logo-icon">🏅</span>
         <div class="ls-logo-title">Vàng Tích Trữ</div>
-        <div class="ls-logo-sub">Xác thực để tiếp tục</div>
+        <div class="ls-logo-sub">Khu vực riêng tư · Xác thực Google</div>
       </div>
       <div class="ls-divider"></div>
-      <div class="ls-group">
-        <label>Email</label>
-        <input type="email" id="ls-email" placeholder="your@email.com" autocomplete="email" autocapitalize="none">
-      </div>
-      <div class="ls-group">
-        <label>Mật khẩu</label>
-        <div class="ls-pw-wrap">
-          <input type="password" id="ls-password" placeholder="••••••••" autocomplete="current-password">
-          <button class="ls-toggle-pw" type="button" onclick="lsTogglePw()" title="Hiện/ẩn">👁</button>
-        </div>
-      </div>
-      <div class="ls-error" id="ls-error"></div>
-      <button class="ls-btn" id="ls-btn" onclick="lsDoLogin()">
-        <span id="ls-btn-text">Đăng nhập</span>
+
+      <div class="ls-msg" id="ls-msg"></div>
+
+      <button class="ls-google" id="ls-google-btn" type="button" onclick="lsDoGoogleLogin()">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span id="ls-google-text">Đăng nhập với Google</span>
+        <span class="ls-google-spinner" id="ls-google-spinner"></span>
       </button>
+
+      <div class="ls-allow">
+        <span class="ls-allow-dot"></span>
+        Chỉ tài khoản được cấp phép
+      </div>
+
       <div class="ls-footer">
         Hệ thống riêng tư — chỉ dành cho thành viên
-        <span>🔒 Bảo mật bởi Supabase Auth</span>
+        <span>🔒 Bảo mật bởi Supabase Auth · Google OAuth 2.0</span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     CỬA SỔ POPUP (hiển thị trong lúc xác thực)
+══════════════════════════════════════════════ -->
+<div id="auth-bridge">
+  <div class="ab-spinner"></div>
+  <div class="ab-text" id="auth-bridge-text">Đang xác thực Google…</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     XÁC THỰC THÀNH CÔNG
+══════════════════════════════════════════════ -->
+<div id="auth-success">
+  <div class="ov-aura"></div>
+  <div class="as-card">
+    <div class="as-avatar-outer">
+      <div class="as-avatar-wrap">
+        <div class="as-avatar-inner">
+          <img id="as-avatar" alt="">
+          <span id="as-initial"></span>
+        </div>
+      </div>
+      <div class="as-check-badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11.8 L9.6 16.2 L19 6.4"/></svg>
+      </div>
+    </div>
+    <div class="as-title">Xác thực thành công</div>
+    <div class="as-name" id="as-name">—</div>
+    <div class="as-email" id="as-email">—</div>
+    <div class="as-progress"><div class="as-progress-fill" id="as-progress-fill"></div></div>
+    <div class="as-hint">Đang mở ứng dụng…</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TỪ CHỐI TRUY CẬP
+══════════════════════════════════════════════ -->
+<div id="auth-denied">
+  <div class="ov-aura" style="background:radial-gradient(circle, rgba(226,75,74,.14) 0%, rgba(226,75,74,.04) 38%, transparent 68%)"></div>
+  <div class="ad-card">
+    <div class="ad-icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4.5" y="10.3" width="15" height="10.2" rx="2.6"></rect>
+        <path d="M8 10.3V7.9a4 4 0 0 1 8 0v2.4"></path>
+        <path d="M12 14.4v2.3"></path>
+      </svg>
+    </div>
+    <div class="ad-title">Tài khoản không được phép</div>
+    <div class="ad-text">Email này không nằm trong danh sách được cấp quyền truy cập hệ thống.</div>
+    <div class="ad-email" id="ad-email">—</div>
+    <button class="ad-btn" type="button" onclick="deniedTryAgain()">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#1F1F1F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">
+        <path d="M4 12h14M12.5 5.5 19 12l-6.5 6.5"/>
+      </svg>
+      Thử tài khoản Google khác
+    </button>
+    <div class="ad-note">Phiên đăng nhập đã được hủy tự động.<br>Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là nhầm lẫn.</div>
   </div>
 </div>
 
@@ -788,7 +981,16 @@
 const SUPABASE_URL = window.SecureConfig.SUPABASE_URL;
 const SUPABASE_KEY = window.SecureConfig.SUPABASE_ANON_KEY;
 const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Google OAuth dùng luồng PKCE + tự phát hiện phiên trả về trong URL
+const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+    persistSession: true,
+    autoRefreshToken: true,
+    storageKey: 'gold_tracker_auth'
+  }
+});
 
 // ── AUTH GUARD ────────────────────────────────────────────────
 // Ẩn toàn bộ nội dung cho đến khi xác thực xong
@@ -799,16 +1001,27 @@ function redirectToLogin() {
   showLoginScreen();
 }
 
+// Trạng thái phiên đăng nhập
+let lsBusy = false;
+let popupWatcher = null;
+let __authFlow = false;
+let __appBooted = false;
+let __successShown = false;
+
+function hideOverlay(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('active');
+}
+
 function showLoginScreen() {
+  __successShown = false;
   document.body.style.visibility = 'visible';
+  hideOverlay('auth-bridge');
+  hideOverlay('auth-success');
+  hideOverlay('auth-denied');
   const ls = document.getElementById('login-screen');
   ls.classList.add('active');
   lsInitCanvas();
-  // focus email
-  setTimeout(() => {
-    const em = document.getElementById('ls-email');
-    if (em) em.focus();
-  }, 400);
 }
 
 function hideLoginScreen() {
@@ -816,45 +1029,244 @@ function hideLoginScreen() {
   ls.classList.remove('active');
 }
 
-// Login screen helpers
-function lsTogglePw() {
-  const inp = document.getElementById('ls-password');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
+// ══════════════════════════════════════════════════════════════
+// ĐĂNG NHẬP GOOGLE (Supabase OAuth — popup chọn tài khoản)
+// ══════════════════════════════════════════════════════════════
+const AUTH_REDIRECT_URL = window.location.origin + window.location.pathname;
+
+function lsMsg(msg, isError) {
+  const el = document.getElementById('ls-msg');
+  if (!el) return;
+  if (!msg) { el.textContent = ''; el.classList.remove('show', 'err'); return; }
+  el.textContent = msg;
+  el.classList.add('show');
+  el.classList.toggle('err', !!isError);
 }
-function lsShowError(msg) {
-  const el = document.getElementById('ls-error');
-  el.textContent = msg; el.classList.add('show');
-}
-function lsHideError() { document.getElementById('ls-error').classList.remove('show'); }
+
 function lsSetLoading(on) {
-  const btn = document.getElementById('ls-btn');
-  const txt = document.getElementById('ls-btn-text');
-  btn.disabled = on;
-  txt.innerHTML = on ? '<span class="ls-spinner"></span> Đang xác thực...' : 'Đăng nhập';
+  lsBusy = on;
+  const btn = document.getElementById('ls-google-btn');
+  const txt = document.getElementById('ls-google-text');
+  const sp  = document.getElementById('ls-google-spinner');
+  if (btn) btn.disabled = on;
+  if (txt) txt.textContent = on ? 'Đang chờ xác thực…' : 'Đăng nhập với Google';
+  if (sp)  sp.style.display = on ? 'inline-block' : 'none';
 }
-async function lsDoLogin() {
-  lsHideError();
-  const email    = document.getElementById('ls-email').value.trim();
-  const password = document.getElementById('ls-password').value;
-  if (!email)    { lsShowError('Vui lòng nhập email.'); return; }
-  if (!password) { lsShowError('Vui lòng nhập mật khẩu.'); return; }
+
+async function lsDoGoogleLogin() {
+  if (lsBusy) return;
+  lsMsg('');
   lsSetLoading(true);
-  const { error } = await db.auth.signInWithPassword({ email, password });
-  if (error) {
+  try {
+    const { data, error } = await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: AUTH_REDIRECT_URL,
+        skipBrowserRedirect: true,
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+    if (error) throw error;
+    const url = data && data.url;
+    if (!url) throw new Error('Không tạo được liên kết đăng nhập Google.');
+
+    const w = 480, h = 700;
+    const left = Math.max(0, Math.round((window.screen.width  - w) / 2));
+    const top  = Math.max(0, Math.round((window.screen.height - h) / 2));
+    const popup = window.open(url, 'gold_google_auth',
+      'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+
+    // Popup bị chặn → chuyển hướng như bình thường
+    if (!popup) { window.location.assign(url); return; }
+
+    lsMsg('Đang chờ bạn chọn tài khoản Google…');
+    watchAuthPopup(popup);
+  } catch (e) {
     lsSetLoading(false);
-    if (error.message.includes('Invalid login')) lsShowError('Email hoặc mật khẩu không đúng.');
-    else if (error.message.includes('Email not confirmed')) lsShowError('Email chưa được xác nhận. Kiểm tra hộp thư.');
-    else lsShowError('Lỗi: ' + error.message);
+    lsMsg(mapAuthError(e), true);
+  }
+}
+
+function watchAuthPopup(popup) {
+  clearInterval(popupWatcher);
+  const started = Date.now();
+  popupWatcher = setInterval(async () => {
+    if (popup.closed) {
+      clearInterval(popupWatcher); popupWatcher = null;
+      // Popup đóng: phiên (nếu có) đã được ghi vào bộ nhớ dùng chung
+      const { data } = await db.auth.getSession();
+      if (data && data.session) { await completeLogin(data.session); }
+      else { lsSetLoading(false); lsMsg('Đã hủy đăng nhập Google.'); }
+      return;
+    }
+    if (Date.now() - started > 300000) {
+      clearInterval(popupWatcher); popupWatcher = null;
+      try { popup.close(); } catch (e) {}
+      lsSetLoading(false);
+      lsMsg('Hết thời gian chờ đăng nhập. Vui lòng thử lại.', true);
+    }
+  }, 700);
+}
+
+function postToOpener(payload) {
+  try {
+    if (window.opener && window.opener !== window) {
+      window.opener.postMessage(Object.assign({ source: 'gold_auth' }, payload), window.location.origin);
+    }
+  } catch (e) {}
+}
+
+// Nghe thông báo từ cửa sổ popup
+window.addEventListener('message', async (ev) => {
+  if (ev.origin !== window.location.origin) return;
+  const d = ev.data;
+  if (!d || d.source !== 'gold_auth') return;
+  if (popupWatcher) { clearInterval(popupWatcher); popupWatcher = null; }
+  if (d.type === 'AUTH_DENIED') { showDeniedScreen(d.email || ''); return; }
+  if (d.type === 'AUTH_SUCCESS') {
+    const { data } = await db.auth.getSession();
+    if (data && data.session) await completeLogin(data.session);
+    else { lsSetLoading(false); lsMsg('Không nhận được phiên đăng nhập. Vui lòng thử lại.', true); }
+  }
+});
+
+// Quay lại tab sau khi đăng nhập ở tab khác (một số trình duyệt mobile)
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible') return;
+  if (__appBooted || __successShown || __authFlow) return;
+  const { data } = await db.auth.getSession();
+  if (data && data.session) await completeLogin(data.session);
+});
+
+// ── KIỂM TRA QUYỀN: danh sách email được phép nằm hoàn toàn ở server ──
+async function isAllowedUser() {
+  try {
+    const { data, error } = await db.rpc('is_allowed_user');
+    if (error) { console.warn('allowlist check:', error.message); return false; }
+    return data === true;
+  } catch (e) {
+    console.warn('allowlist check failed:', e.message);
+    return false;   // lỗi → từ chối (fail closed)
+  }
+}
+
+function providerOf(user) {
+  if (!user) return null;
+  if (user.app_metadata && user.app_metadata.provider) return user.app_metadata.provider;
+  if (Array.isArray(user.identities) && user.identities.length) return user.identities[0].provider;
+  return null;
+}
+
+async function completeLogin(session) {
+  if (__appBooted || __authFlow || __successShown) return;
+  __authFlow = true;
+  const user = session && session.user;
+  const isPopup = !!(window.opener && window.opener !== window);
+
+  // 1) Chỉ chấp nhận phiên đăng nhập Google
+  if (!user || providerOf(user) !== 'google') {
+    await db.auth.signOut();
+    __authFlow = false;
+    lsSetLoading(false);
+    if (isPopup) {
+      postToOpener({ type: 'AUTH_DENIED', email: '' });
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 400);
+      return;
+    }
+    showLoginScreen();
+    lsMsg('Vui lòng đăng nhập bằng tài khoản Google.', true);
     return;
   }
-  // Login thành công → ẩn login screen, reload app
-  hideLoginScreen();
-  window.location.reload();
+
+  // 2) Kiểm tra email có trong danh sách cho phép (server quyết định)
+  const allowed = await isAllowedUser();
+  __authFlow = false;
+
+  if (!allowed) {
+    const email = user.email || '';
+    await db.auth.signOut();
+    if (isPopup) {
+      postToOpener({ type: 'AUTH_DENIED', email });
+      const t = document.getElementById('auth-bridge-text');
+      if (t) t.textContent = 'Tài khoản không được phép';
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 900);
+    } else {
+      showDeniedScreen(email);
+    }
+    return;
+  }
+
+  // 3) Cửa sổ popup: báo cửa sổ chính rồi tự đóng
+  if (isPopup) {
+    postToOpener({ type: 'AUTH_SUCCESS', email: user.email || '' });
+    const t = document.getElementById('auth-bridge-text');
+    if (t) t.textContent = 'Xác thực thành công…';
+    setTimeout(() => { try { window.close(); } catch (e) {} }, 400);
+    return;
+  }
+
+  // 4) Màn hình xác thực thành công
+  showSuccessScreen(user);
 }
-document.addEventListener('keydown', e => {
-  const ls = document.getElementById('login-screen');
-  if (ls && ls.classList.contains('active') && e.key === 'Enter') lsDoLogin();
-});
+
+function showSuccessScreen(user) {
+  __successShown = true;
+  document.body.style.visibility = 'visible';
+  hideLoginScreen();
+  hideOverlay('auth-denied');
+  hideOverlay('auth-bridge');
+
+  const md = user.user_metadata || {};
+  const name = md.full_name || md.name || (user.email || '').split('@')[0];
+  const avatar = md.avatar_url || md.picture || '';
+  document.getElementById('as-name').textContent = name;
+  document.getElementById('as-email').textContent = user.email || '';
+
+  const img = document.getElementById('as-avatar');
+  const ini = document.getElementById('as-initial');
+  if (avatar) { img.src = avatar; img.style.display = 'block'; ini.style.display = 'none'; }
+  else {
+    ini.textContent = (name || '?').trim().charAt(0).toUpperCase();
+    ini.style.display = 'block';
+    img.style.display = 'none';
+  }
+
+  document.getElementById('auth-success').classList.add('active');
+
+  const bar = document.getElementById('as-progress-fill');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  void bar.offsetWidth;
+  bar.style.transition = 'width 2.4s cubic-bezier(0.4,0,0.2,1)';
+  bar.style.width = '100%';
+
+  setTimeout(() => { hideOverlay('auth-success'); bootApp(); }, 2500);
+}
+
+function showDeniedScreen(email) {
+  document.body.style.visibility = 'visible';
+  hideLoginScreen();
+  hideOverlay('auth-success');
+  hideOverlay('auth-bridge');
+  document.getElementById('ad-email').textContent = email || 'không xác định';
+  document.getElementById('auth-denied').classList.add('active');
+}
+
+async function deniedTryAgain() {
+  hideOverlay('auth-denied');
+  await db.auth.signOut();
+  lsSetLoading(false);
+  showLoginScreen();
+  lsMsg('Vui lòng chọn một tài khoản được cấp phép.');
+}
+
+function mapAuthError(e) {
+  const m = (e && e.message) ? e.message : String(e || '');
+  if (/provider is not enabled|Unsupported provider/i.test(m)) return 'Google chưa được bật trong Supabase (Authentication → Providers → Google).';
+  if (/redirect|not allowed/i.test(m)) return 'Redirect URL chưa được khai báo trong Supabase (Authentication → URL Configuration).';
+  if (/Failed to fetch|NetworkError|network/i.test(m)) return 'Không kết nối được tới Supabase. Kiểm tra mạng rồi thử lại.';
+  return 'Không thể đăng nhập Google: ' + m;
+}
 
 // Canvas background cho login screen
 function lsInitCanvas() {
@@ -932,56 +1344,103 @@ function lsInitCanvas() {
 }
 
 
-(async () => {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) {
-    // Chưa đăng nhập → về trang login
+// ── KHỞI ĐỘNG ỨNG DỤNG (chỉ sau khi xác thực Google thành công) ──
+function addLogoutButton() {
+  const header = document.querySelector('.header');
+  if (!header || header.querySelector('#logout-btn')) return;
+  const logoutBtn = document.createElement('button');
+  logoutBtn.id = 'logout-btn';
+  logoutBtn.textContent = 'Đăng xuất';
+  logoutBtn.style.cssText = `
+    margin-left: auto;
+    background: none;
+    border: 1px solid rgba(201,146,42,0.3);
+    color: var(--text3);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-label);
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  `;
+  logoutBtn.onmouseover = () => {
+    logoutBtn.style.borderColor = 'var(--gold)';
+    logoutBtn.style.color = 'var(--gold)';
+  };
+  logoutBtn.onmouseleave = () => {
+    logoutBtn.style.borderColor = 'rgba(201,146,42,0.3)';
+    logoutBtn.style.color = 'var(--text3)';
+  };
+  logoutBtn.onclick = async () => {
+    logoutBtn.disabled = true;
+    await db.auth.signOut();
+    __appBooted = false;
+    __successShown = false;
+    redirectToLogin();
+  };
+  header.appendChild(logoutBtn);
+}
+
+function bootApp() {
+  if (__appBooted) return;
+  __appBooted = true;
+  hideLoginScreen();
+  hideOverlay('auth-bridge');
+  document.body.style.visibility = 'visible';
+  addLogoutButton();
+  fetchAllPrices();
+  loadHoldings();
+}
+
+// Phiên hết hạn hoặc đăng xuất → quay về màn hình đăng nhập
+db.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_OUT') {
+    __appBooted = false;
+    __successShown = false;
+    if (window.opener && window.opener !== window) return;
     redirectToLogin();
     return;
   }
-  // Đã xác thực → hiện nội dung
-  document.body.style.visibility = 'visible';
+  if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !__appBooted) {
+    await completeLogin(session);
+  }
+});
 
-  // Thêm nút Đăng xuất vào header
-  const header = document.querySelector('.header');
-  if (header) {
-    const logoutBtn = document.createElement('button');
-    logoutBtn.textContent = 'Đăng xuất';
-    logoutBtn.style.cssText = `
-      margin-left: auto;
-      background: none;
-      border: 1px solid rgba(201,146,42,0.3);
-      color: var(--text3);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 11px;
-      font-family: var(--font-label);
-      letter-spacing: 0.5px;
-      transition: all 0.2s;
-    `;
-    logoutBtn.onmouseover = () => {
-      logoutBtn.style.borderColor = 'var(--gold)';
-      logoutBtn.style.color = 'var(--gold)';
-    };
-    logoutBtn.onmouseleave = () => {
-      logoutBtn.style.borderColor = 'rgba(201,146,42,0.3)';
-      logoutBtn.style.color = 'var(--text3)';
-    };
-    logoutBtn.onclick = async () => {
-      await db.auth.signOut();
-      redirectToLogin();
-    };
-    header.appendChild(logoutBtn);
+// Khởi động: kiểm tra phiên hiện có
+(async () => {
+  const isPopup = !!(window.opener && window.opener !== window);
+  if (isPopup) {
+    document.body.style.visibility = 'visible';
+    document.getElementById('auth-bridge').classList.add('active');
   }
 
-  // Lắng nghe nếu session hết hạn / bị thu hồi
-  db.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !db.auth.getSession()) {
-      redirectToLogin();
-    }
-  });
+  let session = null;
+  try {
+    const res = await db.auth.getSession();
+    session = res && res.data ? res.data.session : null;
+  } catch (e) { console.warn('getSession:', e.message); }
+
+  if (session) { await completeLogin(session); return; }
+
+  if (!isPopup) {
+    const err = urlAuthError();
+    showLoginScreen();
+    if (err) lsMsg(err, true);
+  }
 })();
+
+function urlAuthError() {
+  try {
+    const q = new URLSearchParams(window.location.search || '');
+    const h = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+    const desc = q.get('error_description') || h.get('error_description') || q.get('error') || h.get('error');
+    if (!desc) return '';
+    if (/access_denied/i.test(desc)) return 'Bạn đã hủy chọn tài khoản Google.';
+    if (/already registered|identity already/i.test(desc)) return 'Email này đã tồn tại với phương thức đăng nhập khác trong Supabase.';
+    return 'Đăng nhập không thành công: ' + desc.split('+').join(' ');
+  } catch (e) { return ''; }
+}
 // ─────────────────────────────────────────────────────────────
 
 let holdings = [];
@@ -1755,7 +2214,7 @@ async function refreshData(btn) {
   showToast('✅ Đã cập nhật dữ liệu!');
 }
 
-(async () => { await fetchAllPrices(); await loadHoldings(); })();
+// (Dữ liệu chỉ được tải sau khi xác thực Google thành công — xem bootApp())
 
 // ===== CHARTS =====
 let chartBrands = null;
