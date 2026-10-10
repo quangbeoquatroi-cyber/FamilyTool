@@ -1376,7 +1376,23 @@ a{text-decoration:none;color:inherit}
 #modal-month .modal-footer{
   flex-direction:column;align-items:stretch;gap:12px;
 }
-.mm-actions{display:flex;justify-content:flex-end;gap:10px}
+.mm-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.btn-del-month{
+  display:none;margin-right:auto;align-items:center;gap:6px;
+  padding:9px 14px;border-radius:var(--r2);font-size:13px;font-weight:700;font-family:inherit;
+  color:var(--red);background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);
+  cursor:pointer;transition:background .15s,border-color .15s;
+}
+.btn-del-month.show{display:inline-flex}
+.btn-del-month:hover{background:rgba(255,82,82,.16);border-color:rgba(255,82,82,.45)}
+.btn-del-month:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.btn-danger{
+  background:linear-gradient(135deg,var(--red),#c62828);color:#fff;border:none;cursor:pointer;
+  padding:9px 22px;border-radius:var(--r2);font-size:13px;font-weight:800;font-family:inherit;
+  transition:opacity .15s,transform .1s;
+}
+.btn-danger:hover{opacity:.88}.btn-danger:active{transform:scale(.97)}
+.btn-danger:disabled{opacity:.6;cursor:wait}
 .mm-sum{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
   padding:10px 14px 9px;border-radius:var(--r2);
@@ -2904,9 +2920,13 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
 .tq-compare-label{font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600}
 .tq-compare-val{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .tq-compare-val.up{color:var(--green)}.tq-compare-val.down{color:var(--red)}.tq-compare-val.neutral{color:var(--muted)}
-.tq-compare-toggle{display:flex;gap:4px;margin:0 12px 14px}
-.tq-compare-toggle button{background:var(--s1);border:1px solid var(--border);padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
-.tq-compare-toggle button.on{background:var(--s3);color:var(--text);border-color:var(--border2)}
+.tq-compare-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 12px 6px}
+.tq-compare-bar-label{font-size:12px;font-weight:700;color:var(--muted)}
+.tq-compare-toggle{display:flex;gap:4px;background:var(--s1);border-radius:10px;padding:3px}
+.tq-compare-toggle button{background:transparent;border:none;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.tq-compare-toggle button.on{background:var(--s3);color:var(--text)}
+.tq-compare-toggle button:disabled{opacity:.45;cursor:not-allowed}
+.tq-compare-hint{margin:0 12px 12px;font-size:11px;line-height:1.5;color:var(--muted)}
 .tq-fund-card,.tq-sv-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 12px 14px}
 .tq-fund-header,.tq-sv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .tq-fund-title,.tq-sv-title{font-size:14px;font-weight:800}
@@ -3319,7 +3339,7 @@ html.popup-mode #popup-splash{display:flex}
       <div class="items-editor" id="income-items"></div>
       <button class="add-item-btn" onclick="addItemRow('income')">+ Thêm khoản thu</button>
 
-      <div class="section-sep" style="margin-top:16px">���� Khoản Chi</div>
+      <div class="section-sep" style="margin-top:16px">🔴 Khoản Chi</div>
       <div class="items-editor" id="expense-items"></div>
       <button class="add-item-btn" onclick="addItemRow('expense')">+ Thêm khoản chi</button>
     </div>
@@ -3340,6 +3360,7 @@ html.popup-mode #popup-splash{display:flex}
         <div class="mm-bar"><span id="mm-bar-fill"></span></div>
       </div>
       <div class="mm-actions">
+        <button class="btn-del-month" id="btn-del-month" type="button" onclick="askDeleteMonth()" title="Xóa tháng này">🗑️ Xóa</button>
         <button class="btn-cancel" onclick="closeModalById('modal-month')">Hủy</button>
         <button class="btn-save" id="btn-save-month" onclick="saveMonth()">
           <span>💾 Lưu tháng</span>
@@ -3433,7 +3454,7 @@ html.popup-mode #popup-splash{display:flex}
         <input type="text" class="field-input" id="cfg-name">
       </div>
       <div class="field-group">
-        <label class="field-label">Mục ti��u (₫)</label>
+        <label class="field-label">Mục tiêu (₫)</label>
         <input type="number" class="field-input" id="cfg-target" placeholder="0">
       </div>
     </div>
@@ -3468,6 +3489,34 @@ html.popup-mode #popup-splash{display:flex}
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModalById('modal-duplicate')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Month Modal -->
+<div class="modal-overlay" id="modal-delete-month" onclick="closeModal(event,'modal-delete-month')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title">🗑️ Xóa tháng</div>
+      <button class="modal-close" onclick="closeModalById('modal-delete-month')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="dup-source-banner" style="margin-bottom:14px">
+        <div class="dup-source-icon">📅</div>
+        <div class="dup-source-info">
+          <div class="dup-source-label" id="dm-owner">Của Anh</div>
+          <div class="dup-source-month" id="dm-title" style="color:var(--red)">Tháng —</div>
+          <div class="dup-source-sub" id="dm-sub">— khoản thu · — khoản chi</div>
+        </div>
+      </div>
+      <p style="color:var(--muted);font-size:13px;line-height:1.6">
+        Toàn bộ khoản thu và khoản chi của tháng này sẽ bị xóa.
+        <span style="color:var(--red)">Không thể hoàn tác.</span>
+      </p>
+    </div>
+    <div class="modal-footer" style="gap:10px">
+      <button class="btn-cancel" onclick="closeModalById('modal-delete-month')">Giữ lại</button>
+      <button class="btn-danger" id="btn-confirm-delete-month" onclick="confirmDeleteMonth()">🗑️ Xóa tháng</button>
     </div>
   </div>
 </div>
@@ -4097,6 +4146,51 @@ async function saveBDTMonth(owner, year, month, incomeItems, expenseItems) {
   if(fresh) S.bdtCache[owner][year][month] = { id: fresh.id, items: fresh.bdt_items || [] };
 }
 
+// ── XÓA THÁNG ────────────────────────────────────────────
+async function deleteBDTMonth(owner, year, month) {
+  const cached = ((S.bdtCache[owner] || {})[year] || {})[month];
+  let id = cached && cached.id;
+  if(!id) {
+    const { data: row, error: fe } = await sb.from('bdt_months').select('id')
+      .eq('owner', owner).eq('year', year).eq('month', month).maybeSingle();
+    if(fe) throw fe;
+    id = row && row.id;
+  }
+  if(!id) throw new Error('Không tìm thấy tháng để xóa');
+  const { error: ie } = await sb.from('bdt_items').delete().eq('month_id', id);
+  if(ie) throw ie;
+  const { data: gone, error: me } = await sb.from('bdt_months').delete().eq('id', id).select('id');
+  if(me) throw me;
+  if(!gone || !gone.length) throw new Error('Không xóa được tháng (có thể không đủ quyền)');
+  delete S.bdtCache[owner][year][month];
+  S.expandedCards.delete(`${owner}-${year}-${month}`);
+}
+
+function askDeleteMonth() {
+  const owner = S.editMonthOwner, year = S.editMonthYear, month = S.editMonth;
+  if(!month) return;
+  const d = ((S.bdtCache[owner] || {})[year] || {})[month];
+  const items = d ? (d.items || []) : [];
+  const inc = items.filter(i => i.type === 'income').length;
+  const exp = items.filter(i => i.type === 'expense').length;
+  document.getElementById('dm-owner').textContent = owner === 'em' ? '👩 Của Em' : '👨 Của Anh';
+  document.getElementById('dm-title').textContent = `Tháng ${month}${month === 13 ? ' 🎁' : ''} — ${year}`;
+  document.getElementById('dm-sub').textContent = `${inc} khoản thu · ${exp} khoản chi`;
+  openModalById('modal-delete-month');
+}
+
+async function confirmDeleteMonth() {
+  const owner = S.editMonthOwner, year = S.editMonthYear, month = S.editMonth;
+  const btn = document.getElementById('btn-confirm-delete-month');
+  if(!month) return;
+  await withLoading(btn, async () => {
+    await deleteBDTMonth(owner, year, month);
+    closeModalById('modal-delete-month');
+    closeModalById('modal-month');
+    renderBDT(owner);
+  }, `🗑️ Đã xóa Tháng ${month}`);
+}
+
 // ── QUY DATA ─────────────────────────────────────────────
 async function loadAllQuy() {
   const { data, error } = await sb.from('quy')
@@ -4252,8 +4346,11 @@ function renderTongQuan() {
     return '<div class="tq-top-card"><div class="tq-top-header" onclick="toggleTopCollapse()"><span class="tq-top-title">🔴 Top Khoản Chi Lớn</span><span id="top-collapse-icon" style="font-size:14px;color:var(--muted)">' + (ts.topCollapsed ? '▼' : '▲') + '</span></div><div class="tq-top-body ' + (ts.topCollapsed ? 'collapsed' : '') + '" id="top-expenses-body"><div class="tq-top-section"><div class="tq-top-subtitle">📋 Theo khoản chi (bảng dự tính)</div>' + renderHBars(bdtTop, bdtTotal, false) + '</div><div class="tq-top-section"><div class="tq-top-subtitle">🏷️ Theo danh mục (giao dịch quỹ)</div>' + renderHBars(catTop, catTotal, true) + '</div></div></div>';
   }
   var toggleBtns = [{ v: 'both', label: 'Cả hai', cls: '' }, { v: 'anh', label: '👨 Anh', cls: 'on-anh' }, { v: 'em', label: '👩 Em', cls: 'on-em' }].map(function(b) { return '<button class="' + (ts.chartMode === b.v ? 'on ' + b.cls : '') + '" onclick="setTQChartMode(\'' + b.v + '\')">' + b.label + '</button>'; }).join('');
-  var compareToggle = '<div class="tq-compare-toggle"><button class="' + (ts.compareMode === 'period' ? 'on' : '') + '" onclick="setTQCompareMode(\'period\')">Cùng kỳ</button><button class="' + (ts.compareMode === 'year' ? 'on' : '') + '" onclick="setTQCompareMode(\'year\')">Cả năm</button></div>';
-  el.innerHTML = '<div class="tq-page"><div class="tq-page-header"><div class="tq-page-title">Tổng quan tài chính</div><div class="tq-page-sub">Năm ' + year + ' · Theo dõi thu chi, quỹ chung và tiết kiệm</div></div><div class="tq-chart-card"><div class="tq-chart-header"><span class="tq-chart-title">📊 Thu/Chi theo tháng</span><div class="tq-chart-toggle">' + toggleBtns + '</div></div><div class="tq-chart-bars">' + bars + '</div></div><div class="tq-cards-area">' + renderPersonCard('anh') + renderPersonCard('em') + '</div>' + compareToggle + renderFundTotal() + renderSavingsTotal() + renderTopExpenses() + '</div>';
+  var prevHasData = prevLoaded && ['anh','em'].some(function(o) { return Object.keys((S.bdtCache[o] || {})[prevYear] || {}).length > 0; });
+  var cmpOff = prevHasData ? '' : ' disabled';
+  var cmpHint = !prevLoaded ? 'Đang tải dữ liệu năm ' + prevYear + '…' : !prevHasData ? 'Chưa có dữ liệu năm ' + prevYear + ' để so sánh.' : ts.compareMode === 'period' ? 'Cùng kỳ: so với đúng những tháng đã có của năm ' + year + '.' : 'Cả năm: so với tổng cả năm ' + prevYear + '.';
+  var compareToggle = '<div class="tq-compare-bar"><span class="tq-compare-bar-label">So sánh với ' + prevYear + '</span><div class="tq-compare-toggle"><button' + cmpOff + ' class="' + (ts.compareMode === 'period' ? 'on' : '') + '" onclick="setTQCompareMode(\'period\')">Cùng kỳ</button><button' + cmpOff + ' class="' + (ts.compareMode === 'year' ? 'on' : '') + '" onclick="setTQCompareMode(\'year\')">Cả năm</button></div></div><div class="tq-compare-hint">' + cmpHint + '</div>';
+  el.innerHTML = '<div class="tq-page"><div class="tq-page-header"><div class="tq-page-title">Tổng quan tài chính</div><div class="tq-page-sub">Năm ' + year + ' · Theo dõi thu chi, quỹ chung và tiết kiệm</div></div><div class="tq-chart-card"><div class="tq-chart-header"><span class="tq-chart-title">📊 Thu/Chi theo tháng</span><div class="tq-chart-toggle">' + toggleBtns + '</div></div><div class="tq-chart-bars">' + bars + '</div></div>' + compareToggle + '<div class="tq-cards-area">' + renderPersonCard('anh') + renderPersonCard('em') + '</div>' + renderFundTotal() + renderSavingsTotal() + renderTopExpenses() + '</div>';
   if(!prevLoaded) { Promise.all(chartOwners.map(function(o) { return loadBDTYear(o, prevYear); })).then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function(e) { console.error('prevYear load:', e); }); }
   if(SV.rows === null && !SV.allowed) { loadSavings().then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function(e) { console.error('savings load:', e); }); }
 }
@@ -4455,6 +4552,8 @@ function openMonthModal(owner, year, month) {
       d.items.filter(i=>i.type==='expense').forEach(i => addItemRow('expense', i.name, i.amount, true));
     }
   }
+  const delBtn = document.getElementById('btn-del-month');
+  if(delBtn) delBtn.classList.toggle('show', !!(month && ((S.bdtCache[S.editMonthOwner] || {})[year] || {})[month]));
   updateMonthSummary();
   openModalById('modal-month');
 }
@@ -4733,7 +4832,7 @@ async function downloadReceipt(txId, quyKey, btn) {
   try {
     const q  = S.quyCache[quyKey];
     const tx = (q?.transactions||[]).find(t => t.id === txId);
-    if(!tx) throw new Error('Không tìm thấy giao d���ch');
+    if(!tx) throw new Error('Không tìm thấy giao dịch');
 
     const isIn     = tx.type === 'in';
     const anhAmt   = tx.amount_anh || 0;
