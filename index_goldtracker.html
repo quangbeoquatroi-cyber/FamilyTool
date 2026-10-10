@@ -1014,7 +1014,7 @@ function hideOverlay(id) {
 }
 
 function showLoginScreen() {
-  __successShown = false;
+  __successShown = false; __authFlow = false; lsSetLoading(false); lsMsg('');
   document.body.style.visibility = 'visible';
   hideOverlay('auth-bridge');
   hideOverlay('auth-success');
