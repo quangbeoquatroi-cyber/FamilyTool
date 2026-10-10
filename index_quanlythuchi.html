@@ -2942,6 +2942,12 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
 .sv-date{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;color-scheme:dark}
 .sv-date:focus{border-color:var(--anh);outline:none}
 @media(max-width:400px){.tq-chart-bars{height:120px}.tq-chart-bar{width:4px}.tq-chart-bar.prev{width:2px}.tq-chart-label{font-size:8px}.qf-search{max-width:80px;font-size:11px}.qf-date{width:32px;font-size:9px}.tq-fund-total,.tq-sv-total{font-size:18px}}
+
+/* Thanh lọc quỹ: ô chọn gọn hơn trên điện thoại (đè quy tắc chống zoom iOS 16px) */
+@media (max-width:768px){
+  .quy-filter-row .qf-select{font-size:12px!important;padding:5px 20px 5px 8px;min-width:0;max-width:none;border-radius:7px;background-position:right 6px center}
+  .quy-filter-row .qf-select.qf-cat{max-width:110px}
+}
 </style>
 <style id="popup-mode-style">
 #popup-splash{display:none}
@@ -4421,7 +4427,7 @@ function renderQuy(key) {
   el.innerHTML = '<div class="quy-page-wrap" style="--quy-color:'+qColor+'">'+
     '<div class="quy-hero"><div class="quy-hero-top"><div class="quy-identity"><div class="quy-icon-pill">'+(q.icon||'💰')+'</div><div class="quy-name-wrap"><div class="quy-name">'+escHtml(q.name)+'</div>'+(target>0?'<div class="quy-subtitle">Mục tiêu: '+fmtVND(target)+'</div>':'<div class="quy-subtitle">Quỹ chung</div>')+'</div></div><div class="quy-hero-actions"><button class="quy-btn-cfg" onclick="openQuyConfig(\''+key+'\')" title="Cài đặt">⚙️</button><button class="quy-btn-add" onclick="openTxModal(null,\''+key+'\')">+ Giao dịch</button></div></div>'+progressHTML+'</div>'+
     '<div class="quy-stats-grid"><div class="quy-stat"><div class="quy-stat-label">📥 Đã nạp</div><div class="quy-stat-value sv-green">'+fmtVND(totalIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">📤 Đã chi</div><div class="quy-stat-value sv-red">'+fmtVND(totalOut)+'</div></div><div class="quy-stat"><div class="quy-stat-label">💰 Còn lại</div><div class="quy-stat-value sv-quy">'+fmtVNDSign(balance)+'</div></div><div class="quy-stat"><div class="quy-stat-label">👨 Anh đóng</div><div class="quy-stat-value sv-anh">'+fmtVND(anhIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">👩 Em đóng</div><div class="quy-stat-value sv-em">'+fmtVND(emIn)+'</div></div><div class="quy-stat"><div class="quy-stat-label">⚠️ Còn thiếu</div><div class="quy-stat-value '+(lacking>0?'sv-muted':'sv-green')+'">'+lackingDisplay+'</div></div></div>'+
-    '<div class="quy-filter-row" id="qfr-'+key+'"><input class="qf-search" type="text" placeholder="🔍 Tìm..." value="'+escHtml(f.q||'')+'" oninput="setFilterQ(\''+key+'\',this.value)"><input class="qf-date qf-date-from" type="date" value="'+(f.from||'')+'" onchange="setFilterDate(\''+key+'\',\'from\',this.value)" title="Từ ngày"><input class="qf-date qf-date-to" type="date" value="'+(f.to||'')+'" onchange="setFilterDate(\''+key+'\',\'to\',this.value)" title="Đến ngày"><select class="qf-select qf-year" onchange="setFilter(\''+key+'\',\'year\',this.value)"><option value=""'+(!f.year?' selected':'')+'>Năm</option>'+yearOptions+'</select><select class="qf-select qf-month" onchange="setFilter(\''+key+'\',\'month\',this.value)"><option value=""'+(!f.month?' selected':'')+'>Tháng</option>'+monthOptions+'</select><select class="qf-select qf-type" onchange="setFilter(\''+key+'\',\'type\',this.value)"><option value=""'+(!f.type?' selected':'')+'>Loại</option><option value="in"'+(f.type==='in'?' selected':'')+'>📥 Nạp</option><option value="out"'+(f.type==='out'?' selected':'')+'>📤 Chi</option></select>'+catSelect+'<button class="qf-btn-clear '+(hasFilter?'qf-visible':'')+'" onclick="clearFilter(\''+key+'\')">✕ Xóa</button>'+(hasFilter?'<span class="qf-count">'+sorted.length+' kết quả · <span style="color:var(--green)">+'+fmtVND(sumIn)+'</span> · <span style="color:var(--red)">−'+fmtVND(sumOut)+'</span></span>':'')+'</div>'+
+    '<div class="quy-filter-row" id="qfr-'+key+'"><input class="qf-search" type="text" placeholder="🔍 Tìm..." value="'+escHtml(f.q||'')+'" oninput="setFilterQ(\''+key+'\',this.value)"><select class="qf-select qf-year" onchange="setFilter(\''+key+'\',\'year\',this.value)"><option value=""'+(!f.year?' selected':'')+'>Năm</option>'+yearOptions+'</select><select class="qf-select qf-month" onchange="setFilter(\''+key+'\',\'month\',this.value)"><option value=""'+(!f.month?' selected':'')+'>Tháng</option>'+monthOptions+'</select><select class="qf-select qf-type" onchange="setFilter(\''+key+'\',\'type\',this.value)"><option value=""'+(!f.type?' selected':'')+'>Loại</option><option value="in"'+(f.type==='in'?' selected':'')+'>📥 Nạp</option><option value="out"'+(f.type==='out'?' selected':'')+'>📤 Chi</option></select>'+catSelect+'<button class="qf-btn-clear '+(hasFilter?'qf-visible':'')+'" onclick="clearFilter(\''+key+'\')">✕ Xóa</button>'+(hasFilter?'<span class="qf-count">'+sorted.length+' kết quả · <span style="color:var(--green)">+'+fmtVND(sumIn)+'</span> · <span style="color:var(--red)">−'+fmtVND(sumOut)+'</span></span>':'')+'</div>'+
     '<div class="quy-tx-section"><div class="quy-tx-header"><span class="quy-tx-title">📋 Lịch sử giao dịch</span><span class="quy-tx-count">'+sorted.length+' giao dịch</span></div><div class="quy-tx-scroll" id="qtx-'+key+'">'+txHTML+'</div></div></div>';
 }
 
@@ -4872,7 +4878,7 @@ function attachMoneyInputs() {
   });
 }
 document.addEventListener('DOMContentLoaded', attachMoneyInputs);
-document.addEventListener('DOMContentLoaded', initPrivacy);
+document.addEventListener('DOMContentLoaded', function() { if (typeof initPrivacy === 'function') initPrivacy(); });
 
 // ── LOGIN PARTICLES ───────────────────────────────────────
 (function(){
