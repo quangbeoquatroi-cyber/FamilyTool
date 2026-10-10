@@ -1009,11 +1009,57 @@ function lsSetLoading(on) {
 function isMobileDevice() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || ''); }
 function isWebview() { const ua = navigator.userAgent || ''; return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Zalo|MicroMessenger|TikTok|Twitter|; wv\)/i.test(ua) || (/iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua)); }
 
+// Đang chạy trong iframe (app được nhúng trong khung "Quản Lý Vàng / Apps")?
+function inIframe() { try { return window.self !== window.top; } catch (e) { return true; } }
+function isAuthPopupWindow() { return !!(window.opener && window.opener !== window); }
+
+// Hiện liên kết thủ công (dùng khi trình duyệt chặn popup trong iframe)
+function lsLink(url) {
+  const el = document.getElementById('ls-msg');
+  if (!el) return;
+  el.textContent = 'Trình duyệt đã chặn cửa sổ đăng nhập. ';
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'opener';
+  a.textContent = 'Bấm vào đây để mở trang chọn tài khoản Google';
+  a.style.cssText = 'color:var(--gold);text-decoration:underline;font-weight:600;';
+  a.addEventListener('click', () => { lsSetLoading(true); watchAuthTab(); });
+  el.appendChild(a);
+  el.classList.add('show'); el.classList.add('err');
+}
+
+// Mở cửa sổ NGAY trong sự kiện click (đồng bộ) để không bị chặn popup,
+// sau đó mới gán địa chỉ Google khi đã có URL.
+function openAuthPopup() {
+  const w = 480, h = 700;
+  const left = Math.max(0, Math.round((window.screen.width  - w) / 2));
+  const top  = Math.max(0, Math.round((window.screen.height - h) / 2));
+  let popup = null;
+  try {
+    popup = window.open('', 'gold_google_auth',
+      'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+  } catch (e) { popup = null; }
+  if (popup) {
+    try {
+      popup.document.write('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Đăng nhập Google</title>' +
+        '<body style="margin:0;background:#0F0E0A;color:#C9922A;font:16px sans-serif;display:flex;align-items:center;justify-content:center;height:100vh">Đang mở Google…</body>');
+    } catch (e) {}
+  }
+  return popup;
+}
+
 async function lsDoGoogleLogin() {
   if (lsBusy) return;
   lsMsg('');
+  if (isWebview()) { try { await navigator.clipboard.writeText(AUTH_REDIRECT_URL); } catch (e) {} lsMsg('Trình duyệt trong ứng dụng (Zalo, Facebook, Messenger, Instagram…) bị Google chặn đăng nhập. Đã sao chép liên kết — hãy mở bằng Chrome hoặc Safari rồi dán liên kết vừa sao chép.', true); return; }
+
+  // Google KHÔNG cho hiển thị trang đăng nhập bên trong iframe (lỗi 403).
+  // → Trong iframe, hoặc trên máy tính: luôn dùng cửa sổ popup riêng.
+  // → Trang chạy độc lập trên điện thoại: chuyển hướng cả trang.
+  const framed = inIframe();
+  const usePopup = framed || !isMobileDevice();
+  const popup = usePopup ? openAuthPopup() : null;   // phải gọi trước mọi "await"
+
   lsSetLoading(true);
-  if (isWebview()) { lsSetLoading(false); try { await navigator.clipboard.writeText(AUTH_REDIRECT_URL); } catch (e) {} lsMsg('Trình duyệt trong ứng dụng (Zalo, Facebook, Messenger, Instagram…) bị Google chặn đăng nhập. Đã sao chép liên kết — hãy mở bằng Chrome hoặc Safari rồi dán liên kết vừa sao chép.', true); return; }
   try {
     const { data, error } = await db.auth.signInWithOAuth({
       provider: 'google',
@@ -1027,37 +1073,45 @@ async function lsDoGoogleLogin() {
     const url = data && data.url;
     if (!url) throw new Error('Không tạo được liên kết đăng nhập Google.');
 
-    const w = 480, h = 700;
-    const left = Math.max(0, Math.round((window.screen.width  - w) / 2));
-    const top  = Math.max(0, Math.round((window.screen.height - h) / 2));
-    const popup = isMobileDevice() ? null : window.open(url, 'gold_google_auth',
-      'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+    if (popup && !popup.closed) {
+      popup.location.href = url;
+      lsMsg('Đang chờ bạn chọn tài khoản Google…');
+      watchAuthPopup(popup);
+      return;
+    }
 
-    // Popup bị chặn → chuyển hướng như bình thường
-    if (!popup) { window.location.assign(url); return; }
-
-    lsMsg('Đang chờ bạn chọn tài khoản Google…');
-    watchAuthPopup(popup);
+    // Popup bị chặn
+    if (framed) { lsSetLoading(false); lsLink(url); return; }   // iframe: không được điều hướng trong khung
+    window.location.assign(url);
   } catch (e) {
+    try { if (popup) popup.close(); } catch (_) {}
     lsSetLoading(false);
     lsMsg(mapAuthError(e), true);
   }
 }
 
+// Theo dõi cửa sổ popup
 function watchAuthPopup(popup) {
   clearInterval(popupWatcher);
   const started = Date.now();
+  let closedAt = 0;
   popupWatcher = setInterval(async () => {
-    if (popup.closed) {
-      clearInterval(popupWatcher); popupWatcher = null;
-      // Popup đóng: phiên (nếu có) đã được ghi vào bộ nhớ dùng chung
+    const timedOut = Date.now() - started > 300000;
+    let closed = false;
+    try { closed = popup.closed; } catch (e) { closed = true; }
+
+    if (closed) {
+      if (!closedAt) closedAt = Date.now();
+      // Chờ thêm vài giây: tin nhắn từ popup có thể đến trễ / phiên được ghi vào bộ nhớ
       const { data } = await db.auth.getSession();
-      if (data && data.session) { await completeLogin(data.session); }
-      else { lsSetLoading(false); lsMsg('Đã hủy đăng nhập Google.'); }
+      if (data && data.session) { stopWatch(); await completeLogin(data.session); return; }
+      if (Date.now() - closedAt > 4000) {
+        stopWatch(); lsSetLoading(false); lsMsg('Đã hủy đăng nhập Google.');
+      }
       return;
     }
-    if (Date.now() - started > 300000) {
-      clearInterval(popupWatcher); popupWatcher = null;
+    if (timedOut) {
+      stopWatch();
       try { popup.close(); } catch (e) {}
       lsSetLoading(false);
       lsMsg('Hết thời gian chờ đăng nhập. Vui lòng thử lại.', true);
@@ -1065,27 +1119,50 @@ function watchAuthPopup(popup) {
   }, 700);
 }
 
+// Dùng khi người dùng mở liên kết thủ công (không có đối tượng popup)
+function watchAuthTab() {
+  clearInterval(popupWatcher);
+  const started = Date.now();
+  popupWatcher = setInterval(async () => {
+    const { data } = await db.auth.getSession();
+    if (data && data.session) { stopWatch(); await completeLogin(data.session); return; }
+    if (Date.now() - started > 300000) { stopWatch(); lsSetLoading(false); lsMsg('Hết thời gian chờ đăng nhập. Vui lòng thử lại.', true); }
+  }, 1000);
+}
+function stopWatch() { if (popupWatcher) { clearInterval(popupWatcher); popupWatcher = null; } }
+
+// Popup → cửa sổ chính: gửi cả token để cửa sổ chính (iframe) tự lập phiên,
+// vì Safari/Chrome có thể tách riêng bộ nhớ giữa iframe và cửa sổ popup.
+let authChannel = null;
+try { authChannel = new BroadcastChannel('gold_auth'); } catch (e) {}
+
 function postToOpener(payload) {
-  try {
-    if (window.opener && window.opener !== window) {
-      window.opener.postMessage(Object.assign({ source: 'gold_auth' }, payload), window.location.origin);
-    }
-  } catch (e) {}
+  const msg = Object.assign({ source: 'gold_auth' }, payload);
+  try { if (window.opener && window.opener !== window) window.opener.postMessage(msg, window.location.origin); } catch (e) {}
+  try { if (authChannel) authChannel.postMessage(msg); } catch (e) {}
 }
 
-// Nghe thông báo từ cửa sổ popup
-window.addEventListener('message', async (ev) => {
-  if (ev.origin !== window.location.origin) return;
-  const d = ev.data;
+async function handleAuthMessage(d) {
+  if (isAuthPopupWindow()) return;              // chỉ cửa sổ chính xử lý
   if (!d || d.source !== 'gold_auth') return;
-  if (popupWatcher) { clearInterval(popupWatcher); popupWatcher = null; }
+  stopWatch();
   if (d.type === 'AUTH_DENIED') { showDeniedScreen(d.email || ''); return; }
   if (d.type === 'AUTH_SUCCESS') {
+    try {
+      if (d.access_token && d.refresh_token) {
+        await db.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token });
+      }
+    } catch (e) { console.warn('setSession:', e.message); }
     const { data } = await db.auth.getSession();
     if (data && data.session) await completeLogin(data.session);
     else { lsSetLoading(false); lsMsg('Không nhận được phiên đăng nhập. Vui lòng thử lại.', true); }
   }
+}
+window.addEventListener('message', (ev) => {
+  if (ev.origin !== window.location.origin) return;
+  handleAuthMessage(ev.data);
 });
+if (authChannel) authChannel.onmessage = (ev) => handleAuthMessage(ev.data);
 
 // Quay lại tab sau khi đăng nhập ở tab khác (một số trình duyệt mobile)
 document.addEventListener('visibilitychange', async () => {
@@ -1155,10 +1232,11 @@ async function completeLogin(session) {
 
   // 3) Cửa sổ popup: báo cửa sổ chính rồi tự đóng
   if (isPopup) {
-    postToOpener({ type: 'AUTH_SUCCESS', email: user.email || '' });
+    postToOpener({ type: 'AUTH_SUCCESS', email: user.email || '', access_token: session.access_token, refresh_token: session.refresh_token });
     const t = document.getElementById('auth-bridge-text');
     if (t) t.textContent = 'Xác thực thành công…';
     setTimeout(() => { try { window.close(); } catch (e) {} }, 400);
+    setTimeout(() => { if (t) t.textContent = 'Xong! Bạn có thể đóng tab này và quay lại ứng dụng.'; }, 1500);
     return;
   }
 
