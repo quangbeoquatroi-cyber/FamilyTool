@@ -325,56 +325,7 @@
     height:1px; margin-bottom:28px;
     background: linear-gradient(90deg, transparent, rgba(201,146,42,0.25), transparent);
   }
-  .ls-group { margin-bottom:16px; }
-  .ls-group label {
-    display:block; font-size:10px; color:var(--text3);
-    text-transform:uppercase; letter-spacing:1.2px; font-weight:500; margin-bottom:8px;
-  }
-  .ls-group input {
-    width:100%; background:rgba(36,34,24,0.85); border:1px solid var(--border);
-    color:var(--text); padding:13px 16px; border-radius:10px;
-    font-size:16px; font-family:var(--font-label);
-    outline:none; transition:border-color .25s,box-shadow .25s; -webkit-appearance:none;
-  }
-  .ls-group input:focus {
-    border-color:var(--gold);
-    box-shadow:0 0 0 3px rgba(201,146,42,0.1),0 0 18px rgba(201,146,42,0.08);
-  }
-  .ls-pw-wrap { position:relative; }
-  .ls-pw-wrap input { padding-right:48px; }
-  .ls-toggle-pw {
-    position:absolute; right:14px; top:50%; transform:translateY(-50%);
-    background:none; border:none; color:var(--text3); cursor:pointer;
-    font-size:16px; padding:4px; line-height:1; transition:color .2s;
-  }
-  .ls-toggle-pw:hover { color:var(--gold); }
-  .ls-error {
-    display:none; background:rgba(226,75,74,0.1); border:1px solid rgba(226,75,74,0.3);
-    color:var(--red); padding:10px 14px; border-radius:8px;
-    font-size:12px; margin-bottom:16px; line-height:1.5;
-  }
-  .ls-error.show { display:block; }
-  .ls-btn {
-    width:100%;
-    background: linear-gradient(120deg,#A97020 0%,#C9922A 25%,#E8B455 50%,#C9922A 75%,#A97020 100%);
-    background-size:300% 100%;
-    border:none; color:#0F0E0A; padding:14px; border-radius:10px;
-    font-size:13px; font-family:var(--font-label); font-weight:700;
-    letter-spacing:1px; text-transform:uppercase; cursor:pointer; margin-top:8px;
-    transition:opacity .2s,transform .1s;
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    box-shadow:0 4px 22px rgba(201,146,42,0.28);
-    animation:ls-btn-flow 5s linear infinite;
-  }
-  @keyframes ls-btn-flow { 0% { background-position:0% 50%; } 100% { background-position:300% 50%; } }
-  .ls-btn:hover { opacity:.91; box-shadow:0 6px 32px rgba(201,146,42,0.42); }
-  .ls-btn:active { transform:scale(0.98); }
-  .ls-btn:disabled { opacity:.5; cursor:not-allowed; animation:none; }
-  .ls-spinner {
-    display:inline-block; width:14px; height:14px;
-    border:2px solid rgba(15,14,10,0.3); border-top-color:var(--bg);
-    border-radius:50%; animation:ls-spin .7s linear infinite;
-  }
+  /* (đã bỏ CSS của form email/mật khẩu cũ — nay chỉ đăng nhập bằng Google) */
   @keyframes ls-spin { to { transform:rotate(360deg); } }
   .ls-footer {
     text-align:center; margin-top:24px; font-size:10px;
@@ -1053,10 +1004,16 @@ function lsSetLoading(on) {
   if (sp)  sp.style.display = on ? 'inline-block' : 'none';
 }
 
+// Điện thoại: dùng chuyển hướng cả trang (popup không đáng tin).
+// Webview trong app (Zalo, Facebook, Messenger…) bị Google chặn bằng lỗi 403.
+function isMobileDevice() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || ''); }
+function isWebview() { const ua = navigator.userAgent || ''; return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Zalo|MicroMessenger|TikTok|Twitter|; wv\)/i.test(ua) || (/iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua)); }
+
 async function lsDoGoogleLogin() {
   if (lsBusy) return;
   lsMsg('');
   lsSetLoading(true);
+  if (isWebview()) { lsSetLoading(false); try { await navigator.clipboard.writeText(AUTH_REDIRECT_URL); } catch (e) {} lsMsg('Trình duyệt trong ứng dụng (Zalo, Facebook, Messenger, Instagram…) bị Google chặn đăng nhập. Đã sao chép liên kết — hãy mở bằng Chrome hoặc Safari rồi dán liên kết vừa sao chép.', true); return; }
   try {
     const { data, error } = await db.auth.signInWithOAuth({
       provider: 'google',
@@ -1073,7 +1030,7 @@ async function lsDoGoogleLogin() {
     const w = 480, h = 700;
     const left = Math.max(0, Math.round((window.screen.width  - w) / 2));
     const top  = Math.max(0, Math.round((window.screen.height - h) / 2));
-    const popup = window.open(url, 'gold_google_auth',
+    const popup = isMobileDevice() ? null : window.open(url, 'gold_google_auth',
       'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
 
     // Popup bị chặn → chuyển hướng như bình thường
