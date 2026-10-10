@@ -3277,8 +3277,35 @@ function closeMobileMenu() {
 // ── CONFIG ──────────────────────────────────────────────
 /* secrets moved to SecureConfig */
 // ── INIT SUPABASE ────────────────────────────────────────
-const { createClient } = supabase;
-const sb = createClient(window.SecureConfig.SUPABASE_URL, window.SecureConfig.SUPABASE_ANON_KEY);
+const _sbLib = (typeof supabase !== 'undefined') ? supabase : null;
+const createClient = _sbLib ? _sbLib.createClient : null;
+const _cfg = window.SecureConfig || {};
+const _hasCfg = !!(createClient && _cfg.SUPABASE_URL && _cfg.SUPABASE_ANON_KEY);
+let sb = null;
+if (_hasCfg) {
+  sb = createClient(_cfg.SUPABASE_URL, _cfg.SUPABASE_ANON_KEY);
+} else {
+  // Thiếu file cấu hình (assets/secure-config.js) hoặc không tải được thư viện Supabase
+  document.addEventListener('DOMContentLoaded', showConfigMissing);
+}
+
+function showConfigMissing() {
+  const box = document.querySelector('.login-box');
+  if (!box) return;
+  box.innerHTML = `
+    <div style="text-align:center;padding:10px 2px">
+      <div style="font-size:46px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:19px;font-weight:800;margin-bottom:12px">Thiếu file cấu hình</div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.7">
+        Trang này cần chạy kèm thư mục <b style="color:var(--text)">assets/</b> chứa file
+        <b style="color:var(--text)">secure-config.js</b> (khai báo Supabase URL và Anon key).
+      </div>
+      <div style="color:var(--muted);font-size:13px;line-height:1.7;margin-top:12px">
+        Hãy đặt file HTML này vào đúng thư mục gốc của bộ code — ngang hàng với thư mục
+        <b style="color:var(--text)">assets</b> — rồi tải lại trang.
+      </div>
+    </div>`;
+}
 
 // ── APP STATE ────────────────────────────────────────────
 const S = {
@@ -3331,10 +3358,11 @@ const fmtDate = d => {
   return dd.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
 };
 const today = () => new Date().toISOString().slice(0,10);
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const BDT_PAGES = ['anh','em'];
 
 // ── AUTH ─────────────────────────────────────────────────
-sb.auth.onAuthStateChange((evt, session) => {
+if (sb) sb.auth.onAuthStateChange((evt, session) => {
   // Chỉ khởi động lại khi đăng nhập/đăng xuất — TOKEN_REFRESHED không load lại trang nữa
   if (evt === 'SIGNED_OUT') { showLogin(); return; }
   if (evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') {
@@ -3442,8 +3470,12 @@ function stopIdleWatcher() {
 async function doSignOut() {
   await sb.auth.signOut();
   // Nếu đang chạy trong iframe (Family Tools Hub), điều hướng parent về home
-  if (window.top && window.top !== window) {
-    window.top.location.replace(new URL('index.html', window.location.href).href);
+  try {
+    if (window.top && window.top !== window) {
+      window.top.location.replace(new URL('index.html', window.location.href).href);
+    }
+  } catch (e) {
+    // Nhúng trong khung của site khác — bỏ qua, chỉ cần đăng xuất phía ứng dụng
   }
 }
 
@@ -3600,7 +3632,7 @@ async function saveBDTMonth(owner, year, month, incomeItems, expenseItems) {
     .upsert({ owner, year, month, updated_at: new Date().toISOString() }, { onConflict: 'owner,year,month' })
     .select().single();
   if(error) throw error;
-  await sb.from('bdt_items').delete().eq('month_id', mo.id);
+  const _prevIds = (((S.bdtCache[owner] || {})[year] || {})[month]?.items || []).map(i => i.id).filter(Boolean);
   const items = [
     ...incomeItems.map((i,idx) => ({ month_id: mo.id, type:'income', name: i.name, amount: i.amount, sort_order: idx })),
     ...expenseItems.map((i,idx) => ({ month_id: mo.id, type:'expense', name: i.name, amount: i.amount, sort_order: idx })),
@@ -3608,6 +3640,11 @@ async function saveBDTMonth(owner, year, month, incomeItems, expenseItems) {
   if(items.length) {
     const { error: ie } = await sb.from('bdt_items').insert(items);
     if(ie) throw ie;
+  }
+  // Chỉ xoá dữ liệu cũ SAU khi ghi xong dữ liệu mới → không bao giờ mất trắng một tháng
+  if(_prevIds.length) {
+    const { error: de } = await sb.from('bdt_items').delete().in('id', _prevIds);
+    if(de) throw de;
   }
   // Update cache
   if(!S.bdtCache[owner][year]) S.bdtCache[owner][year] = {};
@@ -3762,12 +3799,12 @@ function renderMonthCard(owner, year, month) {
 
   const incomeRows = incomes.map(i => `
     <div class="mc-row">
-      <span class="mc-row-name">${i.name}</span>
+      <span class="mc-row-name">${escHtml(i.name)}</span>
       <span class="mc-row-amount ${i.amount>=0?'positive':'negative'}">${i.amount>=0?'':'-'}${fmtVND(i.amount)}</span>
     </div>`).join('');
   const expenseRows = expenses.map(i => `
     <div class="mc-row">
-      <span class="mc-row-name">${i.name}</span>
+      <span class="mc-row-name">${escHtml(i.name)}</span>
       <span class="mc-row-amount negative">${fmtVND(i.amount)}</span>
     </div>`).join('');
 
@@ -3894,14 +3931,14 @@ function renderQuy(key) {
         const totalAmt = (t.amount_anh||0)+(t.amount_em||0);
         const accent = isIn?'var(--green)':'var(--red)';
         const emoji  = isIn?'📥':'📤';
-        const catOrType = (t.category||'') ? `<span class="tx-card-badge tx-badge-cat">${t.category}</span>` : `<span class="tx-card-badge ${isIn?'tx-badge-in':'tx-badge-out'}">${isIn?'Nạp':'Chi'}</span>`;
+        const catOrType = (t.category||'') ? `<span class="tx-card-badge tx-badge-cat">${escHtml(t.category)}</span>` : `<span class="tx-card-badge ${isIn?'tx-badge-in':'tx-badge-out'}">${isIn?'Nạp':'Chi'}</span>`;
         return `<div class="tx-card" style="--tx-accent:${accent}">
           <div class="tx-card-icon">${emoji}</div>
           <div class="tx-card-body">
-            <div class="tx-card-title">${t.description||'—'}</div>
+            <div class="tx-card-title">${escHtml(t.description||'—')}</div>
             <div class="tx-card-meta">
               ${catOrType}
-              ${t.note?`<span class="tx-card-note">· ${t.note}</span>`:''}
+              ${t.note?`<span class="tx-card-note">· ${escHtml(t.note)}</span>`:''}
             </div>
           </div>
           <div class="tx-card-right">
@@ -3918,7 +3955,7 @@ function renderQuy(key) {
     }).join('');
   })();
 
-  const catOptions   = cats.map(c => `<option value="${c}" ${f.cat===c?'selected':''}>${c}</option>`).join('');
+  const catOptions   = cats.map(c => `<option value="${escHtml(c)}" ${f.cat===c?'selected':''}>${escHtml(c)}</option>`).join('');
   const yearOptions  = years.map(y => `<option value="${y}" ${f.year===y?'selected':''}>${y}</option>`).join('');
   const monthOptions = Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,'0');return `<option value="${m}" ${f.month===m?'selected':''}>T${i+1}</option>`;}).join('');
 
@@ -3944,7 +3981,7 @@ function renderQuy(key) {
         <div class="quy-identity">
           <div class="quy-icon-pill">${q.icon||'💰'}</div>
           <div class="quy-name-wrap">
-            <div class="quy-name">${q.name}</div>
+            <div class="quy-name">${escHtml(q.name)}</div>
             ${target>0?`<div class="quy-subtitle">Mục tiêu: ${fmtVND(target)}</div>`:'<div class="quy-subtitle">Quỹ chung</div>'}
           </div>
         </div>
@@ -4040,8 +4077,8 @@ function openMonthModal(owner, year, month) {
   if(month) {
     const d = (S.bdtCache[S.editMonthOwner][year] || {})[month];
     if(d) {
-      d.items.filter(i=>i.type==='income').forEach(i => addItemRow('income', i.name, i.amount));
-      d.items.filter(i=>i.type==='expense').forEach(i => addItemRow('expense', i.name, i.amount));
+      d.items.filter(i=>i.type==='income').forEach(i => addItemRow('income', i.name, i.amount, true));
+      d.items.filter(i=>i.type==='expense').forEach(i => addItemRow('expense', i.name, i.amount, true));
     }
   }
   updateMonthSummary();
@@ -4091,13 +4128,13 @@ function removeItemRow(btn) {
   updateMonthSummary();
 }
 
-function addItemRow(type, name='', amount='') {
+function addItemRow(type, name='', amount='', skipFocus=false) {
   const container = document.getElementById(type+'-items');
   const row = document.createElement('div');
   row.className = 'item-row';
   const displayVal = amount ? formatAmountDisplay(amount) : '';
   row.innerHTML = `
-    <input class="item-name" placeholder="Tên khoản..." value="${name}">
+    <input class="item-name" placeholder="Tên khoản..." value="${escHtml(name)}">
     <input class="item-amount" type="text" inputmode="numeric" placeholder="0" value="${displayVal}" style="color:${type==='income'?'var(--green)':'var(--red)'}">
     <button class="item-del" onclick="removeItemRow(this)">✕</button>`;
   container.appendChild(row);
@@ -4114,7 +4151,7 @@ function addItemRow(type, name='', amount='') {
     this.value = formatted;
   });
   amtInput.addEventListener('input', updateMonthSummary);
-  row.querySelector('.item-name').focus();
+  if(!skipFocus) row.querySelector('.item-name').focus();
   updateMonthSummary();
 }
 
@@ -4130,10 +4167,26 @@ async function saveMonth() {
         name:   row.querySelector('.item-name').value.trim(),
         amount: parseAmountInput(row.querySelector('.item-amount').value),
       }))
-      .filter(i => i.name);
+      .filter(i => i.name || i.amount);
   };
   const incomeItems  = readItems('income');
   const expenseItems = readItems('expense');
+
+  const missingName = [...incomeItems, ...expenseItems].find(i => !i.name);
+  if(missingName) {
+    toast('Có dòng đã nhập số tiền nhưng chưa có tên khoản. Vui lòng nhập tên hoặc xoá dòng đó.', 'error');
+    return;
+  }
+
+  const sameYear = (S.bdtCache[owner] || {})[year] || {};
+  const hasData  = sameYear[month] && (sameYear[month].items || []).length > 0;
+  if(S.editMonth && month !== S.editMonth && hasData) {
+    if(!confirm('Tháng ' + month + ' đã có dữ liệu. Ghi đè bằng nội dung đang nhập?')) return;
+  } else if(S.editMonth && month !== S.editMonth) {
+    if(!confirm('Bạn đang sửa Tháng ' + S.editMonth + ' nhưng chọn Tháng ' + month + '. Dữ liệu sẽ được lưu vào Tháng ' + month + '. Tiếp tục?')) return;
+  } else if(!S.editMonth && hasData) {
+    if(!confirm('Tháng ' + month + ' đã có dữ liệu. Ghi đè?')) return;
+  }
 
   await withLoading(btn, async () => {
     await saveBDTMonth(owner, year, month, incomeItems, expenseItems);
@@ -4223,7 +4276,7 @@ function openTxDetail(txId, quyKey) {
               <div class="dtv-info-icon" style="background:rgba(38,217,139,.12)">📋</div>
               <span class="dtv-info-label">Mô tả</span>
             </div>
-            <span class="dtv-info-val">${tx.description||'—'}</span>
+            <span class="dtv-info-val">${escHtml(tx.description||'—')}</span>
           </div>
           ${tx.category ? `
           <div class="dtv-info-row">
@@ -4231,7 +4284,7 @@ function openTxDetail(txId, quyKey) {
               <div class="dtv-info-icon" style="background:rgba(38,217,139,.12)">🏷️</div>
               <span class="dtv-info-label">Danh mục</span>
             </div>
-            <span class="dtv-info-val">${tx.category}</span>
+            <span class="dtv-info-val">${escHtml(tx.category)}</span>
           </div>` : ''}
           ${contribRows.join('')}
           ${tx.note ? `
@@ -4240,7 +4293,7 @@ function openTxDetail(txId, quyKey) {
               <div class="dtv-info-icon" style="background:rgba(68,138,255,.15)">📝</div>
               <span class="dtv-info-label">Ghi chú</span>
             </div>
-            <span class="dtv-info-val" style="color:var(--muted);font-style:italic">${tx.note}</span>
+            <span class="dtv-info-val" style="color:var(--muted);font-style:italic">${escHtml(tx.note)}</span>
           </div>` : ''}
         </div>
 
@@ -4290,6 +4343,7 @@ function openTxDetail(txId, quyKey) {
         </div>
         <div id="modal-detail-body" style="padding:16px 16px 8px"></div>
       </div>`;
+    m.addEventListener('click', function(e){ if(e.target === m) closeModalById('modal-detail'); });
     document.body.appendChild(m);
   }
   document.getElementById('modal-detail-body').innerHTML = detail;
