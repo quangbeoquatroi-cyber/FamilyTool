@@ -2952,22 +2952,163 @@ html.popup-mode #toast-container,
 html.popup-mode .modal-overlay,
 html.popup-mode .sidebar-overlay,
 html.popup-mode .rf-toast{display:none!important}
-html.popup-mode #popup-splash{
-  display:flex;position:fixed;inset:0;z-index:99999;
-  flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  padding:24px;text-align:center;background:#0a1310;color:#eaf2ec;
-  font-family:'Nunito',sans-serif;
+html.popup-mode #popup-splash{display:flex}
+</style>
+<style id="auth-gate-style">
+/* ══════════════════════════════════════════════════════════
+   AUTH GATE — màn hình chuyển hướng & xác thực (cửa sổ popup)
+   Một "sợi dây" nối app ⇄ Google: sáng chạy ra Google khi chuyển
+   hướng, chạy ngược về app khi xác thực, đặc lại khi thành công,
+   đứt đoạn khi lỗi. CSS này dùng chung cho cả trang about:blank.
+   ══════════════════════════════════════════════════════════ */
+.ag{
+  --ag-mint:#2dd4a0;--ag-mint-hi:#7fffd4;--ag-red:#ff7070;
+  --ag-text:#eaf2ec;--ag-muted:#7da896;
+  position:fixed;inset:0;z-index:99999;
+  display:flex;align-items:center;justify-content:center;
+  padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));
+  background:#0a1310;color:var(--ag-text);
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  text-align:center;overflow:hidden;
 }
-.ps-spin{width:36px;height:36px;border-radius:50%;border:3px solid rgba(45,212,160,.2);border-top-color:#2dd4a0;animation:spin .7s linear infinite}
-.ps-msg{font-size:15px;line-height:1.7;color:#eaf2ec}
-.ps-msg small{display:block;color:#7da896;font-size:12px;margin-top:4px}
+.ag,.ag *,.ag *::before,.ag *::after{box-sizing:border-box}
+.ag::before,.ag::after{content:'';position:absolute;inset:-10%;pointer-events:none;z-index:0}
+.ag::before{
+  background:
+    radial-gradient(ellipse 70% 55% at 18% 22%,rgba(45,212,160,.2) 0%,transparent 62%),
+    radial-gradient(ellipse 55% 45% at 82% 78%,rgba(249,168,37,.11) 0%,transparent 60%);
+  animation:ag-breath 5s ease-in-out infinite;
+  transition:opacity .6s;
+}
+.ag::after{
+  background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(255,82,82,.15) 0%,transparent 65%);
+  opacity:0;transition:opacity .6s;
+}
+.ag[data-state="error"]::after{opacity:1}
+.ag[data-state="error"]::before{opacity:.3;animation:none}
+@keyframes ag-breath{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+
+.ag-stage{
+  position:relative;z-index:1;width:100%;max-width:360px;
+  display:flex;flex-direction:column;align-items:center;
+  animation:ag-in .8s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes ag-in{
+  from{opacity:0;transform:translateY(16px);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:blur(0)}
+}
+
+/* Hai đầu dây */
+.ag-link{position:relative;display:flex;align-items:center;margin-bottom:40px}
+.ag-tile{
+  flex:none;width:76px;height:76px;border-radius:22px;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .5s,box-shadow .5s;
+}
+.ag-app{
+  background:linear-gradient(150deg,#0e261a 0%,#08160f 100%);
+  border:1px solid rgba(45,212,160,.28);
+  box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 28px rgba(45,212,160,.12);
+}
+.ag-app img{width:52px;height:52px;object-fit:contain;border-radius:14px;display:block}
+.ag-google{
+  background:#f3f7f4;border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 14px 34px rgba(0,0,0,.45);
+}
+.ag-google svg{width:34px;height:34px;display:block}
+
+/* Sợi dây */
+.ag-wire{
+  position:relative;width:112px;height:2px;border-radius:2px;overflow:hidden;
+  background:rgba(45,212,160,.16);transition:background .4s;
+}
+.ag-comet{
+  position:absolute;top:0;left:0;width:44px;height:100%;
+  background:linear-gradient(90deg,transparent,var(--ag-mint),var(--ag-mint-hi));
+  animation:ag-travel 1.7s cubic-bezier(.5,0,.25,1) infinite;
+}
+@keyframes ag-travel{from{left:-44px}to{left:100%}}
+.ag[data-dir="back"] .ag-comet{
+  background:linear-gradient(270deg,transparent,var(--ag-mint),var(--ag-mint-hi));
+  animation-direction:reverse;
+}
+.ag-fill{
+  position:absolute;inset:0;transform:scaleX(0);transform-origin:left;
+  background:linear-gradient(90deg,var(--ag-mint),var(--ag-mint-hi));
+  transition:transform .55s cubic-bezier(.22,1,.36,1);
+}
+.ag[data-state="success"] .ag-fill{transform:scaleX(1)}
+.ag[data-state="success"] .ag-comet,
+.ag[data-state="error"] .ag-comet{display:none}
+.ag[data-state="success"] .ag-app{
+  border-color:rgba(45,212,160,.75);
+  box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 40px rgba(45,212,160,.35);
+}
+.ag[data-state="error"] .ag-wire{
+  background:repeating-linear-gradient(90deg,rgba(255,112,112,.65) 0 6px,transparent 6px 14px);
+}
+.ag[data-state="error"] .ag-app{border-color:rgba(255,112,112,.5);box-shadow:0 14px 34px rgba(0,0,0,.45)}
+
+/* Huy hiệu giữa dây: ✓ / ✕ */
+.ag-badge{
+  position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 4px #0a1310;
+  transform:scale(0);opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1) .35s,opacity .2s .35s;
+}
+.ag[data-state="success"] .ag-badge,
+.ag[data-state="error"] .ag-badge{transform:scale(1);opacity:1}
+.ag[data-state="success"] .ag-badge{background:var(--ag-mint)}
+.ag[data-state="error"] .ag-badge{background:var(--ag-red)}
+.ag-badge svg{
+  display:none;width:18px;height:18px;fill:none;stroke:#041a10;
+  stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+}
+.ag[data-state="success"] .ag-ok,
+.ag[data-state="error"] .ag-no{display:block}
+.ag-ok path{stroke-dasharray:24;stroke-dashoffset:24}
+.ag[data-state="success"] .ag-ok path{animation:ag-draw .4s ease .6s forwards}
+@keyframes ag-draw{to{stroke-dashoffset:0}}
+
+/* Chữ */
+.ag-title{
+  margin:0;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  font-weight:600;font-size:32px;line-height:1.15;letter-spacing:.01em;color:var(--ag-text);text-wrap:balance;
+  animation:ag-swap .4s ease both;
+}
+.ag-sub{
+  margin:10px 0 0;max-width:34ch;font-size:14px;line-height:1.65;color:var(--ag-muted);
+  animation:ag-swap .4s ease both;
+}
+.ag[data-state="error"] .ag-sub{color:#e6a7a7}
+@keyframes ag-swap{from{opacity:0}to{opacity:1}}
+
+/* Nút đóng — chỉ hiện khi trình duyệt không cho tự đóng cửa sổ */
+.ag-btn{
+  display:none;margin-top:28px;padding:11px 24px;border-radius:12px;cursor:pointer;
+  font:700 14px 'Nunito',system-ui,sans-serif;color:var(--ag-text);
+  background:rgba(45,212,160,.09);border:1px solid rgba(45,212,160,.38);
+  transition:background .25s,border-color .25s;
+}
+.ag[data-close="1"] .ag-btn{display:inline-flex;animation:ag-swap .4s ease both}
+.ag-btn:hover{background:rgba(45,212,160,.18);border-color:rgba(45,212,160,.6)}
+.ag-btn:focus-visible{outline:2px solid var(--ag-mint);outline-offset:3px}
+
+@media (max-width:380px){
+  .ag-wire{width:72px}
+  .ag-title{font-size:28px}
+}
+@media (prefers-reduced-motion:reduce){
+  .ag::before,.ag-stage{animation:none}
+  .ag-comet{animation:none;left:34px}
+  .ag-fill,.ag-badge{transition:none}
+  .ag[data-state="success"] .ag-ok path{animation:none;stroke-dashoffset:0}
+}
 </style>
 </head>
 <body>
-<div id="popup-splash" aria-live="polite">
-  <div class="ps-spin" id="ps-spin"></div>
-  <div class="ps-msg" id="ps-msg">Đang xác thực tài khoản...<small>Cửa sổ này sẽ tự đóng</small></div>
-</div>
+<div id="popup-splash" class="ag" data-state="loading" data-dir="back" aria-live="polite"></div>
 
 <!-- ════════════════ LOGIN SCREEN ════════════════ -->
 <div id="screen-login">
@@ -3472,21 +3613,70 @@ var _authCheckInProgress = false;
 const _isPopup = document.documentElement.classList.contains('popup-mode');
 var _popupDone = false;
 
-function popupSplashShow(html, done) {
-  var m = document.getElementById('ps-msg'); if(m) m.innerHTML = html;
-  var sp = document.getElementById('ps-spin'); if(sp && done) sp.style.display = 'none';
+// ── AUTH GATE: màn hình chuyển hướng / xác thực trong cửa sổ popup ──
+var AG_GOOGLE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>';
+
+function agLogoSrc() {
+  var i = document.querySelector('.login-logo img');
+  return (i && i.src) || new URL('assets/icon_quanlythuchi.png', location.href).href;
+}
+function agMarkup(title, sub) {
+  return '<div class="ag-stage">'
+    + '<div class="ag-link" aria-hidden="true">'
+    +   '<div class="ag-tile ag-app"><img alt="" src="' + agLogoSrc() + '"></div>'
+    +   '<div class="ag-wire"><i class="ag-fill"></i><i class="ag-comet"></i></div>'
+    +   '<div class="ag-badge">'
+    +     '<svg class="ag-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    +     '<svg class="ag-no" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg>'
+    +   '</div>'
+    +   '<div class="ag-tile ag-google">' + AG_GOOGLE_SVG + '</div>'
+    + '</div>'
+    + '<h2 class="ag-title" id="ag-title">' + escHtml(title) + '</h2>'
+    + '<p class="ag-sub" id="ag-sub">' + escHtml(sub) + '</p>'
+    + '<button type="button" class="ag-btn" onclick="window.close()">Đóng cửa sổ</button>'
+    + '</div>';
+}
+// Trang HTML đầy đủ ghi vào popup (about:blank) trong lúc chờ lấy link đăng nhập Google
+function agDocument() {
+  var css = (document.getElementById('auth-gate-style') || {}).textContent || '';
+  return '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">'
+    + '<title>Thu Chi Gia Đình</title>'
+    + '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">'
+    + '<style>html,body{margin:0;height:100%;background:#0a1310}' + css + '</style></head>'
+    + '<body><div class="ag" data-state="loading" data-dir="out">'
+    + agMarkup('Đang mở Google', 'Chọn tài khoản để tiếp tục đăng nhập.')
+    + '</div></body></html>';
+}
+// Đổi trạng thái màn hình trong popup: loading | success | error
+function popupGateSet(state, title, sub, canClose) {
+  var root = document.getElementById('popup-splash'); if (!root) return;
+  root.setAttribute('data-state', state);
+  if (canClose) root.setAttribute('data-close', '1'); else root.removeAttribute('data-close');
+  var t = document.getElementById('ag-title'), s = document.getElementById('ag-sub');
+  [[t, title], [s, sub]].forEach(function(p) {
+    if (!p[0]) return;
+    p[0].textContent = p[1] || '';
+    p[0].style.animation = 'none'; void p[0].offsetWidth; p[0].style.animation = '';
+  });
 }
 function popupFinish(ok, msg) {
   // báo kết quả cho cửa sổ chính (cùng origin) qua localStorage
   try { localStorage.setItem('tcgd_popup_result', JSON.stringify({ ok: !!ok, msg: msg || '', t: Date.now() })); } catch(e) {}
-  popupSplashShow(ok ? '✅ Đăng nhập thành công<small>Đang quay về ứng dụng...</small>' : '❌ ' + escHtml(msg || 'Đăng nhập không thành công'), !ok);
-  setTimeout(function() { try { window.close(); } catch(e) {} }, 400);
+  var failMsg = msg || 'Đăng nhập không thành công.';
+  var title = ok ? 'Đăng nhập thành công' : 'Chưa đăng nhập được';
+  popupGateSet(ok ? 'success' : 'error', title, ok ? 'Đang quay về ứng dụng.' : failMsg);
+  // chừa thời gian để người dùng kịp thấy kết quả rồi mới đóng
+  setTimeout(function() { try { window.close(); } catch(e) {} }, ok ? 1200 : 2400);
   // nếu trình duyệt không cho tự đóng thì hướng dẫn người dùng
   setTimeout(function() {
-    popupSplashShow((ok ? '✅ Đăng nhập thành công' : '❌ ' + escHtml(msg || 'Đăng nhập không thành công')) + '<small>Bạn có thể đóng cửa sổ này.</small>', true);
-  }, 1500);
+    popupGateSet(ok ? 'success' : 'error', title, ok ? 'Bạn có thể đóng cửa sổ này.' : failMsg, true);
+  }, ok ? 2400 : 3400);
 }
 if (_isPopup) {
+  var _gate = document.getElementById('popup-splash');
+  if (_gate) _gate.innerHTML = agMarkup('Đang xác thực', 'Chỉ mất vài giây.');
   // chống treo: quá 20 giây không có phản hồi thì báo lỗi và đóng
   setTimeout(function() { if(!_popupDone) { _popupDone = true; popupFinish(false, 'Không nhận được phản hồi đăng nhập. Hãy thử lại.'); } }, 20000);
 }
@@ -3573,9 +3763,7 @@ function doGoogleLogin() {
     showLoginError('Trình duyệt đang chặn popup. Hãy cho phép popup rồi thử lại.');
     return;
   }
-  try {
-    popup.document.write('<body style="background:#0a1310;color:#eaf2ec;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">Đang chuyển tới Google...</body>');
-  } catch(e) {}
+  try { popup.document.open(); popup.document.write(agDocument()); popup.document.close(); } catch(e) {}
 
   sb.auth.signInWithOAuth({
     provider: 'google',
@@ -5482,7 +5670,5 @@ function svSetDate(field, value) { if(field === 'from') SV.fFrom = value; if(fie
 })();
 </script>
 
-
-  
 </body>
 </html>
