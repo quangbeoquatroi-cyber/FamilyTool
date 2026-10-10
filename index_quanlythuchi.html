@@ -525,7 +525,7 @@ a{text-decoration:none;color:inherit}
 
 /* ══════════════════════════════════════════════════════════
    QUỸ PAGE — REDESIGNED MOBILE-FIRST DESIGN SYSTEM
-   ══════════════════════════════════════════════════════════ */
+   ══════════════��═══════════════════════════════════════════ */
 
 /* ── QUY WRAPPER ── */
 .quy-page-wrap{
@@ -1257,7 +1257,7 @@ a{text-decoration:none;color:inherit}
   }
 }
 
-/* ── MODALS ─────────────────────────────────────────────── */
+/* ── MODALS ────────────────────────────��────────────────── */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.7);
   display:flex;align-items:center;justify-content:center;
@@ -3150,7 +3150,7 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
       <div class="items-editor" id="income-items"></div>
       <button class="add-item-btn" onclick="addItemRow('income')">+ Thêm khoản thu</button>
 
-      <div class="section-sep" style="margin-top:16px">🔴 Khoản Chi</div>
+      <div class="section-sep" style="margin-top:16px">���� Khoản Chi</div>
       <div class="items-editor" id="expense-items"></div>
       <button class="add-item-btn" onclick="addItemRow('expense')">+ Thêm khoản chi</button>
     </div>
@@ -3264,7 +3264,7 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
         <input type="text" class="field-input" id="cfg-name">
       </div>
       <div class="field-group">
-        <label class="field-label">Mục tiêu (₫)</label>
+        <label class="field-label">Mục ti��u (₫)</label>
         <input type="number" class="field-input" id="cfg-target" placeholder="0">
       </div>
     </div>
@@ -3440,7 +3440,8 @@ const fmtDate = d => {
   const dd = new Date(d);
   return dd.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
 };
-const today = () => new Date().toISOString().slice(0,10);
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const localYM = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); };
 const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const BDT_PAGES = ['anh','em'];
 
@@ -3472,7 +3473,7 @@ async function doLogin() {
   }
 }
 
-// ── INACTIVITY AUTO-LOGOUT (30 phút) ─────────────────────
+// ── INACTIVITY AUTO-LOGOUT (5 phút) ─────────────────────
 const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 phút  
 const WARN_BEFORE  =  2 * 60 * 1000; //  2 phút trước sẽ cảnh báo
 let idleTimer   = null;
@@ -3481,7 +3482,11 @@ let idleWarning = null; // toast element
 
 const IDLE_EVENTS = ['mousemove','mousedown','keydown','touchstart','touchmove','scroll','click','wheel'];
 
+var _idleThrottle = 0;
 function resetIdleTimer() {
+  var now = Date.now();
+  if(now - _idleThrottle < 1000) return;
+  _idleThrottle = now;
   clearTimeout(idleTimer);
   clearTimeout(warnTimer);
   dismissIdleWarning();
@@ -3655,6 +3660,7 @@ async function doRefresh() {
     // Xóa toàn bộ cache rồi load lại tất cả
     S.bdtCache = { anh: {}, em: {} };
     S.quyCache = {};
+    if(S.tqState) S.tqState = undefined;
     if(page==='tietkiem') await loadSavings();
     await Promise.all([
       loadBDTYear('anh', S.year),
@@ -3680,20 +3686,22 @@ function topbarAddClick() {
 
 // ── YEAR ─────────────────────────────────────────────────
 function changeYear(delta) {
-  S.year += delta;
-  document.getElementById('year-label').textContent = S.year;
+  const newYear = S.year + delta;
+  S.year = newYear;
+  document.getElementById('year-label').textContent = newYear;
   const owner = S.page;
   if(owner === 'tongquan') {
-    Promise.all([loadBDTYear('anh',S.year), loadBDTYear('em',S.year)]).then(() => renderTongQuan());
+    Promise.all([loadBDTYear('anh',newYear), loadBDTYear('em',newYear)]).then(() => { if(S.year === newYear) renderTongQuan(); }).catch(e => console.error('changeYear tongquan:', e));
     return;
   }
   if(!BDT_PAGES.includes(owner)) return;
   showSkeletons(owner);
-  loadBDTYear(owner, S.year).then(() => renderPage(owner));
+  loadBDTYear(owner, newYear).then(() => { if(S.year === newYear) renderPage(owner); }).catch(e => console.error('changeYear:', e));
 }
 
-// ── BDT DATA ─────────────────────────────────────────────
+// ── BDT DATA ───────────────────────────��─────────────────
 async function loadBDTYear(owner, year) {
+  if(S.bdtCache[owner] && S.bdtCache[owner][year] !== undefined) return;
   const { data, error } = await sb.from('bdt_months')
     .select('*, bdt_items(*)')
     .eq('owner', owner)
@@ -3728,8 +3736,7 @@ async function saveBDTMonth(owner, year, month, incomeItems, expenseItems) {
   }
   // FIX: Xoá theo month_id (loại trừ id vừa chèn) → chống dòng trùng khi 2 máy cùng sửa
   if(_newIds.length > 0) {
-    var _idList = _newIds.map(function(id) { return "'" + id + "'"; }).join(',');
-    const { error: de } = await sb.from('bdt_items').delete().eq('month_id', mo.id).not('id', 'in', '(' + _idList + ')');
+    const { error: de } = await sb.from('bdt_items').delete().eq('month_id', mo.id).not('id', 'in', '(' + _newIds.join(',') + ')');
     if(de) throw de;
   } else {
     const { error: de } = await sb.from('bdt_items').delete().eq('month_id', mo.id);
@@ -3779,8 +3786,12 @@ async function deleteQuyTx(txId) {
 // ── RENDER PAGES ─────────────────────────────────────────
 function renderPage(page) {
   if(page==='tongquan') {
-    // Ensure both owners' data is loaded for the current year AND prev year (for % change)
-    Promise.all([loadBDTYear('anh',S.year), loadBDTYear('em',S.year)]).then(() => renderTongQuan());
+    var needLoad = !(S.bdtCache.anh && S.bdtCache.anh[S.year] !== undefined) || !(S.bdtCache.em && S.bdtCache.em[S.year] !== undefined);
+    if(needLoad) {
+      Promise.all([loadBDTYear('anh',S.year), loadBDTYear('em',S.year)]).then(() => renderTongQuan()).catch(e => console.error('renderPage tongquan:', e));
+    } else {
+      renderTongQuan();
+    }
   } else if(page==='tietkiem') renderSavings();
   else if(BDT_PAGES.includes(page)) renderBDT(page);
   else renderQuy(page);
@@ -3888,7 +3899,7 @@ function renderTongQuan() {
         var pct = total > 0 ? (item.amount / total * 100) : 0;
         var name = item.name.length > 20 ? item.name.slice(0, 18) + '…' : item.name;
         var titleAttr = _privacyMode ? escHtml(item.name) : (escHtml(item.name) + ': ' + fmtVND(item.amount));
-        var clickAttr = (clickable && item.quyKey) ? 'onclick="tqTopCategoryClick(\'' + escHtml(item.name).replace(/'/g, '&#39;') + '\',\'' + item.quyKey + '\')" class="tq-hbar-row clickable"' : 'class="tq-hbar-row"';
+        var catJson = JSON.stringify(item.name).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); var clickAttr = (clickable && item.quyKey) ? 'onclick="tqTopCategoryClick(' + catJson + ',\'' + item.quyKey + '\')" class="tq-hbar-row clickable"' : 'class="tq-hbar-row"';
         return '<div ' + clickAttr + ' title="' + titleAttr + '"><div class="tq-hbar-label"><span class="tq-hbar-name">' + escHtml(name) + '</span><span class="tq-hbar-right"><span class="tq-hbar-val pv">' + fmtVND(item.amount) + '</span><span class="tq-hbar-pct">' + pct.toFixed(1) + '%</span></span></div><div class="tq-hbar-track"><div class="tq-hbar-fill" style="width:' + pct + '%"></div></div></div>';
       }).join('');
     }
@@ -3897,8 +3908,8 @@ function renderTongQuan() {
   var toggleBtns = [{ v: 'both', label: 'Cả hai', cls: '' }, { v: 'anh', label: '👨 Anh', cls: 'on-anh' }, { v: 'em', label: '👩 Em', cls: 'on-em' }].map(function(b) { return '<button class="' + (ts.chartMode === b.v ? 'on ' + b.cls : '') + '" onclick="setTQChartMode(\'' + b.v + '\')">' + b.label + '</button>'; }).join('');
   var compareToggle = '<div class="tq-compare-toggle"><button class="' + (ts.compareMode === 'period' ? 'on' : '') + '" onclick="setTQCompareMode(\'period\')">Cùng kỳ</button><button class="' + (ts.compareMode === 'year' ? 'on' : '') + '" onclick="setTQCompareMode(\'year\')">Cả năm</button></div>';
   el.innerHTML = '<div class="tq-page"><div class="tq-page-header"><div class="tq-page-title">Tổng quan tài chính</div><div class="tq-page-sub">Năm ' + year + ' · Theo dõi thu chi, quỹ chung và tiết kiệm</div></div><div class="tq-chart-card"><div class="tq-chart-header"><span class="tq-chart-title">📊 Thu/Chi theo tháng</span><div class="tq-chart-toggle">' + toggleBtns + '</div></div><div class="tq-chart-bars">' + bars + '</div></div><div class="tq-cards-area">' + renderPersonCard('anh') + renderPersonCard('em') + '</div>' + compareToggle + renderFundTotal() + renderSavingsTotal() + renderTopExpenses() + '</div>';
-  if(!prevLoaded) { Promise.all(chartOwners.map(function(o) { return loadBDTYear(o, prevYear); })).then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function() {}); }
-  if(SV.rows === null && !SV.allowed) { loadSavings().then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function() {}); }
+  if(!prevLoaded) { Promise.all(chartOwners.map(function(o) { return loadBDTYear(o, prevYear); })).then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function(e) { console.error('prevYear load:', e); }); }
+  if(SV.rows === null && !SV.allowed) { loadSavings().then(function() { if(S.page === 'tongquan') renderTongQuan(); }).catch(function(e) { console.error('savings load:', e); }); }
 }
 
 
@@ -4035,7 +4046,7 @@ function renderQuy(key) {
   var totalOut = txs.filter(function(t) { return t.type==='out'; }).reduce(function(s,t) { return s+(t.amount_anh||0)+(t.amount_em||0); }, 0);
   var balance = totalIn - totalOut;
   var target = q.target || 0;
-  var pct = target > 0 ? Math.min(100, Math.round(balance/target*100)) : 0;
+  var pct = target > 0 ? Math.max(0, Math.min(100, Math.round(balance/target*100))) : 0;
   var anhIn = txs.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_anh||0); }, 0);
   var emIn = txs.filter(function(t) { return t.type==='in'; }).reduce(function(s,t) { return s+(t.amount_em||0); }, 0);
   var lacking = Math.max(0, target - balance);
@@ -4075,7 +4086,7 @@ function renderQuy(key) {
 }
 
 
-// ── MONTH MODAL ──────────────────────────────────────────
+// ── MONTH MODAL ──────────────────────────────────────��───
 function openMonthModal(owner, year, month) {
   S.editMonthOwner = owner || S.page;
   S.editMonthYear  = year  || S.year;
@@ -4328,7 +4339,7 @@ function openTxDetail(txId, quyKey) {
             </div>
             <div class="dtv-bal-item">
               <div class="dtv-bal-label">💰 Còn lại</div>
-              <div class="dtv-bal-amt" style="color:var(--em)">${fmtVND(conLai)}</div>
+              <div class="dtv-bal-amt" style="color:var(--em)">${fmtVNDSign(conLai)}</div>
             </div>
           </div>
         </div>
@@ -4464,7 +4475,7 @@ async function downloadReceipt(txId, quyKey, btn) {
           </div>
           <div style="text-align:center;padding:12px 6px">
             <div style="font-size:9px;font-weight:800;color:#6b9e80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">💰 Còn lại</div>
-            <div style="font-size:13px;font-weight:800;color:#f9a825">${fmtVND(conLai)}</div>
+            <div style="font-size:13px;font-weight:800;color:#f9a825">${fmtVNDSign(conLai)}</div>
           </div>
         </div>
 
@@ -4667,7 +4678,7 @@ async function saveQuyConfig() {
     name:   document.getElementById('cfg-name').value.trim(),
     icon:   document.getElementById('cfg-icon').value.trim(),
     color:  document.getElementById('cfg-color').value,
-    target: parseFloat(document.getElementById('cfg-target').value) || 0,
+    target: parseFloat(String(document.getElementById('cfg-target').value).replace(/[^0-9.]/g,'')) || 0,
   };
   await withLoading(btn, async () => {
     await saveQuyConfigData(q.id, cfg);
@@ -4740,7 +4751,7 @@ const DUP = {
 
 /**
  * 1. getExistingMonths(owner, year)
- *    Trả về array các tháng ĐÃ tồn tại trong cache.
+ *    Trả v��� array các tháng ĐÃ tồn tại trong cache.
  *    Ví dụ: [1, 2, 3, 4, 5]
  */
 function getExistingMonths(owner, year) {
@@ -4920,7 +4931,7 @@ function showLoadingToast(msg) {
 
 <script>
 
-// ═══════════════ TIẾT KIỆM (savings_transactions) ═══════════════
+// ��══════════════ TIẾT KIỆM (savings_transactions) ═══════════════
 const SAVINGS_EMAIL = 'haiduachungminh@gmail.com';
 var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, hasSoCol: false, form: { owner: 'anh', type: 'in', category: '', so: '' } };
 window.SV = SV;
@@ -4957,7 +4968,7 @@ function svTotals() {
   t.anh.so = soRows.filter(r => r.owner === 'anh').reduce((s, r) => s + soSign(r), 0);
   t.em.so = soRows.filter(r => r.owner === 'em').reduce((s, r) => s + soSign(r), 0);
   t.total = t.anh.bal + t.em.bal + t.anh.so + t.em.so;
-  const ym = new Date().toISOString().slice(0, 7);
+  const ym = localYM();
   t.month = SV.rows.filter(r => !r.passbook_holder && (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + svSigned(r), 0);
   return t;
 }
@@ -5006,6 +5017,7 @@ async function renderSavings() {
   </div>
   <div class="sv-wallets">${svWallet('anh', t)}${svWallet('em', t)}</div>
   ${svSoCard()}
+  <div id="sv-search-wrap"><div class="sv-search-row"><input class="sv-search" type="text" placeholder="🔍 Tìm theo mô tả, ghi chú, danh mục..." value="${svEsc(SV.fQ||'')}" oninput="svSetSearch(this.value)"><input class="sv-date" type="date" value="${SV.fFrom||''}" onchange="svSetDate('from',this.value)" title="Từ ngày"><input class="sv-date" type="date" value="${SV.fTo||''}" onchange="svSetDate('to',this.value)" title="Đến ngày"></div></div>
   <div id="sv-history-wrap">${svHistory()}</div>
 </div>`;
   const deck = el.querySelector('.sv-deck');
@@ -5028,7 +5040,7 @@ function svSoCard() {
   const total = rows.reduce((s, r) => s + sign(r), 0);
   const anhHold = rows.filter(r => r.passbook_holder === 'anh').reduce((s, r) => s + sign(r), 0);
   const emHold = rows.filter(r => r.passbook_holder === 'em').reduce((s, r) => s + sign(r), 0);
-  const ym = new Date().toISOString().slice(0, 7);
+  const ym = localYM();
   const month = rows.filter(r => (r.date || '').slice(0, 7) === ym).reduce((s, r) => s + sign(r), 0);
   return `<div class="sv-so">
     <div class="sv-so-top">
@@ -5073,7 +5085,6 @@ function svHistory() {
     return true;
   });
   function chip(k, v, label, cls) { return '<button class="sv-chip '+(cls||'')+' '+(SV[k]===v?'on':'')+'" onclick="svSetFilter(\''+k+'\',\''+v+'\')">'+label+'</button>'; }
-  var searchRow = '<div class="sv-search-row"><input class="sv-search" type="text" placeholder="🔍 Tìm theo mô tả, ghi chú, danh mục..." value="'+svEsc(SV.fQ||'')+'" oninput="svSetSearch(this.value)"><input class="sv-date" type="date" value="'+(SV.fFrom||'')+'" onchange="svSetDate(\'from\',this.value)" title="Từ ngày"><input class="sv-date" type="date" value="'+(SV.fTo||'')+'" onchange="svSetDate(\'to\',this.value)" title="Đến ngày"></div>';
   var body;
   if(!rows.length) {
     body = (SV.rows && SV.rows.length) ? '<div class="sv-empty"><div class="sv-empty-ico">🔍</div>Không có giao dịch phù hợp bộ lọc</div>' : '<div class="sv-empty"><div class="sv-empty-ico">🌱</div>Chưa có giao dịch nào.<br>Bắt đầu gửi khoản tiết kiệm đầu tiên nhé!<br><button class="sv-btn sv-btn-in" onclick="openSavingsModal(null)">＋ Thêm giao dịch</button></div>';
@@ -5091,7 +5102,7 @@ function svHistory() {
       return '<div class="sv-month"><div class="sv-month-head"><div class="sv-month-name">Tháng '+(+m)+'/'+y+'<small>'+list.length+' giao dịch</small></div><div class="sv-month-sum"><div class="sv-ms in"><span>Đã gửi</span><b>+'+svFmt(sumIn)+'</b></div><div class="sv-ms out"><span>Đã rút</span><b>−'+svFmt(sumOut)+'</b></div><div class="sv-ms net '+(net>=0?'in':'out')+'" title="Chênh lệch = Đã gửi − Đã rút trong tháng"><span>Chênh lệch</span><b>'+(net>=0?'+':'−')+svFmt(Math.abs(net))+' ₫</b></div></div></div><div class="sv-month-list">'+dayHtml+'</div></div>';
     }).join('');
   }
-  return '<div class="sv-section sv-in" style="animation-delay:.18s"><div class="sv-sec-head"><div class="sv-sec-title">Lịch sử giao dịch</div><div class="sv-sec-count">'+rows.length+' giao dịch</div></div><div class="sv-filter">'+searchRow+'<div class="sv-chips">'+chip('fOwner','','Tất cả')+chip('fOwner','anh','👨 Anh','anh')+chip('fOwner','em','👩 Em','em')+'</div><div class="sv-chips">'+chip('fType','','Mọi loại')+chip('fType','in','↓ Gửi vào','in')+chip('fType','out','↑ Rút ra','out')+'</div></div>'+body+'</div>';
+  return '<div class="sv-section sv-in" style="animation-delay:.18s"><div class="sv-sec-head"><div class="sv-sec-title">Lịch sử giao dịch</div><div class="sv-sec-count">'+rows.length+' giao dịch</div></div><div class="sv-filter"><div class="sv-chips">'+chip('fOwner','','Tất cả')+chip('fOwner','anh','👨 Anh','anh')+chip('fOwner','em','👩 Em','em')+'</div><div class="sv-chips">'+chip('fType','','Mọi loại')+chip('fType','in','↓ Gửi vào','in')+chip('fType','out','↑ Rút ra','out')+'</div></div>'+body+'</div>';
 }
 
 
@@ -5297,6 +5308,7 @@ function setTQCompareMode(mode) { if(!S.tqState) S.tqState = {}; S.tqState.compa
 function toggleTopCollapse() { if(!S.tqState) S.tqState = {}; S.tqState.topCollapsed = !S.tqState.topCollapsed; var body = document.getElementById('top-expenses-body'); var icon = document.getElementById('top-collapse-icon'); if(body) body.classList.toggle('collapsed', S.tqState.topCollapsed); if(icon) icon.textContent = S.tqState.topCollapsed ? '▼' : '▲'; }
 
 function tqChartTooltip(el) { var tip = el.querySelector('.tq-chart-tooltip'); if(tip) { document.querySelectorAll('.tq-chart-tooltip').forEach(function(t) { if(t !== tip) t.style.display = 'none'; }); tip.style.display = tip.style.display === 'block' ? 'none' : 'block'; } }
+document.addEventListener('click', function(e) { if(!e.target.closest || !e.target.closest('.tq-chart-month')) { document.querySelectorAll('.tq-chart-tooltip').forEach(function(t) { t.style.display = 'none'; }); } }, true);
 
 function tqTopCategoryClick(cat, quyKey) { if(!quyKey) return; var f = getFilter(quyKey); f.cat = cat; f.year = String(S.year); navigateTo(quyKey); }
 
