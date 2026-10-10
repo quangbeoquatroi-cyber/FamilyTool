@@ -2955,16 +2955,11 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
       <p>Quản lý tài chính vợ chồng</p>
     </div>
     <div class="login-divider"></div>
-    <div class="form-group">
-      <label for="login-email">Email</label>
-      <input type="email" id="login-email" placeholder="email@gmail.com" autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label for="login-pass">Mật khẩu</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">
-      Đăng nhập
+    <button class="login-btn" id="login-btn" onclick="doGoogleLogin()">
+      <span style="display:inline-flex;align-items:center;justify-content:center;gap:10px">
+        <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+        Đăng nhập với Google
+      </span>
     </button>
     <div class="login-error" id="login-error"></div>
   </div>
@@ -3446,32 +3441,67 @@ const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':
 const BDT_PAGES = ['anh','em'];
 
 // ── AUTH ─────────────────────────────────────────────────
+var _authCheckInProgress = false;
 if (sb) sb.auth.onAuthStateChange((evt, session) => {
-  // Chỉ khởi động lại khi đăng nhập/đăng xuất — TOKEN_REFRESHED không load lại trang nữa
   if (evt === 'SIGNED_OUT') { showLogin(); return; }
   if (evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') {
     if(window.SV) window.SV.rows = null;
-    if(session) initApp();
+    if(session) checkAllowedAndInit(session);
     else showLogin();
   }
 });
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
-  const btn   = document.getElementById('login-btn');
-  const err   = document.getElementById('login-error');
-  err.classList.remove('show');
-  btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px"><div class="spinner"></div> Đang đăng nhập...</div>';
-  btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if(error) {
-    err.textContent = 'Sai email hoặc mật khẩu!';
-    err.classList.add('show');
-    btn.innerHTML = 'Đăng nhập';
-    btn.disabled = false;
+async function checkAllowedAndInit(session) {
+  if(_authCheckInProgress) return;
+  _authCheckInProgress = true;
+  try {
+    const { data, error } = await sb.rpc('is_allowed');
+    if(error || data !== true) {
+      await sb.auth.signOut();
+      showLoginError('Tài khoản không có quyền truy cập');
+      showLogin();
+      return;
+    }
+    initApp();
+  } catch(e) {
+    showLoginError('Không kiểm tra được quyền truy cập. Thử lại.');
+    showLogin();
+  } finally {
+    _authCheckInProgress = false;
   }
 }
+
+function showLoginError(msg) {
+  const err = document.getElementById('login-error');
+  if(err) { err.textContent = msg; err.classList.add('show'); }
+}
+
+function doGoogleLogin() {
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  if(err) err.classList.remove('show');
+  if(btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+  if(window.top && window.top !== window) {
+    sb.auth.signInWithOAuth({ provider: 'google', options: { skipBrowserRedirect: true, queryParams: { prompt: 'select_account' } } }).then(function(res) {
+      if(res.data && res.data.url) { try { window.top.location.href = res.data.url; } catch(e) { window.location.href = res.data.url; } }
+      else { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); }
+    }).catch(function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); });
+    return;
+  }
+  sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname, queryParams: { prompt: 'select_account' } } }).catch(function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } showLoginError('Không thể khởi tạo đăng nhập'); });
+}
+
+function checkOAuthError() {
+  var hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  var queryParams = new URLSearchParams(window.location.search);
+  var errDesc = hashParams.get('error_description') || queryParams.get('error_description');
+  var errCode = hashParams.get('error_code') || queryParams.get('error_code');
+  if(errDesc || errCode) {
+    showLoginError('Không thể đăng nhập. Tài khoản không có quyền.');
+    if(window.history && window.history.replaceState) { window.history.replaceState(null, '', window.location.origin + window.location.pathname); }
+  }
+}
+checkOAuthError();
 
 // ── INACTIVITY AUTO-LOGOUT (5 phút) ─────────────────────
 const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 phút  
@@ -3573,9 +3603,6 @@ function showLogin() {
   document.getElementById('screen-app').classList.remove('active');
 }
 
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if(e.key === 'Enter') doLogin();
-});
 
 // ── INIT ─────────────────────────────────────────────────
 async function initApp() {
@@ -3874,7 +3901,7 @@ function renderTongQuan() {
     return '<div class="tq-fund-card"><div class="tq-fund-header"><span class="tq-fund-title">💰 Tổng Quỹ Chung</span><span style="font-size:11px;color:var(--muted)">' + fundList.length + ' quỹ</span></div><div class="tq-fund-total pv">' + fmtVNDSign(totalBalance) + '</div><div class="tq-fund-list">' + fundItems + '</div></div>';
   }
   function renderSavingsTotal() {
-    if(!SV.allowed) return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span><span style="font-size:18px">🔒</span></div><div style="color:var(--muted);font-size:13px;padding:8px 0">Chỉ tài khoản ' + escHtml(SAVINGS_EMAIL) + ' mới xem được</div></div>';
+    if(!SV.allowed) return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span><span style="font-size:18px">🔒</span></div><div style="color:var(--muted);font-size:13px;padding:8px 0">Bạn không có quyền xem khu vực này</div></div>';
     if(SV.rows === null) { if(!S._svLoading) { S._svLoading = true; loadSavings().then(function() { S._svLoading = false; if(S.page === 'tongquan') renderTongQuan(); }).catch(function() { S._svLoading = false; }); } return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span></div><div style="color:var(--muted);font-size:13px;padding:8px 0">Đang tải...</div></div>'; }
     var t = svTotals();
     return '<div class="tq-sv-card"><div class="tq-sv-header"><span class="tq-sv-title">🐷 Tổng Tiết Kiệm</span><span style="font-size:11px;color:var(--muted)">Anh + Em + Sổ</span></div><div class="tq-sv-total pv">' + svFmt(t.total) + ' ₫</div><div style="display:flex;gap:12px;font-size:12px;margin-top:8px"><span style="color:var(--anh)">👨 <span class="pv">' + svFmt(t.anh.bal + t.anh.so) + ' ₫</span></span><span style="color:var(--em)">👩 <span class="pv">' + svFmt(t.em.bal + t.em.so) + ' ₫</span></span></div></div>';
@@ -4932,7 +4959,6 @@ function showLoadingToast(msg) {
 <script>
 
 // ��══════════════ TIẾT KIỆM (savings_transactions) ═══════════════
-const SAVINGS_EMAIL = 'haiduachungminh@gmail.com';
 var SV = { rows: null, allowed: false, fOwner: '', fType: '', edit: null, hasSoCol: false, form: { owner: 'anh', type: 'in', category: '', so: '' } };
 window.SV = SV;
 const SV_CATS = {
@@ -4945,8 +4971,8 @@ const svParse = v => Number(String(v || '').replace(/\D/g, '')) || 0;
 const svSigned = r => (r.type === 'in' ? 1 : -1) * (Number(r.amount) || 0);
 
 async function loadSavings() {
-  const { data: { user } } = await sb.auth.getUser();
-  SV.allowed = !!user && (user.email || '').toLowerCase() === SAVINGS_EMAIL;
+  const { data, error } = await sb.rpc('is_allowed');
+  SV.allowed = !error && data === true;
   if (!SV.allowed) { SV.rows = []; return; }
   const { data, error } = await sb.from('savings_transactions').select('*')
     .order('date', { ascending: false }).order('created_at', { ascending: false });
@@ -4986,7 +5012,7 @@ async function renderSavings() {
   }
   if (S.page !== 'tietkiem') return;
   if (!SV.allowed) {
-    el.innerHTML = `<div class="sv-lock sv-in"><div class="sv-lock-ico">🔒</div><div class="sv-lock-title">Khu vực riêng tư</div><div class="sv-lock-sub">Chỉ tài khoản <b>${SAVINGS_EMAIL}</b> mới được xem và thêm tiền tiết kiệm.</div></div>`;
+    el.innerHTML = `<div class="sv-lock sv-in"><div class="sv-lock-ico">🔒</div><div class="sv-lock-title">Khu vực riêng tư</div><div class="sv-lock-sub">Bạn không có quyền xem khu vực này.</div></div>`;
     return;
   }
   const t = svTotals();
@@ -5130,7 +5156,7 @@ function svSetFilter(k, v) {
 }
 
 function openSavingsModal(id, owner, type, cat) {
-  if (!SV.allowed) { toast('Chỉ tài khoản ' + SAVINGS_EMAIL + ' mới được thêm/sửa', 'error'); return; }
+  if (!SV.allowed) { toast('Bạn không có quyền thực hiện thao tác này', 'error'); return; }
   const r = id ? SV.rows.find(x => x.id === id) : null;
   SV.edit = r ? r.id : null;
   SV.form = { owner: (r && r.owner) || owner || SV.fOwner || 'anh', type: (r && r.type) || type || 'in', category: (r && r.category) || cat || '', so: (r && r.passbook_holder) || '' };
