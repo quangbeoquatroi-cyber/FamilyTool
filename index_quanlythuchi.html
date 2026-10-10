@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
+<script>
+/* Cửa sổ popup đăng nhập (?popup=1): bật popup-mode ngay từ đầu để CSS ẩn toàn bộ giao diện app */
+(function(){try{if(new URLSearchParams(location.search).get('popup')==='1')document.documentElement.classList.add('popup-mode');}catch(e){}})();
+</script>
 <meta name="description" content="Thu Chi Gia Đình — quản lý thu chi, quỹ chung và tiết kiệm cho vợ chồng.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2939,8 +2943,31 @@ body.privacy .pv,body.privacy .mc-sum-amount,body.privacy .mc-row-amount,body.pr
 .sv-date:focus{border-color:var(--anh);outline:none}
 @media(max-width:400px){.tq-chart-bars{height:120px}.tq-chart-bar{width:4px}.tq-chart-bar.prev{width:2px}.tq-chart-label{font-size:8px}.qf-search{max-width:80px;font-size:11px}.qf-date{width:32px;font-size:9px}.tq-fund-total,.tq-sv-total{font-size:18px}}
 </style>
+<style id="popup-mode-style">
+#popup-splash{display:none}
+html.popup-mode,html.popup-mode body{background:#0a1310!important;overflow:hidden}
+html.popup-mode #screen-login,
+html.popup-mode #screen-app,
+html.popup-mode #toast-container,
+html.popup-mode .modal-overlay,
+html.popup-mode .sidebar-overlay,
+html.popup-mode .rf-toast{display:none!important}
+html.popup-mode #popup-splash{
+  display:flex;position:fixed;inset:0;z-index:99999;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:24px;text-align:center;background:#0a1310;color:#eaf2ec;
+  font-family:'Nunito',sans-serif;
+}
+.ps-spin{width:36px;height:36px;border-radius:50%;border:3px solid rgba(45,212,160,.2);border-top-color:#2dd4a0;animation:spin .7s linear infinite}
+.ps-msg{font-size:15px;line-height:1.7;color:#eaf2ec}
+.ps-msg small{display:block;color:#7da896;font-size:12px;margin-top:4px}
+</style>
 </head>
 <body>
+<div id="popup-splash" aria-live="polite">
+  <div class="ps-spin" id="ps-spin"></div>
+  <div class="ps-msg" id="ps-msg">Đang xác thực tài khoản...<small>Cửa sổ này sẽ tự đóng</small></div>
+</div>
 
 <!-- ════════════════ LOGIN SCREEN ════════════════ -->
 <div id="screen-login">
@@ -3442,13 +3469,46 @@ const BDT_PAGES = ['anh','em'];
 
 // ── AUTH ─────────────────────────────────────────────────
 var _authCheckInProgress = false;
-const _isPopup = !!window.opener && new URLSearchParams(window.location.search).get('popup') === '1';
+const _isPopup = document.documentElement.classList.contains('popup-mode');
+var _popupDone = false;
+
+function popupSplashShow(html, done) {
+  var m = document.getElementById('ps-msg'); if(m) m.innerHTML = html;
+  var sp = document.getElementById('ps-spin'); if(sp && done) sp.style.display = 'none';
+}
+function popupFinish(ok, msg) {
+  // báo kết quả cho cửa sổ chính (cùng origin) qua localStorage
+  try { localStorage.setItem('tcgd_popup_result', JSON.stringify({ ok: !!ok, msg: msg || '', t: Date.now() })); } catch(e) {}
+  popupSplashShow(ok ? '✅ Đăng nhập thành công<small>Đang quay về ứng dụng...</small>' : '❌ ' + escHtml(msg || 'Đăng nhập không thành công'), !ok);
+  setTimeout(function() { try { window.close(); } catch(e) {} }, 400);
+  // nếu trình duyệt không cho tự đóng thì hướng dẫn người dùng
+  setTimeout(function() {
+    popupSplashShow((ok ? '✅ Đăng nhập thành công' : '❌ ' + escHtml(msg || 'Đăng nhập không thành công')) + '<small>Bạn có thể đóng cửa sổ này.</small>', true);
+  }, 1500);
+}
+if (_isPopup) {
+  // chống treo: quá 20 giây không có phản hồi thì báo lỗi và đóng
+  setTimeout(function() { if(!_popupDone) { _popupDone = true; popupFinish(false, 'Không nhận được phản hồi đăng nhập. Hãy thử lại.'); } }, 20000);
+}
+
+// Cửa sổ chính: nhận kết quả từ popup
+window.addEventListener('storage', function(e) {
+  if (_isPopup || e.key !== 'tcgd_popup_result' || !e.newValue) return;
+  var r; try { r = JSON.parse(e.newValue); } catch(err) { return; }
+  if (!r) return;
+  if (!r.ok) { showLoginError(r.msg || 'Đăng nhập không thành công'); return; }
+  if (sb) sb.auth.getSession().then(function(res) {
+    var ses = res && res.data ? res.data.session : null;
+    if (ses) checkAllowedAndInit(ses);
+  });
+});
 
 if (sb) sb.auth.onAuthStateChange((evt, session) => {
-  // Đang chạy trong popup: lưu session xong thì tự đóng, không khởi động app
+  // Đang chạy trong popup: chỉ lưu phiên rồi tự đóng, KHÔNG khởi động app
   if (_isPopup) {
-    if ((evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') && session) {
-      setTimeout(() => window.close(), 300);
+    if ((evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION') && !_popupDone) {
+      if (session) { _popupDone = true; popupFinish(true); }
+      else if (evt === 'INITIAL_SESSION') { _popupDone = true; popupFinish(false, 'Chưa nhận được phiên đăng nhập. Hãy thử lại.'); }
     }
     return;
   }
@@ -3480,16 +3540,26 @@ async function checkAllowedAndInit(session) {
   }
 }
 
+function resetLoginBtn() {
+  const b = document.getElementById('login-btn');
+  if(b) { b.disabled = false; b.style.opacity = '1'; }
+}
+
 function showLoginError(msg) {
   const err = document.getElementById('login-error');
-  if(err) { err.textContent = msg; err.classList.add('show'); }
+  if(err) {
+    err.textContent = msg;
+    err.classList.remove('show'); void err.offsetWidth; // chạy lại hiệu ứng rung mỗi lần lỗi
+    err.classList.add('show');
+  }
+  resetLoginBtn(); // luôn cho phép bấm đăng nhập lại
 }
 
 function doGoogleLogin() {
   const btn = document.getElementById('login-btn');
   const err = document.getElementById('login-error');
   if(err) err.classList.remove('show');
-  const resetBtn = function() { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } };
+  try { localStorage.removeItem('tcgd_popup_result'); } catch(e) {}
   if(btn) { btn.disabled = true; btn.style.opacity = '.7'; }
 
   // Mở popup NGAY trong lúc click để trình duyệt không chặn
@@ -3500,7 +3570,6 @@ function doGoogleLogin() {
     'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
 
   if(!popup) {
-    resetBtn();
     showLoginError('Trình duyệt đang chặn popup. Hãy cho phép popup rồi thử lại.');
     return;
   }
@@ -3519,24 +3588,27 @@ function doGoogleLogin() {
     const data = res.data, error = res.error;
     if(error || !data || !data.url) {
       try { popup.close(); } catch(e) {}
-      resetBtn();
       showLoginError('Không thể khởi tạo đăng nhập' + (error ? ': ' + error.message : ''));
       return;
     }
     popup.location.href = data.url;
 
-    // Khi popup đóng thì kiểm tra đã có session chưa
-    const timer = setInterval(async function() {
-      if(!popup.closed) return;
+    // Khi popup đóng: chờ phiên đồng bộ sang trang này rồi kiểm tra; không có thì bật lại nút
+    const timer = setInterval(function() {
+      let closed = false;
+      try { closed = popup.closed; } catch(e) { closed = true; }
+      if(!closed) return;
       clearInterval(timer);
-      const r = await sb.auth.getSession();
-      const session = r && r.data ? r.data.session : null;
-      if(session) checkAllowedAndInit(session);
-      else resetBtn();
+      setTimeout(async function() {
+        if(document.getElementById('screen-app').classList.contains('active')) return;
+        const r = await sb.auth.getSession();
+        const session = r && r.data ? r.data.session : null;
+        if(session) checkAllowedAndInit(session);
+        else if(!_authCheckInProgress) resetLoginBtn();
+      }, 1200);
     }, 500);
   }).catch(function() {
     try { popup.close(); } catch(e) {}
-    resetBtn();
     showLoginError('Không thể khởi tạo đăng nhập');
   });
 }
@@ -3547,8 +3619,10 @@ function checkOAuthError() {
   var errDesc = hashParams.get('error_description') || queryParams.get('error_description');
   var errCode = hashParams.get('error_code') || queryParams.get('error_code');
   if(errDesc || errCode) {
-    showLoginError('Không thể đăng nhập. Tài khoản không có quyền.');
-    if(window.history && window.history.replaceState) { window.history.replaceState(null, '', window.location.origin + window.location.pathname); }
+    var msg = 'Không thể đăng nhập. Tài khoản không có quyền.';
+    if(window.history && window.history.replaceState) { window.history.replaceState(null, '', window.location.origin + window.location.pathname + (_isPopup ? '?popup=1' : '')); }
+    if(_isPopup) { _popupDone = true; popupFinish(false, msg); }
+    else showLoginError(msg);
   }
 }
 checkOAuthError();
@@ -3649,6 +3723,7 @@ async function doSignOut() {
 
 function showLogin() {
   stopIdleWatcher();
+  resetLoginBtn();
   document.getElementById('screen-login').style.display = 'flex';
   document.getElementById('screen-app').classList.remove('active');
 }
