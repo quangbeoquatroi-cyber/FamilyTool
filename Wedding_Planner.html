@@ -8,8 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>if(!window.supabase){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"><\/script>');}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --ivory:#FAF6F0; --ivory-2:#F4EDE3; --paper:#FFFFFF;
@@ -52,6 +51,11 @@ a{color:inherit;text-decoration:none}
 .btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 20px;background:var(--paper);border:1px solid var(--line-2);border-radius:8px;font-size:14px;font-weight:500;color:var(--ink);transition:all .2s}
 .btn-google:hover{border-color:var(--burgundy);box-shadow:0 2px 8px rgba(107,39,55,.08)}
 .btn-google:active{transform:scale(.99)}
+.login-field{text-align:left;margin-bottom:14px}
+.login-field label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-2);margin-bottom:6px}
+.login-field input{width:100%;padding:12px 14px;border:1px solid var(--line-2);border-radius:8px;background:var(--paper);color:var(--ink);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
+.login-field input:focus{border-color:var(--burgundy)}
+.btn-google{margin-top:6px}
 .btn-google svg{width:18px;height:18px}
 .btn-google:disabled{opacity:.6;cursor:not-allowed}
 .login-foot{margin-top:24px;font-size:12px;color:var(--muted);font-family:var(--serif);font-style:italic}
@@ -303,12 +307,11 @@ a{color:inherit;text-decoration:none}
     <div class="login-title">The Wedding Atelier</div>
     <div class="login-sub">Private Wedding Planner</div>
     <div class="login-divider">Đăng nhập riêng tư</div>
-    <button class="btn-google" id="btnGoogleLogin">
-      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.5l-6.6-5.6C29.6 34.5 26.9 35.5 24 35.5c-5.2 0-9.6-3.3-11.2-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.4l6.6 5.6C41.9 36.5 44 30.8 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
-      <span id="googleBtnText">Tiếp tục với Google</span>
-    </button>
+    <div class="login-field"><label>Email</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" autocapitalize="none"></div>
+    <div class="login-field"><label>Mật khẩu</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-google" id="btnGoogleLogin"><span id="googleBtnText">Đăng nhập</span></button>
     <div class="login-error" id="loginError"></div>
-    <div class="login-foot">Chỉ hai tài khoản được phê duyệt có thể truy cập</div>
+    <div class="login-foot">Chỉ tài khoản được phê duyệt có thể truy cập</div>
   </div>
 </div>
 
@@ -519,6 +522,11 @@ const Auth = {
     });
   },
   async handleSession(session){
+    if(this.user && this.user.id===session.user.id) return; // tránh xử lý trùng (SIGNED_IN + đăng nhập trực tiếp)
+    if(this._busy) return; this._busy=true;
+    try{ await this._handle(session); } finally{ this._busy=false; }
+  },
+  async _handle(session){
     const email = session.user.email;
     // Frontend allowlist check
     const allowed = await this.checkAllowed(email);
@@ -537,36 +545,31 @@ const Auth = {
       return !!data;
     }catch(e){ return false; }
   },
-  async signInWithGoogle(){
+  async signInWithGoogle(){ return this.signInWithPassword(); },
+  async signInWithPassword(){
     const btn=document.getElementById('btnGoogleLogin');
     const txt=document.getElementById('googleBtnText');
     const errEl=document.getElementById('loginError');
-    const showError=(msg)=>{ errEl.textContent=msg; errEl.classList.add('show'); btn.disabled=false; txt.textContent='Tiếp tục với Google'; };
-    btn.disabled=true; txt.textContent='Đang chuyển hướng...';
+    const showError=(msg)=>{ errEl.textContent=msg; errEl.classList.add('show'); btn.disabled=false; txt.textContent='Đăng nhập'; };
     errEl.classList.remove('show');
-    // Phải mở qua http(s), không phải file://
-    if(location.protocol==='file:'){
-      showError('Bạn đang mở file trực tiếp trên máy. Google OAuth cần host qua http/https (GitHub Pages, Netlify...). Vui lòng upload file lên web rồi mở bằng URL https.');
-      return;
-    }
-    if(window.top!==window.self){
-      showError('Trang đang chạy trong khung nhúng (iframe/preview). Google chặn đăng nhập trong iframe. Hãy mở trực tiếp bằng URL https của trang (tab mới).');
-      return;
-    }
+    const email=document.getElementById('loginEmail').value.trim();
+    const password=document.getElementById('loginPassword').value;
+    if(!email){ showError('Vui lòng nhập email.'); return; }
+    if(!password){ showError('Vui lòng nhập mật khẩu.'); return; }
     if(!sb){ showError('Ứng dụng chưa khởi tạo được Supabase. Tải lại trang hoặc kiểm tra kết nối mạng.'); return; }
+    btn.disabled=true; txt.textContent='Đang xác thực...';
     try{
-      const redirectTo = window.location.origin + window.location.pathname.replace(/\/[^/]*$/,'/');
-      const {error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo, scopes:'openid email profile' } });
-      if(error) throw error;
-      // signInWithOAuth tự chuyển hướng trình duyệt; nếu vẫn ở đây sau 1.5s thì có thể redirect URL chưa được thêm vào Supabase
-      setTimeout(()=>{ if(document.visibilityState==='visible'){ showError('Không chuyển hướng được. Kiểm tra: 1) đã bật Google provider trong Supabase Auth, 2) đã thêm "'+redirectTo+'" vào Redirect URLs (Supabase → Authentication → URL Configuration).'); } }, 4000);
-    }catch(e){
-      const m=(e&&e.message)||'';
-      let hint='Đăng nhập thất bại: '+m;
-      if(/not enabled|provider/i.test(m)) hint='Google provider chưa bật trong Supabase. Vào Authentication → Providers → Google, bật lên và nhập Client ID/Secret từ Google Cloud Console.';
-      else if(/redirect|url/i.test(m)) hint='URL chuyển hướng chưa được thêm. Vào Supabase → Authentication → URL Configuration → thêm: '+(window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/'));
-      showError(hint);
-    }
+      const {data,error} = await sb.auth.signInWithPassword({email,password});
+      if(error){
+        const m=error.message||'';
+        if(/Invalid login/i.test(m)) showError('Email hoặc mật khẩu không đúng.');
+        else if(/not confirmed/i.test(m)) showError('Email chưa được xác nhận. Kiểm tra hộp thư.');
+        else showError('Lỗi: '+m);
+        return;
+      }
+      // Phiên đăng nhập được xử lý tại đây (không phụ thuộc onAuthStateChange)
+      if(data && data.session) await this.handleSession(data.session);
+    }catch(e){ showError('Đăng nhập thất bại: '+((e&&e.message)||'')); }
   },
   async deny(){
     try{ await sb.auth.signOut(); }catch(e){}
@@ -1637,7 +1640,8 @@ const Settings = {
 
 /* ---------- BOOT ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
-  document.getElementById('btnGoogleLogin').addEventListener('click', ()=>Auth.signInWithGoogle());
+  document.getElementById('btnGoogleLogin').addEventListener('click', ()=>Auth.signInWithPassword());
+  ['loginEmail','loginPassword'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') Auth.signInWithPassword(); }));
   window.addEventListener('pageshow', ()=>{ const b=document.getElementById('btnGoogleLogin'); if(b){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } });
   try{
     const qp=new URLSearchParams(location.search.slice(1)+'&'+location.hash.replace(/^#/,''));
