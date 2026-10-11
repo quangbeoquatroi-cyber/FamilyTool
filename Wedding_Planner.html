@@ -549,13 +549,17 @@ const Auth = {
       showError('Bạn đang mở file trực tiếp trên máy. Google OAuth cần host qua http/https (GitHub Pages, Netlify...). Vui lòng upload file lên web rồi mở bằng URL https.');
       return;
     }
+    if(window.top!==window.self){
+      showError('Trang đang chạy trong khung nhúng (iframe/preview). Google chặn đăng nhập trong iframe. Hãy mở trực tiếp bằng URL https của trang (tab mới).');
+      return;
+    }
     if(!sb){ showError('Ứng dụng chưa khởi tạo được Supabase. Tải lại trang hoặc kiểm tra kết nối mạng.'); return; }
     try{
       const redirectTo = window.location.origin + window.location.pathname.replace(/\/[^/]*$/,'/');
       const {error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo, scopes:'openid email profile' } });
       if(error) throw error;
       // signInWithOAuth tự chuyển hướng trình duyệt; nếu vẫn ở đây sau 1.5s thì có thể redirect URL chưa được thêm vào Supabase
-      setTimeout(()=>{ if(!btn.disabled){ showError('Không chuyển hướng được. Kiểm tra: 1) đã bật Google provider trong Supabase Auth, 2) đã thêm "'+redirectTo+'" vào Redirect URLs (Supabase → Authentication → URL Configuration).'); } }, 1500);
+      setTimeout(()=>{ if(document.visibilityState==='visible'){ showError('Không chuyển hướng được. Kiểm tra: 1) đã bật Google provider trong Supabase Auth, 2) đã thêm "'+redirectTo+'" vào Redirect URLs (Supabase → Authentication → URL Configuration).'); } }, 4000);
     }catch(e){
       const m=(e&&e.message)||'';
       let hint='Đăng nhập thất bại: '+m;
@@ -1634,6 +1638,12 @@ const Settings = {
 /* ---------- BOOT ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('btnGoogleLogin').addEventListener('click', ()=>Auth.signInWithGoogle());
+  window.addEventListener('pageshow', ()=>{ const b=document.getElementById('btnGoogleLogin'); if(b){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } });
+  try{
+    const qp=new URLSearchParams(location.search.slice(1)+'&'+location.hash.replace(/^#/,''));
+    const ed=qp.get('error_description')||qp.get('error');
+    if(ed){ const el=document.getElementById('loginError'); el.textContent='Lỗi đăng nhập: '+ed.replace(/\+/g,' '); el.classList.add('show'); }
+  }catch(e){}
   try{ await Auth.init(); }
   catch(e){
     const err=document.getElementById('loginError');
