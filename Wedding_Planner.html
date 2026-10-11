@@ -431,6 +431,93 @@ a{color:inherit;text-decoration:none}
 .gx-tb th.stt,.gx-tb td.stt{width:48px;text-align:center;color:var(--muted)}
 .gx-tb th:last-child,.gx-tb td:last-child{position:sticky;right:0;background:var(--paper);box-shadow:-1px 0 0 var(--line)}
 .gx-tb .pill{white-space:nowrap;padding:2px 8px;font-size:11px}.gx-tb .btn-close{padding:4px}
+
+/* ===== v8: SỰ KIỆN & LỊCH TRÌNH (lộ trình theo giai đoạn) ===== */
+.pl-notice{margin-bottom:18px;padding:12px 16px;border:1.5px solid var(--champagne);background:var(--champagne-soft);border-radius:12px;font-size:13px;color:#6b5420;line-height:1.6}
+.pl-notice code{background:#fff;padding:1px 6px;border-radius:5px;font-size:12px}.pl-notice a{color:var(--burgundy);font-weight:600}
+.pl-notice.pl-info{border-color:var(--line-2);background:var(--paper);color:var(--ink-2)}
+.pl-tl{padding-top:4px}
+.pl-phase{display:grid;grid-template-columns:44px 1fr;gap:0 18px;position:relative}
+.pl-rail{position:relative;display:flex;justify-content:center}
+.pl-rail::before{content:'';position:absolute;top:44px;bottom:-24px;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(var(--line-2),var(--line))}
+.pl-phase:last-child .pl-rail::before{display:none}
+.pl-node{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;font-weight:600;background:var(--paper);border:2px solid var(--line-2);color:var(--muted);position:sticky;top:96px;z-index:2;box-shadow:0 0 0 5px var(--ivory)}
+.pl-node svg{width:18px;height:18px}
+.pl-phase.cur .pl-node{background:var(--burgundy);border-color:var(--burgundy);color:#fff;box-shadow:0 0 0 5px var(--ivory),0 0 0 8px var(--burgundy-soft)}
+.pl-phase.done .pl-node{background:var(--forest);border-color:var(--forest);color:#fff}
+.pl-phase.none .pl-node{border-style:dashed}
+.pl-pcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:26px;overflow:hidden;min-width:0}
+.pl-phase.cur .pl-pcard{border-color:#E3C9CE}
+.pl-ph{display:flex;align-items:center;gap:18px;padding:18px 22px 16px;cursor:pointer;flex-wrap:wrap}
+.pl-ph-main{flex:1 1 260px;min-width:0}
+.pl-kick{font-size:10.5px;letter-spacing:2px;font-weight:700;color:var(--champagne);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pl-phase.cur .pl-kick{color:var(--burgundy)}.pl-phase.done .pl-kick{color:var(--forest)}
+.pl-badge{letter-spacing:.2px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--ivory-2);color:var(--muted)}
+.pl-badge.ok{background:var(--forest-soft);color:var(--forest)}.pl-badge.now{background:var(--burgundy-soft);color:var(--burgundy)}
+.pl-ph-title{font-family:var(--serif);font-size:25px;font-weight:600;color:var(--ink);line-height:1.2;margin-top:2px}
+.pl-ph-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+.pl-ph-stats{display:flex;gap:22px;flex-wrap:wrap}
+.pl-ph-stats>div,.pl-kpi{font-size:11px;color:var(--muted);line-height:1.3}
+.pl-ph-stats b,.pl-kpi b{display:block;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:lining-nums tabular-nums}
+.pl-pct b{color:var(--burgundy)}.pl-phase.done .pl-pct b{color:var(--forest)}
+.pl-tools{display:flex;align-items:center;gap:2px}
+.pl-chev{width:18px;height:18px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.pl-phase:not(.collapsed)>.pl-pcard>.pl-ph>.pl-chev{transform:rotate(180deg)}
+.pl-ev.open>.pl-ev-h>.pl-chev{transform:rotate(180deg)}
+.pl-bar{height:4px;background:var(--ivory-2)}.pl-bar i{display:block;height:100%;background:var(--burgundy);transition:width .4s}.pl-phase.done .pl-bar i{background:var(--forest)}
+.pl-evs{padding:18px 20px 6px;background:linear-gradient(var(--ivory),var(--ivory));border-top:1px solid var(--line)}
+.pl-phase.collapsed .pl-evs{display:none}
+.pl-ev{background:var(--paper);border:1px solid var(--line);border-radius:13px;margin-bottom:14px;overflow:hidden;transition:box-shadow .2s}
+.pl-ev:hover{box-shadow:var(--shadow)}.pl-ev.open{border-color:var(--line-2)}
+.pl-ev.virt{border-style:dashed;background:transparent}
+.pl-ev-h{display:flex;align-items:center;gap:16px;padding:14px 18px;cursor:pointer;flex-wrap:wrap}
+.pl-date{width:54px;height:58px;flex-shrink:0;border-radius:11px;background:var(--champagne-soft);border:1px solid #E8D9A8;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#7E6320}
+.pl-date b{font-family:var(--serif);font-size:24px;line-height:1;font-weight:700}.pl-date span{font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-top:2px;font-weight:600}
+.pl-ev-main{flex:1 1 220px;min-width:0}
+.pl-ev-name{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink)}
+.pl-ev-meta{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:3px;align-items:center}
+.pl-kpis{display:flex;gap:20px;flex-wrap:wrap}
+.pl-kpi b{font-size:16px;display:inline;margin-right:4px}.pl-kpi{white-space:nowrap}
+.od{color:var(--danger);font-style:normal;font-weight:600}
+.pl-ev-body{display:none;grid-template-columns:1.2fr 1fr;border-top:1px solid var(--line)}
+.pl-ev.open .pl-ev-body{display:grid}
+.pl-col{padding:14px 18px 16px;min-width:0}.pl-col+.pl-col{border-left:1px solid var(--line);background:var(--ivory)}
+.pl-col-h{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.pl-col-h em{font-style:normal;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:500;margin-left:6px}
+.pl-add{font-size:12px;font-weight:600;color:var(--burgundy);padding:4px 10px;border-radius:7px;letter-spacing:0;text-transform:none}.pl-add:hover{background:var(--burgundy-soft)}
+.pl-none{font-size:12.5px;color:var(--muted-2);font-style:italic;padding:8px 2px}
+.pl-t{display:flex;align-items:flex-start;gap:10px;padding:8px 2px;border-bottom:1px dashed var(--line)}
+.pl-t .task-check{margin-top:2px}.pl-t-b{flex:1;min-width:0;cursor:pointer}
+.pl-t-title{font-size:13.5px;font-weight:500;color:var(--ink)}.pl-t.done .pl-t-title{text-decoration:line-through;color:var(--muted)}.pl-t.cx{opacity:.55}
+.pl-t-meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.pl-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.pl-t .btn-close{opacity:0;transition:opacity .15s}.pl-t:hover .btn-close{opacity:1}
+.pl-quick input{width:100%;margin-top:8px;padding:8px 11px;border:1px dashed var(--line-2);border-radius:8px;background:transparent;font:inherit;font-size:13px}
+.pl-quick input:focus{outline:none;border:1px solid var(--burgundy);background:#fff}
+.pl-b{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px dashed var(--line-2);cursor:pointer}
+.pl-b:hover .pl-b-t{color:var(--burgundy)}
+.pl-b-t{font-size:13px;font-weight:500;min-width:0}.pl-b-t small,.pl-b-m small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.pl-b-m{text-align:right;font-size:13px}.pl-b-m b{font-family:var(--serif);font-size:15px}
+.pl-sum{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end;font-size:11.5px;color:var(--muted);padding-top:10px}.pl-sum b{color:var(--ink);margin-left:3px}
+.pl-grp{margin-bottom:22px}.pl-grp-h{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:10px}
+.pl-grp-n{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--burgundy);color:#fff;align-items:center;justify-content:center;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:6px;flex-shrink:0}
+.pl-grp-h .pl-grp-n{margin:0}
+.pl-sub{display:flex;align-items:baseline;gap:8px;padding:10px 18px;background:var(--ivory);border-bottom:1px solid var(--line);font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--ink-2)}
+.pl-sub small{font-weight:400;color:var(--muted)}.pl-sub em{margin-left:auto;font-style:normal;font-weight:500;color:var(--muted)}
+.card .pl-t{padding:12px 18px}
+.pl-bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:26px}
+.pl-bc{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+.pl-bc-h{display:flex;align-items:center;font-size:13px;font-weight:600;margin-bottom:8px}
+.pl-bc-v{font-family:var(--serif);font-size:24px;font-weight:600;line-height:1.1}.pl-bc-v small{font-family:var(--sans);font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.pl-stack{position:relative;height:8px;border-radius:8px;background:var(--ivory-2);margin:12px 0 8px;overflow:hidden}
+.pl-stack i{position:absolute;left:0;top:0;bottom:0;border-radius:8px}.pl-stack .e{background:#E8D9A8}.pl-stack .a{background:var(--champagne)}.pl-stack .a.over{background:var(--danger)}.pl-stack .p{background:var(--forest)}
+.pl-bc-f{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.pl-bt th.right,.pl-bt td.right{text-align:right;white-space:nowrap}
+.pl-bt-g td{background:var(--ivory);font-size:12.5px;border-top:1px solid var(--line-2)}.pl-bt-g .pl-grp-n{width:20px;height:20px;font-size:11px}
+.pl-bt-t td{font-weight:700;background:var(--ivory-2)}
+button.pill{cursor:pointer;border:0}
+@media(max-width:900px){.pl-ev-body{grid-template-columns:1fr}.pl-col+.pl-col{border-left:0;border-top:1px solid var(--line)}.pl-ph-stats{gap:16px}}
+@media(max-width:640px){.pl-phase{grid-template-columns:30px 1fr;gap:0 10px}.pl-node{width:30px;height:30px;font-size:15px;top:70px;box-shadow:0 0 0 3px var(--ivory)}.pl-rail::before{top:32px}.pl-ph{padding:14px}.pl-ph-title{font-size:21px}.pl-evs{padding:12px 10px 2px}.pl-ev-h{padding:12px}.pl-kpis{gap:12px}.pl-t .btn-close{opacity:1}}
 </style>
 <style id="wa-overrides">
 /* ============================================================
@@ -1251,15 +1338,13 @@ const I = {
 
 /* ---------- ROUTER ---------- */
 const Router = {
-  get routes(){ return { overview:Overview, guest:Guestbook, seating:Seating, events:Events, tasks:Tasks, budget:Budget, settings:Settings }; },
+  get routes(){ return { overview:Overview, guest:Guestbook, seating:Seating, events:Plan, settings:Settings }; },
   current:'overview',
   navItems:[
     {id:'overview',label:'Tổng quan',ico:I.overview,group:'Chính'},
     {id:'guest',label:'Khách mời & thiệp',ico:I.guest,group:'Chính'},
     {id:'seating',label:'Sơ đồ bàn tiệc',ico:I.seating,group:'Chính'},
     {id:'events',label:'Sự kiện & lịch trình',ico:I.events,group:'Chính'},
-    {id:'tasks',label:'Công việc chuẩn bị',ico:I.tasks,group:'Chính'},
-    {id:'budget',label:'Ngân sách & quà',ico:I.budget,group:'Tài chính'},
     {id:'settings',label:'Cấu hình',ico:I.settings,group:'Hệ thống'}
   ],
   init(){
@@ -1272,7 +1357,7 @@ const Router = {
     let lastGroup='';
     let navHTML='';
     let mobHTML='';
-    const mobileSet = new Set(['overview','guest','seating','events','tasks','budget','settings']);
+    const mobileSet = new Set(['overview','guest','seating','events','settings']);
     this.navItems.forEach(it=>{
       if(it.group!==lastGroup){ navHTML+=`<div class="nav-section">${it.group}</div>`; lastGroup=it.group; }
       navHTML+=`<button class="nav-item" data-route="${it.id}" onclick="Router.go('${it.id}')">${it.ico.replace('<svg','<svg class="ico"')}<span>${it.label}</span><span class="badge" id="badge-${it.id}" style="display:none">0</span></button>`;
@@ -1283,6 +1368,7 @@ const Router = {
   },
   go(route){
     if(route==='groups'||route==='rsvp'){ Guestbook.tab=route; route='guest'; }
+    if(route==='tasks'||route==='budget'){ Plan.tab=route; route='events'; }
     if(!this.routes[route]) route='overview';
     this.current=route;
     location.hash='#/'+route;
@@ -2135,242 +2221,307 @@ const Seating = {
 /* ============================================================
    VIEW: EVENTS
    ============================================================ */
-const Events = {
-  events:[],
-  async render(){
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-primary" onclick="Events.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm sự kiện</button>`;
-    const c=document.getElementById('content');
-    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
-    try{
-      this.events=await DB.list('wed_events',{order:['event_date']});
-      this.renderList();
-    }catch(e){ c.innerHTML=UI.empty(I.events,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Events.render()">Thử lại</button>'); }
-  },
-  async renderList(){
-    const guests=await DB.list('wed_guests').catch(()=>[]);
-    const c=document.getElementById('content');
-    if(!this.events.length){ c.innerHTML=UI.empty(I.events,'Chưa có sự kiện','Thêm lễ ăn hỏi, lễ cưới, tiệc cưới...',`<button class="btn btn-primary" onclick="Events.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm sự kiện</button>`); return; }
-    let html='';
-    this.events.forEach(e=>{
-      const evGuests=guests.filter(g=>g.event_ids&&g.event_ids.includes(e.id));
-      const confirmed=evGuests.filter(g=>(g.rsvp_status||'')==='confirmed').reduce((s,g)=>s+(g.confirmed_count||0),0);
-      html+=`<div class="event-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div><div class="event-name">${Util.esc(e.name)}</div>
-          <div class="event-meta"><span>${Util.fmtDateLong(e.event_date)}</span>${e.event_time?`<span>· ${e.event_time}</span>`:''}${e.venue?`<span>· ${Util.esc(e.venue)}</span>`:''}</div></div>
-          <div style="display:flex;gap:4px"><button class="btn-close" onclick="Events.openEdit('${e.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Events.confirmDelete('${e.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></div>
-        </div>
-        <div class="event-stats"><div class="event-stat"><b>${evGuests.length}</b>khách mời</div><div class="event-stat"><b>${confirmed}</b>xác nhận</div></div>
-      </div>`;
-    });
-    c.innerHTML=html;
-  },
-  openAdd(){ this.openDrawer(null); },
-  openEdit(id){ this.openDrawer(this.events.find(e=>e.id===id)); },
-  openDrawer(e){
-    const isEdit=!!e;
-    const body=`<div class="field"><label class="label">Tên sự kiện *</label><input class="input" id="eName" value="${e?Util.esc(e.name):''}" placeholder="Lễ ăn hỏi / Tiệc cưới"/></div>
-      <div class="row"><div class="field"><label class="label">Ngày</label><input class="input" type="date" id="eDate" value="${e?e.event_date||'':''}"/></div><div class="field"><label class="label">Giờ</label><input class="input" type="time" id="eTime" value="${e?e.event_time||'':''}"/></div></div>
-      <div class="field"><label class="label">Địa điểm</label><input class="input" id="eVenue" value="${e?Util.esc(e.venue||''):''}"/></div>
-      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="eNotes">${e?Util.esc(e.notes||''):''}</textarea></div>`;
-    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Events.save('${e?e.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
-    UI.openDrawer(isEdit?'Sửa sự kiện':'Thêm sự kiện', body, foot);
-  },
-  async save(id){
-    const row={ name:document.getElementById('eName').value.trim(), event_date:document.getElementById('eDate').value||null, event_time:document.getElementById('eTime').value||null, venue:document.getElementById('eVenue').value.trim()||null, notes:document.getElementById('eNotes').value.trim()||null };
-    if(!row.name){ Toast.err('Nhập tên sự kiện'); return; }
-    try{ if(id) await DB.update('wed_events',id,row); else await DB.insert('wed_events',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.render(); }
-    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
-  },
-  confirmDelete(id){ const e=this.events.find(x=>x.id===id); UI.confirm('Xóa sự kiện?',`Xóa <b>${Util.esc(e.name)}</b>?`,()=>this.doDelete(id),'Xóa',true); },
-  async doDelete(id){ try{ await DB.remove('wed_events',id); Toast.ok('Đã xóa'); await this.render(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } }
-};
+const Plan = {
+  phases:[], events:[], tasks:[], items:[], gifts:[], guests:[], guestGifts:[], cfg:{},
+  tab:'route', ok:true, inited:false, open:new Set(), closedPh:new Set(),
+  fStatus:'', fAssignee:'', fEvent:'',
+  nat:new Intl.Collator('vi',{numeric:true,sensitivity:'base'}),
+  ST:{todo:'Cần làm',in_progress:'Đang làm',done:'Hoàn thành',cancelled:'Đã hủy'},
+  BST:{planned:['Dự kiến','pill-notsent'],booked:['Đã đặt','pill-sent'],paid:['Đã trả','pill-confirmed'],cancelled:['Đã hủy','pill-declined']},
+  ic(i){ return i.replace('<svg','<svg style="width:15px;height:15px"'); },
+  chev:'<svg class="pl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>',
+  money(n){ n=Number(n)||0; const a=Math.abs(n); if(a>=1e9) return (n/1e9).toLocaleString('vi-VN',{maximumFractionDigits:2})+' tỷ'; if(a>=1e6) return (n/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tr'; return n.toLocaleString('vi-VN')+' ₫'; },
+  today(){ return new Date().toISOString().slice(0,10); },
+  addDays(d,n){ const x=new Date(d+'T00:00:00'); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); },
+  errMsg(e){ const m=(e&&e.message)||''; return /phase_id|event_id|wed_phases|schema cache|column/i.test(m)?'Thiếu cột/bảng mới trong database — hãy chạy file wedding-plan-phases.sql trong Supabase SQL Editor':'Lưu thất bại: '+m; },
+  scroller(){ let el=document.getElementById('content'); while(el&&el!==document.body){ const o=getComputedStyle(el).overflowY; if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight) return el; el=el.parentElement; } return null; },
 
-/* ============================================================
-   VIEW: TASKS
-   ============================================================ */
-const Tasks = {
-  tasks:[],
-  filterStatus:'', filterAssignee:'',
+  /* ---------- tải dữ liệu ---------- */
+  actions(){
+    const P=this.ic(I.plus);
+    const a={ route:`<button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button><button class="btn btn-primary" onclick="Plan.openEvent()">${P} Thêm sự kiện</button>`,
+      tasks:`<button class="btn btn-primary" onclick="Plan.openTask()">${P} Thêm công việc</button>`,
+      budget:`<button class="btn btn-ghost" onclick="Plan.openGift()">Quà mừng</button><button class="btn btn-primary" onclick="Plan.openBudget()">${P} Thêm khoản chi</button>` };
+    document.getElementById('topbarActions').innerHTML=a[this.tab]||'';
+  },
   async render(){
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-primary" onclick="Tasks.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm công việc</button>`;
-    const c=document.getElementById('content');
-    c.innerHTML=`<div class="toolbar"><select class="filter-select" id="tFilterStatus" onchange="Tasks.applyFilter()"><option value="">Tất cả trạng thái</option><option value="todo">Cần làm</option><option value="in_progress">Đang làm</option><option value="done">Hoàn thành</option><option value="cancelled">Đã hủy</option></select><select class="filter-select" id="tFilterAssignee" onchange="Tasks.applyFilter()"><option value="">Tất cả người phụ trách</option></select></div><div id="taskList">${UI.skeleton(5)}</div>`;
+    this.actions();
+    document.getElementById('content').innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
     await this.load();
   },
   async load(){
+    const c=document.getElementById('content'), soft=p=>p.catch(()=>[]);
     try{
-      this.tasks=await DB.list('wed_tasks',{order:['due_date']});
-      const assignees=[...new Set(this.tasks.map(t=>t.assignee).filter(Boolean))];
-      const sel=document.getElementById('tFilterAssignee');
-      sel.innerHTML='<option value="">Tất cả người phụ trách</option>'+assignees.map(a=>`<option value="${Util.esc(a)}">${Util.esc(a)}</option>`).join('');
-      this.renderList();
-    }catch(e){ document.getElementById('taskList').innerHTML=UI.empty(I.tasks,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Tasks.load()">Thử lại</button>'); }
+      const [ph,ev,tk,bi,gf,gs,st]=await Promise.all([
+        DB.list('wed_phases',{order:['phase_order']}).then(r=>({ok:true,r}),()=>({ok:false,r:[]})),
+        DB.list('wed_events',{order:['event_date']}),
+        soft(DB.list('wed_tasks',{order:['due_date']})), soft(DB.list('wed_budget_items',{order:['category']})), soft(DB.list('wed_gifts',{order:['received_date']})),
+        soft(DB.list('wed_guests',{select:'id,full_name,event_ids,rsvp_status,confirmed_count,invited_count,gift_amount,gift_method'})), soft(DB.list('wed_wedding_settings'))]);
+      this.ok=ph.ok; this.phases=ph.r; this.events=ev; this.tasks=tk; this.items=bi; this.gifts=gf; this.guests=gs; this.guestGifts=gs.filter(x=>Number(x.gift_amount)>0); this.cfg=st[0]||{};
+      if(!this.inited){ this.inited=true; this.initOpen(); }
+      this.paint();
+    }catch(e){ c.innerHTML=UI.empty(I.events,'Không tải được',Util.esc(e.message||''),'<button class="btn btn-ghost" onclick="Plan.render()">Thử lại</button>'); }
   },
-  applyFilter(){ this.filterStatus=document.getElementById('tFilterStatus').value; this.filterAssignee=document.getElementById('tFilterAssignee').value; this.renderList(); },
-  renderList(){
-    let list=this.tasks;
-    if(this.filterStatus) list=list.filter(t=>t.status===this.filterStatus);
-    if(this.filterAssignee) list=list.filter(t=>t.assignee===this.filterAssignee);
-    const el=document.getElementById('taskList');
-    if(!list.length){ el.innerHTML=UI.empty(I.tasks,'Chưa có công việc','Thêm công việc hoặc khởi tạo checklist mẫu.',`<div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-ghost" onclick="Tasks.seedTemplate()">Khởi tạo mẫu</button><button class="btn btn-primary" onclick="Tasks.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm</button></div>`); return; }
-    const statusLabel={todo:'Cần làm',in_progress:'Đang làm',done:'Hoàn thành',cancelled:'Đã hủy'};
-    const prioPill={urgent:'pill-priority-high',high:'pill-priority-high',medium:'pill-priority-medium',low:'pill-priority-low'};
-    const prioLabel={urgent:'Khẩn',high:'Cao',medium:'TB',low:'Thấp'};
-    el.innerHTML=`<div class="card">${list.map(t=>{
-      const days=Util.daysUntil(t.due_date);
-      const overdue=days!==null&&days<0&&t.status!=='done';
-      return `<div class="task-row">
-        <div class="task-check ${t.status==='done'?'done':''}" onclick="Tasks.toggle('${t.id}')">${t.status==='done'?I.check:''}</div>
-        <div class="task-body">
-          <div class="task-title ${t.status==='done'?'done':''}">${Util.esc(t.title)}</div>
-          <div class="task-meta">
-            ${t.category?`<span>${Util.esc(t.category)}</span>`:''}
-            ${t.assignee?`<span>· ${Util.esc(t.assignee)}</span>`:''}
-            ${t.due_date?`<span style="color:${overdue?'var(--danger)':'var(--muted)'}">· ${overdue?'Quá hạn ':''}${Util.fmtDate(t.due_date)}</span>`:''}
-            <span class="pill ${prioPill[t.priority]||'pill-priority-low'}">${prioLabel[t.priority]||'TB'}</span>
-            <span class="pill pill-notsent">${statusLabel[t.status]||'Cần làm'}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:4px"><button class="btn-close" onclick="Tasks.openEdit('${t.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Tasks.confirmDelete('${t.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></div>
-      </div>`;
-    }).join('')}</div>`;
+  initOpen(){ const {g}=this.groups(); const cur=g.find(x=>!this.phDone(x)); if(cur) cur.evs.forEach(e=>this.open.add(e.id)); this.open.add(''); },
+
+  /* ---------- cấu trúc & số liệu ---------- */
+  evSort(a,b){ return (a.event_date||'9999').localeCompare(b.event_date||'9999')||(a.event_time||'').localeCompare(b.event_time||'')||this.nat.compare(a.name||'',b.name||''); },
+  groups(){
+    const g=this.phases.map((p,i)=>({key:p.id,p,idx:i,evs:[]})), none={key:'none',p:null,idx:-1,evs:[]};
+    this.events.forEach(e=>{ (g.find(q=>q.key===e.phase_id)||none).evs.push(e); });
+    g.concat(none).forEach(x=>x.evs.sort((a,b)=>this.evSort(a,b)));
+    return {g,none};
   },
-  async toggle(id){
-    const t=this.tasks.find(x=>x.id===id);
-    const newStatus=t.status==='done'?'todo':'done';
-    const patch={status:newStatus};
-    if(newStatus==='done') patch.completed_date=new Date().toISOString().slice(0,10);
-    try{ await DB.update('wed_tasks',id,patch); await this.load(); }
-    catch(e){ Toast.err('Cập nhật thất bại: '+(e.message||'')); }
+  evTasks(id){ const ids=new Set(this.events.map(e=>e.id)); const l=id?this.tasks.filter(t=>t.event_id===id):this.tasks.filter(t=>!t.event_id||!ids.has(t.event_id));
+    return l.sort((a,b)=>((a.status==='done')-(b.status==='done'))||(a.due_date||'9999').localeCompare(b.due_date||'9999')||this.nat.compare(a.title||'',b.title||'')); },
+  evItems(id){ const ids=new Set(this.events.map(e=>e.id)); return id?this.items.filter(i=>i.event_id===id):this.items.filter(i=>!i.event_id||!ids.has(i.event_id)); },
+  agg(T,B){ const A=T.filter(t=>t.status!=='cancelled'), C=B.filter(i=>i.status!=='cancelled'), s=k=>C.reduce((a,i)=>a+(Number(i[k])||0),0), td=A.filter(t=>t.status==='done').length;
+    return {tt:A.length,td,od:A.filter(t=>t.status!=='done'&&t.due_date&&Util.daysUntil(t.due_date)<0).length,est:s('estimated_amount'),act:s('actual_amount'),paid:s('paid_amount'),pct:A.length?Math.round(td/A.length*100):0}; },
+  gAgg(x){ const T=[],B=[]; x.evs.forEach(e=>{ T.push(...this.evTasks(e.id)); B.push(...this.evItems(e.id)); }); if(!x.p){ T.push(...this.evTasks('')); B.push(...this.evItems('')); } return this.agg(T,B); },
+  phDone(x){ const A=this.gAgg(x); return A.tt>0?A.td===A.tt:(x.evs.length>0&&x.evs.every(e=>e.event_date&&Util.daysUntil(e.event_date)<0)); },
+  range(x){ const p=x.p||{}; const ds=x.evs.map(e=>e.event_date).filter(Boolean).sort(); const a=p.start_date||ds[0], b=p.end_date||ds[ds.length-1]; if(!a) return ''; return a===b||!b?Util.fmtDate(a):Util.fmtDate(a)+' – '+Util.fmtDate(b); },
+  phLabel(p){ const i=this.phases.findIndex(x=>x.id===p.id); return 'Giai đoạn '+(i+1)+' · '+p.name; },
+  evOptions(sel,o={}){
+    const {g,none}=this.groups(); const opt=e=>`<option value="${e.id}" ${sel===e.id?'selected':''}>${Util.esc(e.name)}${e.event_date?' ('+Util.fmtDate(e.event_date)+')':''}</option>`;
+    let h=o.all?`<option value="">${o.all}</option>`:`<option value="">— Chưa gắn sự kiện —</option>`;
+    if(o.none) h+=`<option value="__none" ${sel==='__none'?'selected':''}>Chưa gắn sự kiện</option>`;
+    g.forEach(x=>{ if(x.evs.length) h+=`<optgroup label="${Util.esc(this.phLabel(x.p))}">${x.evs.map(opt).join('')}</optgroup>`; });
+    if(none.evs.length) h+=`<optgroup label="Chưa phân giai đoạn">${none.evs.map(opt).join('')}</optgroup>`;
+    return h;
   },
-  openAdd(){ this.openDrawer(null); },
-  openEdit(id){ this.openDrawer(this.tasks.find(t=>t.id===id)); },
-  openDrawer(t){
-    const isEdit=!!t;
+
+  /* ---------- khung chung ---------- */
+  setTab(t){ this.tab=t; this.actions(); this.paint(); },
+  paint(){
+    const c=document.getElementById('content'), sc=this.scroller(), top=sc?sc.scrollTop:0;
+    const all=this.agg(this.tasks,this.items), {g}=this.groups(), doneP=g.filter(x=>this.phDone(x)).length;
+    const days=this.cfg.wedding_date?Util.daysUntil(this.cfg.wedding_date):null;
+    const gGuest=this.guestGifts.reduce((s,x)=>s+(Number(x.gift_amount)||0),0), totalGifts=this.gifts.reduce((s,x)=>s+(Number(x.amount)||0),0)+gGuest;
+    let h='';
+    if(!this.ok) h+=`<div class="pl-notice"><b>Chưa cập nhật database.</b> Chạy file <code>wedding-plan-phases.sql</code> trong Supabase → SQL Editor để dùng giai đoạn và gắn công việc/ngân sách vào sự kiện, sau đó bấm <a href="#" onclick="Plan.render();return false">Tải lại</a>.</div>`;
+    h+=`<div class="stat-grid">
+      <div class="stat"><div class="accent-bar"></div><div class="stat-label">${days!==null&&days>=0?'Đếm ngược ngày cưới':'Giai đoạn'}</div><div class="stat-value">${days!==null&&days>=0?days:doneP+'/'+g.length}</div><div class="stat-sub">${days!==null&&days>=0?'ngày nữa · '+doneP+'/'+g.length+' giai đoạn xong':'hoàn tất'}</div></div>
+      <div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Công việc</div><div class="stat-value">${all.td}/${all.tt}</div><div class="stat-sub">${all.pct}% hoàn thành${all.od?` · <span style="color:var(--danger)">${all.od} quá hạn</span>`:''}</div></div>
+      <div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Chi phí thực tế</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(all.act)}</div><div class="stat-sub">dự kiến ${this.money(all.est)} · đã trả ${this.money(all.paid)}</div></div>
+      <div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Quà mừng</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(totalGifts)}</div><div class="stat-sub">${this.gifts.length} món · ${this.guestGifts.length} khách mừng</div></div></div>
+      <div class="gx-tabs">${[['route','Lộ trình & sự kiện'],['tasks','Công việc'],['budget','Ngân sách & quà']].map(t=>`<button class="gx-tab ${this.tab===t[0]?'on':''}" onclick="Plan.setTab('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="plBody"></div>`;
+    c.innerHTML=h; this.paintBody(); if(sc) sc.scrollTop=top;
+  },
+  paintBody(){ if(this.tab==='tasks') this.paintTasks(); else if(this.tab==='budget') this.paintBudget(); else this.paintRoute(); },
+
+  /* ---------- TAB 1: LỘ TRÌNH ---------- */
+  taskRow(t){
+    const done=t.status==='done', d=Util.daysUntil(t.due_date), od=d!==null&&d<0&&!done&&t.status!=='cancelled', pr={urgent:'#B5453A',high:'#B5453A',medium:'#B8862F',low:'#BFB3A6'}[t.priority]||'#BFB3A6';
+    return `<div class="pl-t ${done?'done':''} ${t.status==='cancelled'?'cx':''}"><div class="task-check ${done?'done':''}" onclick="Plan.toggleTask('${t.id}')">${done?I.check:''}</div>
+      <div class="pl-t-b" onclick="Plan.openTask('${t.id}')"><div class="pl-t-title">${Util.esc(t.title)}</div><div class="pl-t-meta"><i class="pl-dot" style="background:${pr}"></i>${t.status==='in_progress'?'<span class="pill pill-sent">Đang làm</span>':''}${t.status==='cancelled'?'<span class="pill pill-declined">Đã hủy</span>':''}${t.category?`<span>${Util.esc(t.category)}</span>`:''}${t.assignee?`<span>· ${Util.esc(t.assignee)}</span>`:''}${t.due_date?`<span class="${od?'od':''}">· ${od?'Quá hạn ':''}${Util.fmtDate(t.due_date)}</span>`:''}</div></div>
+      <button class="btn-close" title="Xóa" onclick="Plan.delTask('${t.id}')">${this.ic(I.trash)}</button></div>`;
+  },
+  bRow(i){ const s=this.BST[i.status]||this.BST.planned, has=Number(i.actual_amount)>0;
+    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-t">${Util.esc(i.description||i.category)}<small>${[i.description?i.category:'',i.vendor].filter(Boolean).map(Util.esc).join(' · ')}</small></div><div class="pl-b-m"><b>${this.money(has?i.actual_amount:i.estimated_amount)}</b><small>${has?'thực tế':'dự kiến'}${Number(i.paid_amount)>0?' · trả '+this.money(i.paid_amount):''}</small></div><span class="pill ${s[1]}">${s[0]}</span></div>`; },
+  evCard(e){
+    const virt=!e.id, T=this.evTasks(e.id), B=this.evItems(e.id), A=this.agg(T,B), open=this.open.has(e.id), d=e.event_date?new Date(e.event_date+'T00:00:00'):null;
+    const eg=virt?[]:this.guests.filter(x=>(x.event_ids||[]).includes(e.id)), conf=eg.filter(x=>x.rsvp_status==='confirmed').reduce((s,x)=>s+(Number(x.confirmed_count)||0),0), du=virt?null:Util.daysUntil(e.event_date);
+    const cd=du===null?'':(du>0?`<span class="pill pill-sent">Còn ${du} ngày</span>`:du===0?'<span class="pill pill-confirmed">Hôm nay</span>':'<span class="pill pill-notsent">Đã diễn ra</span>');
+    return `<article class="pl-ev ${open?'open':''} ${virt?'virt':''}" id="pev-${e.id||'x'}">
+      <div class="pl-ev-h" onclick="Plan.toggleEv('${e.id}')">
+        <div class="pl-date">${d?`<b>${d.getDate()}</b><span>Th${d.getMonth()+1}</span>`:'<b>—</b><span>chưa đặt</span>'}</div>
+        <div class="pl-ev-main"><div class="pl-ev-name">${virt?'Chưa gắn sự kiện':Util.esc(e.name)}</div><div class="pl-ev-meta">${virt?'<span>Công việc & khoản chi chưa thuộc sự kiện nào</span>':[e.event_time?e.event_time.slice(0,5):'',e.venue?Util.esc(e.venue):''].filter(Boolean).map(x=>`<span>${x}</span>`).join('')}${cd}</div></div>
+        <div class="pl-kpis">${virt?'':`<div class="pl-kpi"><b>${eg.length}</b>khách${conf?` · ${conf} xác nhận`:''}</div>`}<div class="pl-kpi"><b>${A.td}/${A.tt}</b>việc${A.od?` · <i class="od">${A.od} quá hạn</i>`:''}</div><div class="pl-kpi"><b>${this.money(A.act||A.est)}</b>${A.act?'thực tế':'dự kiến'}</div></div>
+        <div class="pl-tools" onclick="event.stopPropagation()">${virt?'':`<button class="btn-close" title="Sửa" onclick="Plan.openEvent('${e.id}')">${this.ic(I.edit)}</button><button class="btn-close" title="Xóa" onclick="Plan.delEvent('${e.id}')">${this.ic(I.trash)}</button>`}</div>${this.chev}</div>
+      <div class="pl-ev-body"><div class="pl-col"><div class="pl-col-h"><span>Công việc chuẩn bị <em>${A.td}/${A.tt}</em></span><button class="pl-add" onclick="Plan.openTask(null,'${e.id}')">+ Chi tiết</button></div>
+        ${T.length?T.map(t=>this.taskRow(t)).join(''):'<div class="pl-none">Chưa có công việc</div>'}
+        <div class="pl-quick"><input placeholder="+ Thêm nhanh công việc rồi nhấn Enter" onkeydown="if(event.key==='Enter')Plan.quickTask('${e.id}',this)"/></div></div>
+        <div class="pl-col"><div class="pl-col-h"><span>Ngân sách <em>${this.money(A.act)} / ${this.money(A.est)}</em></span><button class="pl-add" onclick="Plan.openBudget(null,'${e.id}')">+ Khoản chi</button></div>
+        ${B.length?B.map(i=>this.bRow(i)).join(''):'<div class="pl-none">Chưa có khoản chi</div>'}
+        ${B.length?`<div class="pl-sum"><span>Dự kiến <b>${this.money(A.est)}</b></span><span>Thực tế <b>${this.money(A.act)}</b></span><span>Đã trả <b>${this.money(A.paid)}</b></span></div>`:''}</div></div>
+    </article>`;
+  },
+  paintRoute(){
+    const el=document.getElementById('plBody'), {g,none}=this.groups(), hasOrph=this.evTasks('').length||this.evItems('').length;
+    if(!g.length&&!none.evs.length&&!this.tasks.length&&!this.items.length){
+      el.innerHTML=UI.empty(I.events,'Chưa có lộ trình','Chia việc chuẩn bị đám cưới thành các giai đoạn, mỗi giai đoạn gồm các sự kiện kèm công việc và ngân sách.',`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary" onclick="Plan.seedPlan()">Khởi tạo lộ trình mẫu</button><button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button></div>`); return; }
+    let cur=-1; g.forEach((x,i)=>{ if(cur<0&&!this.phDone(x)) cur=i; });
+    let h='';
+    if(!g.length) h+=`<div class="pl-notice pl-info">Bạn chưa chia giai đoạn. <button class="btn btn-primary btn-sm" onclick="Plan.seedPlan()">Tạo 5 giai đoạn mẫu</button> <span class="muted">hệ thống sẽ tự xếp sự kiện/công việc hiện có vào giai đoạn phù hợp.</span></div>`;
+    h+='<div class="pl-tl">';
+    const block=(x,state)=>{ const A=this.gAgg(x), key=x.key, collapsed=this.closedPh.has(key), nm=x.p?x.p.name:'Chưa phân giai đoạn', rg=this.range(x);
+      const evs=x.evs.map(e=>this.evCard(e)).join('')+((!x.p&&hasOrph)?this.evCard({id:'',name:''}):'');
+      const badge={done:'<span class="pl-badge ok">Đã hoàn tất</span>',cur:'<span class="pl-badge now">Đang thực hiện</span>',next:'<span class="pl-badge">Sắp tới</span>',none:''}[state];
+      return `<section class="pl-phase ${state} ${collapsed?'collapsed':''}" id="php-${key}"><div class="pl-rail"><div class="pl-node">${state==='done'?I.check:(x.p?x.idx+1:'–')}</div></div>
+        <div class="pl-pcard"><div class="pl-ph" onclick="Plan.togglePh('${key}')"><div class="pl-ph-main"><div class="pl-kick">${x.p?'GIAI ĐOẠN '+(x.idx+1):'KHÁC'} ${badge}</div><div class="pl-ph-title">${Util.esc(nm)}</div><div class="pl-ph-sub">${[rg,x.p&&x.p.description?Util.esc(x.p.description):''].filter(Boolean).join(' · ')||'&nbsp;'}</div></div>
+          <div class="pl-ph-stats"><div><b>${x.evs.length}</b>sự kiện</div><div><b>${A.td}/${A.tt}</b>công việc</div><div><b>${this.money(A.act||A.est)}</b>${A.act?'thực tế':'dự kiến'}</div><div class="pl-pct"><b>${A.pct}%</b>tiến độ</div></div>
+          <div class="pl-tools" onclick="event.stopPropagation()">${x.p?`<button class="btn-close" title="Thêm sự kiện" onclick="Plan.openEvent(null,'${x.p.id}')">${this.ic(I.plus)}</button><button class="btn-close" title="Sửa giai đoạn" onclick="Plan.openPhase('${x.p.id}')">${this.ic(I.edit)}</button><button class="btn-close" title="Xóa giai đoạn" onclick="Plan.delPhase('${x.p.id}')">${this.ic(I.trash)}</button>`:''}</div>${this.chev}</div>
+          <div class="pl-bar"><i style="width:${A.pct}%"></i></div>
+          <div class="pl-evs">${evs||'<div class="pl-none" style="padding:18px 22px">Chưa có sự kiện. Bấm dấu + ở góc phải để thêm.</div>'}</div></div></section>`; };
+    g.forEach((x,i)=>{ h+=block(x,this.phDone(x)?'done':(i===cur?'cur':'next')); });
+    if(none.evs.length||hasOrph) h+=block(none,'none');
+    el.innerHTML=h+'</div>';
+  },
+  toggleEv(id){ this.open.has(id)?this.open.delete(id):this.open.add(id); const e=document.getElementById('pev-'+(id||'x')); if(e) e.classList.toggle('open',this.open.has(id)); },
+  togglePh(k){ this.closedPh.has(k)?this.closedPh.delete(k):this.closedPh.add(k); const e=document.getElementById('php-'+k); if(e) e.classList.toggle('collapsed',this.closedPh.has(k)); },
+
+  /* ---------- TAB 2: CÔNG VIỆC ---------- */
+  paintTasks(){
+    const el=document.getElementById('plBody'), assignees=[...new Set(this.tasks.map(t=>t.assignee).filter(Boolean))];
+    const ok=t=>(!this.fStatus||t.status===this.fStatus)&&(!this.fAssignee||t.assignee===this.fAssignee)&&(!this.fEvent||(this.fEvent==='__none'?this.evTasks('').includes(t):t.event_id===this.fEvent));
+    let h=`<div class="toolbar"><select class="filter-select" onchange="Plan.fStatus=this.value;Plan.paintBody()"><option value="">Tất cả trạng thái</option>${Object.keys(this.ST).map(k=>`<option value="${k}" ${this.fStatus===k?'selected':''}>${this.ST[k]}</option>`).join('')}</select>
+      <select class="filter-select" onchange="Plan.fAssignee=this.value;Plan.paintBody()"><option value="">Tất cả người phụ trách</option>${assignees.map(a=>`<option ${this.fAssignee===a?'selected':''}>${Util.esc(a)}</option>`).join('')}</select>
+      <select class="filter-select" onchange="Plan.fEvent=this.value;Plan.paintBody()">${this.evOptions(this.fEvent,{all:'Tất cả sự kiện',none:true})}</select></div>`;
+    const {g,none}=this.groups(), secs=[]; let n=0;
+    g.concat([none]).forEach(x=>{ const evs=x.evs.slice(); if(!x.p) evs.push({id:'',name:'Chưa gắn sự kiện'});
+      const parts=evs.map(e=>({e,T:this.evTasks(e.id).filter(ok)})).filter(q=>q.T.length);
+      if(parts.length) secs.push({x,parts}); });
+    secs.forEach(({x,parts})=>{ h+=`<div class="pl-grp"><div class="pl-grp-h"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name:'Khác')}</div><div class="card">`;
+      parts.forEach(({e,T})=>{ n+=T.length; h+=`<div class="pl-sub">${Util.esc(e.name)}${e.event_date?` <small>${Util.fmtDate(e.event_date)}</small>`:''}<em>${T.filter(t=>t.status==='done').length}/${T.length}</em></div>${T.map(t=>this.taskRow(t)).join('')}`; });
+      h+='</div></div>'; });
+    if(!n) h+=UI.empty(I.tasks,'Không có công việc phù hợp','Thêm công việc hoặc đổi bộ lọc.',`<button class="btn btn-primary" onclick="Plan.openTask()">${this.ic(I.plus)} Thêm công việc</button>`);
+    el.innerHTML=h;
+  },
+
+  /* ---------- TAB 3: NGÂN SÁCH & QUÀ ---------- */
+  paintBudget(){
+    const el=document.getElementById('plBody'), {g,none}=this.groups(), cells=[];
+    g.concat([none]).forEach(x=>{ const A=this.gAgg(x); if(x.p||x.evs.length||A.est||A.act) cells.push({x,A}); });
+    let h='';
+    const withMoney=cells.filter(c=>c.A.est||c.A.act);
+    if(withMoney.length){ h+='<div class="section-h">Chi phí theo giai đoạn</div><div class="pl-bgrid">'+withMoney.map(({x,A})=>{ const base=Math.max(A.act,A.est)||1, pa=Math.min(100,A.paid/base*100), pb=Math.min(100,A.act/base*100), pe=Math.min(100,A.est/base*100), over=A.est>0&&A.act>A.est;
+      return `<div class="pl-bc"><div class="pl-bc-h"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name:'Khác')}</div><div class="pl-bc-v">${Util.fmtMoney(A.act||A.est)}<small>${A.act?'thực tế':'dự kiến'}</small></div>
+      <div class="pl-stack"><i class="e" style="width:${pe}%"></i><i class="a ${over?'over':''}" style="width:${pb}%"></i><i class="p" style="width:${pa}%"></i></div>
+      <div class="pl-bc-f"><span>Dự kiến ${this.money(A.est)}</span><span>Đã trả ${this.money(A.paid)}</span>${over?`<span class="od">Vượt ${this.money(A.act-A.est)}</span>`:''}</div></div>`; }).join('')+'</div>'; }
+    h+='<div class="section-h" style="margin-top:8px">Khoản chi<span class="sub">nhóm theo giai đoạn & sự kiện</span></div>';
+    const parts=[]; g.concat([none]).forEach(x=>{ const evs=x.evs.slice(); if(!x.p) evs.push({id:'',name:'Chưa gắn sự kiện'}); evs.forEach(e=>{ const B=this.evItems(e.id); if(B.length) parts.push({x,e,B,A:this.agg([],B)}); }); });
+    if(!parts.length) h+=UI.empty(I.budget,'Chưa có khoản chi','Thêm khoản ngân sách và gắn vào sự kiện để theo dõi.',`<button class="btn btn-primary" onclick="Plan.openBudget()">${this.ic(I.plus)} Thêm khoản chi</button>`);
+    else{
+      const tot=this.agg([],this.items);
+      h+='<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl pl-bt"><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Nhà cung cấp</th><th class="right">Dự kiến</th><th class="right">Thực tế</th><th class="right">Đã trả</th><th>Hạn TT</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
+      parts.forEach(({x,e,B,A})=>{ h+=`<tr class="pl-bt-g"><td colspan="3"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name+' · ':'')}<b>${Util.esc(e.name)}</b></td><td class="right">${Util.fmtMoney(A.est)}</td><td class="right">${Util.fmtMoney(A.act)}</td><td class="right">${Util.fmtMoney(A.paid)}</td><td colspan="3"></td></tr>`;
+        B.forEach(i=>{ const s=this.BST[i.status]||this.BST.planned; h+=`<tr ondblclick="Plan.openBudget('${i.id}')"><td><div style="font-weight:500">${Util.esc(i.category)}</div></td><td>${Util.esc(i.description||'—')}</td><td>${Util.esc(i.vendor||'—')}</td><td class="right">${Util.fmtMoney(i.estimated_amount)}</td><td class="right">${Util.fmtMoney(i.actual_amount)}</td><td class="right">${Util.fmtMoney(i.paid_amount)}</td><td>${i.due_date?Util.fmtDate(i.due_date):'—'}</td><td><span class="pill ${s[1]}">${s[0]}</span></td><td class="right" style="white-space:nowrap"><button class="btn-close" onclick="Plan.openBudget('${i.id}')">${this.ic(I.edit)}</button><button class="btn-close" onclick="Plan.delBudget('${i.id}')">${this.ic(I.trash)}</button></td></tr>`; }); });
+      h+=`<tr class="pl-bt-t"><td colspan="3">Tổng cộng</td><td class="right">${Util.fmtMoney(tot.est)}</td><td class="right">${Util.fmtMoney(tot.act)}</td><td class="right">${Util.fmtMoney(tot.paid)}</td><td colspan="3">Còn phải trả: ${Util.fmtMoney(tot.act-tot.paid)}</td></tr></tbody></table></div></div>`;
+    }
+    const gGuest=this.guestGifts.reduce((s,x)=>s+Number(x.gift_amount),0), gCash=this.guestGifts.filter(x=>x.gift_method!=='transfer').reduce((s,x)=>s+Number(x.gift_amount),0);
+    h+=`<div class="section-h" style="margin-top:34px">Quà mừng<span class="sub">tiền mừng ghi ở danh sách khách: ${Util.fmtMoney(gGuest)} (${this.guestGifts.length} khách · TM ${this.money(gCash)} · CK ${this.money(gGuest-gCash)})</span></div>`;
+    if(!this.gifts.length) h+='<div class="card" style="padding:18px 22px;color:var(--muted);font-size:13px">Chưa có quà mừng ghi riêng. Bấm “Quà mừng” để thêm phong bì hoặc quà vật chất ngoài danh sách khách.</div>';
+    else h+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Người tặng</th><th class="right">Số tiền</th><th>Ngày nhận</th><th>Mô tả</th><th>Cảm ơn</th><th></th></tr></thead><tbody>${this.gifts.map(x=>`<tr><td style="font-weight:500">${Util.esc(x.giver_name||'—')}</td><td class="right">${Util.fmtMoney(x.amount)}</td><td>${x.received_date?Util.fmtDate(x.received_date):'—'}</td><td>${Util.esc(x.gift_description||'—')}</td><td><button class="pill ${x.thank_you_sent?'pill-confirmed':'pill-pending'}" onclick="Plan.toggleThank('${x.id}')">${x.thank_you_sent?'Đã cảm ơn':'Chưa cảm ơn'}</button></td><td class="right"><button class="btn-close" onclick="Plan.delGift('${x.id}')">${this.ic(I.trash)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    el.innerHTML=h;
+  },
+
+  /* ---------- CÔNG VIỆC: thao tác ---------- */
+  async toggleTask(id){ const t=this.tasks.find(x=>x.id===id); if(!t) return; const ns=t.status==='done'?'todo':'done', patch={status:ns,completed_date:ns==='done'?this.today():null};
+    try{ const r=await DB.update('wed_tasks',id,patch); Object.assign(t,r||patch); this.paint(); }catch(e){ Toast.err('Cập nhật thất bại: '+(e.message||'')); } },
+  async quickTask(evId,inp){ const title=inp.value.trim(); if(!title) return; const row={title,priority:'medium',status:'todo'}; if(this.ok&&evId) row.event_id=evId;
+    inp.disabled=true; try{ const r=await DB.insert('wed_tasks',row); this.tasks.push(r); this.open.add(evId); this.paint(); const n=document.querySelector(`#pev-${evId||'x'} .pl-quick input`); if(n) n.focus(); }catch(e){ inp.disabled=false; Toast.err(this.errMsg(e)); } },
+  openTask(id,evId){
+    const t=id?this.tasks.find(x=>x.id===id):null, ev=t?t.event_id:evId, o=(k,v,l)=>`<option value="${k}" ${(t?t[v]:'')===k||(!t&&k===l)?'selected':''}>`;
     const body=`<div class="field"><label class="label">Công việc *</label><input class="input" id="tkTitle" value="${t?Util.esc(t.title):''}"/></div>
+      ${this.ok?`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="tkEvent">${this.evOptions(ev||'')}</select></div>`:''}
       <div class="row"><div class="field"><label class="label">Danh mục</label><input class="input" id="tkCat" value="${t?Util.esc(t.category||''):''}" placeholder="Địa điểm / Trang phục..."/></div><div class="field"><label class="label">Người phụ trách</label><input class="input" id="tkAssignee" value="${t?Util.esc(t.assignee||''):''}"/></div></div>
       <div class="row-3"><div class="field"><label class="label">Hạn</label><input class="input" type="date" id="tkDue" value="${t?t.due_date||'':''}"/></div>
-      <div class="field"><label class="label">Ưu tiên</label><select class="select" id="tkPrio"><option value="low" ${t&&t.priority==='low'?'selected':''}>Thấp</option><option value="medium" ${!t||t.priority==='medium'?'selected':''}>Trung bình</option><option value="high" ${t&&t.priority==='high'?'selected':''}>Cao</option><option value="urgent" ${t&&t.priority==='urgent'?'selected':''}>Khẩn</option></select></div>
-      <div class="field"><label class="label">Trạng thái</label><select class="select" id="tkStatus"><option value="todo" ${!t||t.status==='todo'?'selected':''}>Cần làm</option><option value="in_progress" ${t&&t.status==='in_progress'?'selected':''}>Đang làm</option><option value="done" ${t&&t.status==='done'?'selected':''}>Hoàn thành</option><option value="cancelled" ${t&&t.status==='cancelled'?'selected':''}>Đã hủy</option></select></div></div>
+      <div class="field"><label class="label">Ưu tiên</label><select class="select" id="tkPrio">${[['low','Thấp'],['medium','Trung bình'],['high','Cao'],['urgent','Khẩn']].map(p=>`<option value="${p[0]}" ${(t?t.priority:'medium')===p[0]?'selected':''}>${p[1]}</option>`).join('')}</select></div>
+      <div class="field"><label class="label">Trạng thái</label><select class="select" id="tkStatus">${Object.keys(this.ST).map(k=>`<option value="${k}" ${(t?t.status:'todo')===k?'selected':''}>${this.ST[k]}</option>`).join('')}</select></div></div>
       <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="tkNotes">${t?Util.esc(t.notes||''):''}</textarea></div>`;
-    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Tasks.save('${t?t.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
-    UI.openDrawer(isEdit?'Sửa công việc':'Thêm công việc', body, foot);
+    UI.openDrawer(t?'Sửa công việc':'Thêm công việc',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveTask('${id||''}')">${t?'Lưu':'Thêm'}</button>`);
   },
-  async save(id){
-    const row={ title:document.getElementById('tkTitle').value.trim(), category:document.getElementById('tkCat').value.trim()||null, assignee:document.getElementById('tkAssignee').value.trim()||null, due_date:document.getElementById('tkDue').value||null, priority:document.getElementById('tkPrio').value, status:document.getElementById('tkStatus').value, notes:document.getElementById('tkNotes').value.trim()||null };
+  async saveTask(id){
+    const v=i=>document.getElementById(i).value, row={title:v('tkTitle').trim(),category:v('tkCat').trim()||null,assignee:v('tkAssignee').trim()||null,due_date:v('tkDue')||null,priority:v('tkPrio'),status:v('tkStatus'),notes:v('tkNotes').trim()||null};
     if(!row.title){ Toast.err('Nhập tên công việc'); return; }
-    try{ if(id) await DB.update('wed_tasks',id,row); else await DB.insert('wed_tasks',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }
-    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+    if(this.ok) row.event_id=v('tkEvent')||null;
+    const old=id&&this.tasks.find(x=>x.id===id); if(row.status==='done'&&(!old||old.status!=='done')) row.completed_date=this.today();
+    try{ if(id) await DB.update('wed_tasks',id,row); else { const r=await DB.insert('wed_tasks',row); if(r.event_id) this.open.add(r.event_id); } Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err(this.errMsg(e)); }
   },
-  confirmDelete(id){ UI.confirm('Xóa công việc?','Hành động không thể hoàn tác.',()=>this.doDelete(id),'Xóa',true); },
-  async doDelete(id){ try{ await DB.remove('wed_tasks',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },
-  async seedTemplate(){
-    const template=[
-      {title:'Xác định số khách, ngày, budget, phong cách',category:'Xác định',priority:'high'},
-      {title:'Đi xem và chọn địa điểm tổ chức',category:'Địa điểm',priority:'high'},
-      {title:'Chọn menu và ăn thử',category:'Địa điểm',priority:'medium'},
-      {title:'Đặt cọc lần 1 cho địa điểm',category:'Địa điểm',priority:'high'},
-      {title:'Chốt số lượng khách và đặt cọc lần 2',category:'Địa điểm',priority:'medium'},
-      {title:'Tham khảo quay chụp phóng sự cưới',category:'Quay chụp',priority:'medium'},
-      {title:'Đặt lịch quay phóng sự',category:'Quay chụp',priority:'medium'},
-      {title:'Tư vấn thiết kế trang trí, khảo sát địa hình',category:'Trang trí',priority:'medium'},
-      {title:'Duyệt bản thảo trang trí và đặt cọc',category:'Trang trí',priority:'high'},
-      {title:'Tham khảo và chụp ảnh cưới',category:'Ảnh cưới',priority:'medium'},
-      {title:'Chọn ảnh, in album và ảnh phóng',category:'Ảnh cưới',priority:'low'},
-      {title:'Thử váy, vest, áo dài và đặt trang phục',category:'Trang phục',priority:'high'},
-      {title:'Xem, thử và đặt nhẫn cưới',category:'Nhẫn',priority:'medium'},
-      {title:'Xem, thử và đặt make up',category:'Make up',priority:'medium'},
-      {title:'Tham khảo và đặt tráp ăn hỏi',category:'Tráp ăn hỏi',priority:'medium'},
-      {title:'Chọn thiết kế thiệp cưới, in thử',category:'Thiệp cưới',priority:'medium'},
-      {title:'Đặt và in hàng loạt thiệp cưới',category:'Thiệp cưới',priority:'high'},
-      {title:'Đi phát thiệp cưới',category:'Thiệp cưới',priority:'medium'},
-      {title:'Lên timeline nháp và chốt kịch bản',category:'Kịch bản',priority:'high'},
-      {title:'Playlist nhạc và gửi cho nhà cung cấp',category:'Kịch bản',priority:'medium'},
-      {title:'Đặt xe di chuyển',category:'Đặt nốt',priority:'low'},
-      {title:'Spa, nail cho ngày cưới',category:'Đặt nốt',priority:'low'},
-      {title:'Đặt bánh kẹo',category:'Đặt nốt',priority:'low'}
-    ];
-    try{ await sb.from('wed_tasks').insert(template); Toast.ok('Đã khởi tạo 23 công việc mẫu'); await this.load(); }
-    catch(e){ Toast.err('Khởi tạo thất bại: '+(e.message||'')); }
+  delTask(id){ const t=this.tasks.find(x=>x.id===id); UI.confirm('Xóa công việc?',`Xóa <b>${Util.esc(t?t.title:'')}</b>? Không thể hoàn tác.`,async()=>{ try{ await DB.remove('wed_tasks',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
+
+  /* ---------- NGÂN SÁCH: thao tác ---------- */
+  openBudget(id,evId){
+    const i=id?this.items.find(x=>x.id===id):null, ev=i?i.event_id:evId;
+    const body=`${this.ok?`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="bEvent">${this.evOptions(ev||'')}</select></div>`:''}
+      <div class="row"><div class="field"><label class="label">Danh mục *</label><input class="input" id="bCat" value="${i?Util.esc(i.category):''}" placeholder="Địa điểm / Ảnh cưới..."/></div><div class="field"><label class="label">Nhà cung cấp</label><input class="input" id="bVendor" value="${i?Util.esc(i.vendor||''):''}"/></div></div>
+      <div class="field"><label class="label">Mô tả</label><input class="input" id="bDesc" value="${i?Util.esc(i.description||''):''}"/></div>
+      <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" type="number" id="bEst" value="${i?i.estimated_amount||0:0}"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" type="number" id="bAct" value="${i?i.actual_amount||0:0}"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" type="number" id="bPaid" value="${i?i.paid_amount||0:0}"/></div></div>
+      <div class="row"><div class="field"><label class="label">Hạn thanh toán</label><input class="input" type="date" id="bDue" value="${i?i.due_date||'':''}"/></div><div class="field"><label class="label">Trạng thái</label><select class="select" id="bStatus">${Object.keys(this.BST).map(k=>`<option value="${k}" ${(i?i.status:'planned')===k?'selected':''}>${this.BST[k][0]}</option>`).join('')}</select></div></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="bNotes">${i?Util.esc(i.notes||''):''}</textarea></div>`;
+    UI.openDrawer(i?'Sửa khoản chi':'Thêm khoản chi',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveBudget('${id||''}')">${i?'Lưu':'Thêm'}</button>`);
+  },
+  async saveBudget(id){
+    const v=i=>document.getElementById(i).value, n=i=>parseFloat(v(i))||0;
+    const row={category:v('bCat').trim(),description:v('bDesc').trim()||null,vendor:v('bVendor').trim()||null,estimated_amount:n('bEst'),actual_amount:n('bAct'),paid_amount:n('bPaid'),due_date:v('bDue')||null,status:v('bStatus'),notes:v('bNotes').trim()||null};
+    if(!row.category){ Toast.err('Nhập danh mục'); return; }
+    if(this.ok) row.event_id=v('bEvent')||null;
+    try{ if(id) await DB.update('wed_budget_items',id,row); else { const r=await DB.insert('wed_budget_items',row); if(r.event_id) this.open.add(r.event_id); } Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err(this.errMsg(e)); }
+  },
+  delBudget(id){ UI.confirm('Xóa khoản chi?','Không thể hoàn tác.',async()=>{ try{ await DB.remove('wed_budget_items',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
+  openGift(){
+    const body=`<div class="field"><label class="label">Người tặng</label><input class="input" id="gfGiver" placeholder="Tên khách"/></div>
+      <div class="row"><div class="field"><label class="label">Số tiền (₫)</label><input class="input" type="number" id="gfAmount" value="0"/></div><div class="field"><label class="label">Ngày nhận</label><input class="input" type="date" id="gfDate" value="${this.today()}"/></div></div>
+      <div class="field"><label class="label">Mô tả quà</label><input class="input" id="gfDesc" placeholder="Phong bì / quà vật chất..."/></div>
+      <div class="field"><label class="label">Đã cảm ơn?</label><select class="select" id="gfThank"><option value="false">Chưa</option><option value="true">Rồi</option></select></div>`;
+    UI.openDrawer('Thêm quà mừng',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveGift()">Lưu</button>`);
+  },
+  async saveGift(){ const v=i=>document.getElementById(i).value, row={giver_name:v('gfGiver').trim()||null,amount:parseFloat(v('gfAmount'))||0,received_date:v('gfDate')||null,gift_description:v('gfDesc').trim()||null,thank_you_sent:v('gfThank')==='true'};
+    try{ await DB.insert('wed_gifts',row); Toast.ok('Đã lưu quà mừng'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); } },
+  async toggleThank(id){ const x=this.gifts.find(g=>g.id===id); if(!x) return; try{ const r=await DB.update('wed_gifts',id,{thank_you_sent:!x.thank_you_sent}); Object.assign(x,r); this.paint(); }catch(e){ Toast.err('Cập nhật thất bại: '+(e.message||'')); } },
+  delGift(id){ UI.confirm('Xóa quà mừng?','Không thể hoàn tác.',async()=>{ try{ await DB.remove('wed_gifts',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
+
+  /* ---------- SỰ KIỆN & GIAI ĐOẠN: thao tác ---------- */
+  openEvent(id,phId){
+    const e=id?this.events.find(x=>x.id===id):null, ph=e?e.phase_id:phId;
+    const body=`<div class="field"><label class="label">Tên sự kiện *</label><input class="input" id="eName" value="${e?Util.esc(e.name):''}" placeholder="Lễ ăn hỏi / Tiệc cưới"/></div>
+      ${this.ok?`<div class="field"><label class="label">Giai đoạn</label><select class="select" id="ePhase"><option value="">— Chưa phân giai đoạn —</option>${this.phases.map((p,i)=>`<option value="${p.id}" ${ph===p.id?'selected':''}>Giai đoạn ${i+1} · ${Util.esc(p.name)}</option>`).join('')}</select></div>`:''}
+      <div class="row"><div class="field"><label class="label">Ngày</label><input class="input" type="date" id="eDate" value="${e?e.event_date||'':''}"/></div><div class="field"><label class="label">Giờ</label><input class="input" type="time" id="eTime" value="${e?e.event_time||'':''}"/></div></div>
+      <div class="field"><label class="label">Địa điểm</label><input class="input" id="eVenue" value="${e?Util.esc(e.venue||''):''}"/></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="eNotes">${e?Util.esc(e.notes||''):''}</textarea></div>`;
+    UI.openDrawer(e?'Sửa sự kiện':'Thêm sự kiện',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveEvent('${id||''}')">${e?'Lưu':'Thêm'}</button>`);
+  },
+  async saveEvent(id){
+    const v=i=>document.getElementById(i).value, row={name:v('eName').trim(),event_date:v('eDate')||null,event_time:v('eTime')||null,venue:v('eVenue').trim()||null,notes:v('eNotes').trim()||null};
+    if(!row.name){ Toast.err('Nhập tên sự kiện'); return; }
+    if(this.ok) row.phase_id=v('ePhase')||null;
+    try{ let r; if(id) r=await DB.update('wed_events',id,row); else r=await DB.insert('wed_events',row); this.open.add(r.id); if(row.phase_id) this.closedPh.delete(row.phase_id); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err(this.errMsg(e)); }
+  },
+  delEvent(id){ const e=this.events.find(x=>x.id===id), nt=this.evTasks(id).length, nb=this.evItems(id).length;
+    UI.confirm('Xóa sự kiện?',`Xóa <b>${Util.esc(e.name)}</b>?${nt||nb?`<br><br>${nt} công việc và ${nb} khoản chi của sự kiện này sẽ chuyển về mục “Chưa gắn sự kiện” (không bị xóa).`:''}`,async()=>{ try{ if(this.ok){ await sb.from('wed_tasks').update({event_id:null}).eq('event_id',id); await sb.from('wed_budget_items').update({event_id:null}).eq('event_id',id); } await DB.remove('wed_events',id); Toast.ok('Đã xóa'); await this.load(); }catch(er){ Toast.err('Xóa thất bại: '+(er.message||'')); } },'Xóa',true); },
+  openPhase(id){
+    const p=id?this.phases.find(x=>x.id===id):null, next=this.phases.reduce((m,x)=>Math.max(m,Number(x.phase_order)||0),0)+1;
+    const body=`${this.ok?'':'<div class="pl-notice">Cần chạy file wedding-plan-phases.sql trước khi tạo giai đoạn.</div>'}<div class="field"><label class="label">Tên giai đoạn *</label><input class="input" id="phName" value="${p?Util.esc(p.name):''}" placeholder="Khởi động & chốt kế hoạch"/></div>
+      <div class="field"><label class="label">Mô tả</label><input class="input" id="phDesc" value="${p?Util.esc(p.description||''):''}" placeholder="Mục tiêu của giai đoạn"/></div>
+      <div class="row-3"><div class="field"><label class="label">Thứ tự</label><input class="input" type="number" min="1" id="phOrder" value="${p?p.phase_order:next}"/></div><div class="field"><label class="label">Bắt đầu</label><input class="input" type="date" id="phStart" value="${p?p.start_date||'':''}"/></div><div class="field"><label class="label">Kết thúc</label><input class="input" type="date" id="phEnd" value="${p?p.end_date||'':''}"/></div></div>
+      <div class="text-xs muted">Để trống ngày bắt đầu/kết thúc để hệ thống tự tính theo các sự kiện trong giai đoạn.</div>`;
+    UI.openDrawer(p?'Sửa giai đoạn':'Thêm giai đoạn',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.savePhase('${id||''}')">${p?'Lưu':'Thêm giai đoạn'}</button>`);
+  },
+  async savePhase(id){
+    const v=i=>document.getElementById(i).value, row={name:v('phName').trim(),description:v('phDesc').trim()||null,phase_order:parseInt(v('phOrder'))||1,start_date:v('phStart')||null,end_date:v('phEnd')||null};
+    if(!row.name){ Toast.err('Nhập tên giai đoạn'); return; }
+    try{ if(id) await DB.update('wed_phases',id,row); else await DB.insert('wed_phases',row); Toast.ok('Đã lưu giai đoạn'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err(this.errMsg(e)); }
+  },
+  delPhase(id){ const p=this.phases.find(x=>x.id===id), n=this.events.filter(e=>e.phase_id===id).length;
+    UI.confirm('Xóa giai đoạn?',`Xóa <b>${Util.esc(p.name)}</b>?${n?`<br><br>${n} sự kiện sẽ chuyển về “Chưa phân giai đoạn” (không bị xóa).`:''}`,async()=>{ try{ await sb.from('wed_events').update({phase_id:null}).eq('phase_id',id); await DB.remove('wed_phases',id); Toast.ok('Đã xóa giai đoạn'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
+
+  /* ---------- LỘ TRÌNH MẪU ---------- */
+  async seedPlan(){
+    if(!this.ok){ Toast.err('Hãy chạy file wedding-plan-phases.sql trong Supabase SQL Editor trước'); return; }
+    const W=this.cfg.wedding_date||null, dt=n=>W?this.addDays(W,n):null;
+    const PH=[['Khởi động & chốt kế hoạch','Quy mô, ngân sách, địa điểm',-180,-120],['Đặt nhà cung cấp','Quay chụp, trang trí, make up',-120,-75],['Ảnh cưới, trang phục & thiệp','Chụp ảnh, may đồ, in và phát thiệp',-90,-30],['Ăn hỏi & hoàn thiện kịch bản','Lễ ăn hỏi, chốt timeline',-45,-3],['Ngày cưới & sau cưới','Tiệc cưới và các việc cuối',0,14]];
+    const EV=[[0,'Họp chốt kế hoạch & địa điểm',-150,['Xác định','Địa điểm']],[1,'Chốt nhà cung cấp dịch vụ',-100,['Quay chụp','Trang trí','Make up']],[2,'Chụp ảnh cưới & thử trang phục',-75,['Ảnh cưới','Trang phục','Nhẫn']],[2,'Thiệp cưới',-50,['Thiệp cưới']],[3,'Lễ ăn hỏi',-30,['Tráp ăn hỏi']],[3,'Chốt kịch bản & timeline',-7,['Kịch bản']],[4,'Tiệc cưới',0,['Đặt nốt']]];
+    const TK=[['Xác định số khách, ngày, budget, phong cách','Xác định','high'],['Đi xem và chọn địa điểm tổ chức','Địa điểm','high'],['Chọn menu và ăn thử','Địa điểm','medium'],['Đặt cọc lần 1 cho địa điểm','Địa điểm','high'],['Chốt số lượng khách và đặt cọc lần 2','Địa điểm','medium'],['Tham khảo quay chụp phóng sự cưới','Quay chụp','medium'],['Đặt lịch quay phóng sự','Quay chụp','medium'],['Tư vấn thiết kế trang trí, khảo sát địa hình','Trang trí','medium'],['Duyệt bản thảo trang trí và đặt cọc','Trang trí','high'],['Tham khảo và chụp ảnh cưới','Ảnh cưới','medium'],['Chọn ảnh, in album và ảnh phóng','Ảnh cưới','low'],['Thử váy, vest, áo dài và đặt trang phục','Trang phục','high'],['Xem, thử và đặt nhẫn cưới','Nhẫn','medium'],['Xem, thử và đặt make up','Make up','medium'],['Tham khảo và đặt tráp ăn hỏi','Tráp ăn hỏi','medium'],['Chọn thiết kế thiệp cưới, in thử','Thiệp cưới','medium'],['Đặt và in hàng loạt thiệp cưới','Thiệp cưới','high'],['Đi phát thiệp cưới','Thiệp cưới','medium'],['Lên timeline nháp và chốt kịch bản','Kịch bản','high'],['Playlist nhạc và gửi cho nhà cung cấp','Kịch bản','medium'],['Đặt xe di chuyển','Đặt nốt','low'],['Spa, nail cho ngày cưới','Đặt nốt','low'],['Đặt bánh kẹo','Đặt nốt','low']];
+    try{
+      Toast.show('Đang khởi tạo lộ trình...');
+      const r1=await sb.from('wed_phases').insert(PH.map((p,i)=>({name:p[0],description:p[1],phase_order:i+1,start_date:dt(p[2]),end_date:dt(p[3])}))).select(); if(r1.error) throw r1.error;
+      const ph=r1.data.sort((a,b)=>a.phase_order-b.phase_order); let evByCat={};
+      if(!this.events.length){
+        const r2=await sb.from('wed_events').insert(EV.map(e=>({name:e[1],event_date:dt(e[2]),phase_id:ph[e[0]].id}))).select(); if(r2.error) throw r2.error;
+        EV.forEach(e=>{ const row=r2.data.find(x=>x.name===e[1]); e[3].forEach(c=>{ evByCat[norm(c)]={id:row.id,date:row.event_date}; }); });
+      } else {
+        for(const e of this.events){ const n=norm(e.name); const k=/hoi/.test(n)?3:(/cuoi|tiec|vu quy|don dau|thanh hon/.test(n)?4:-1); if(k>=0) await DB.update('wed_events',e.id,{phase_id:ph[k].id}); }
+      }
+      if(Object.keys(evByCat).length){
+        if(!this.tasks.length){ const r3=await sb.from('wed_tasks').insert(TK.map(t=>({title:t[0],category:t[1],priority:t[2],status:'todo',event_id:(evByCat[norm(t[1])]||{}).id||null,due_date:(evByCat[norm(t[1])]||{}).date||null}))); if(r3.error) throw r3.error; }
+        else { const by={}; this.tasks.filter(t=>!t.event_id&&t.category&&evByCat[norm(t.category)]).forEach(t=>{ (by[evByCat[norm(t.category)].id]=by[evByCat[norm(t.category)].id]||[]).push(t.id); }); for(const k in by) await sb.from('wed_tasks').update({event_id:k}).in('id',by[k]); }
+        const byB={}; this.items.filter(i=>!i.event_id&&i.category&&evByCat[norm(i.category)]).forEach(i=>{ const k=evByCat[norm(i.category)].id; (byB[k]=byB[k]||[]).push(i.id); }); for(const k in byB) await sb.from('wed_budget_items').update({event_id:k}).in('id',byB[k]);
+      }
+      this.inited=false; Toast.ok('Đã tạo lộ trình mẫu'); await this.load();
+    }catch(e){ Toast.err('Khởi tạo thất bại: '+(e.message||'')); }
   }
 };
 
-/* ============================================================
-   VIEW: BUDGET
-   ============================================================ */
-const Budget = {
-  items:[], gifts:[],
-  async render(){
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Budget.openAddGift()">Quà mừng</button><button class="btn btn-primary" onclick="Budget.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khoản</button>`;
-    const c=document.getElementById('content');
-    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
-    try{
-      const [b,g,gs]=await Promise.all([DB.list('wed_budget_items',{order:['category']}),DB.list('wed_gifts',{order:['received_date']}),DB.list('wed_guests',{select:'full_name,gift_amount,gift_method'}).catch(()=>[])]);
-      this.items=b; this.gifts=g; this.guestGifts=gs.filter(x=>Number(x.gift_amount)>0);
-      this.renderView();
-    }catch(e){ c.innerHTML=UI.empty(I.budget,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Budget.render()">Thử lại</button>'); }
-  },
-  renderView(){
-    const totalEst=this.items.reduce((s,i)=>s+(Number(i.estimated_amount)||0),0);
-    const totalAct=this.items.reduce((s,i)=>s+(Number(i.actual_amount)||0),0);
-    const totalPaid=this.items.reduce((s,i)=>s+(Number(i.paid_amount)||0),0);
-    const gGuest=(this.guestGifts||[]).reduce((s,g)=>s+(Number(g.gift_amount)||0),0), gCash=(this.guestGifts||[]).filter(g=>g.gift_method!=='transfer').reduce((s,g)=>s+Number(g.gift_amount),0);
-    const totalGifts=this.gifts.reduce((s,g)=>s+(Number(g.amount)||0),0)+gGuest;
-    let html='<div class="stat-grid">';
-    html+=`<div class="stat"><div class="accent-bar"></div><div class="stat-label">Dự kiến</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalEst)}</div></div>`;
-    html+=`<div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Thực tế</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalAct)}</div><div class="stat-sub">còn ${Util.fmtMoney(totalAct-totalPaid)}</div></div>`;
-    html+=`<div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Đã thanh toán</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalPaid)}</div></div>`;
-    html+=`<div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Quà mừng</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalGifts)}</div><div class="stat-sub">${this.gifts.length} món · khách mời: ${(this.guestGifts||[]).length} (TM ${Util.fmtMoney(gCash)} · CK ${Util.fmtMoney(gGuest-gCash)})</div></div>`;
-    html+='</div>';
-    html+='<div class="section-h">Khoản chi</div>';
-    if(!this.items.length) html+=UI.empty(I.budget,'Chưa có khoản chi','Thêm khoản ngân sách để theo dõi.',`<button class="btn btn-primary" onclick="Budget.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khoản</button>`);
-    else{
-      html+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Dự kiến</th><th>Thực tế</th><th>Đã trả</th><th>Trạng thái</th><th class="right"></th></tr></thead><tbody>`;
-      const stPill={planned:'pill-notsent',booked:'pill-sent',paid:'pill-confirmed',cancelled:'pill-declined'};
-      const stLabel={planned:'Dự kiến',booked:'Đã đặt',paid:'Đã trả',cancelled:'Đã hủy'};
-      this.items.forEach(i=>{
-        html+=`<tr ondblclick="Budget.openEdit('${i.id}')"><td><div style="font-weight:500">${Util.esc(i.category)}</div></td><td>${Util.esc(i.description||'—')}</td><td>${Util.fmtMoney(i.estimated_amount)}</td><td>${Util.fmtMoney(i.actual_amount)}</td><td>${Util.fmtMoney(i.paid_amount)}</td><td><span class="pill ${stPill[i.status]||'pill-notsent'}">${stLabel[i.status]||'—'}</span></td><td class="right"><button class="btn-close" onclick="Budget.openEdit('${i.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Budget.confirmDelete('${i.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></td></tr>`;
-      });
-      html+='</tbody></table></div></div>';
-    }
-    document.getElementById('content').innerHTML=html;
-  },
-  openAdd(){ this.openDrawer(null); },
-  openEdit(id){ this.openDrawer(this.items.find(i=>i.id===id)); },
-  openDrawer(i){
-    const isEdit=!!i;
-    const body=`<div class="row"><div class="field"><label class="label">Danh mục *</label><input class="input" id="bCat" value="${i?Util.esc(i.category):''}" placeholder="Địa điểm / Ảnh cưới..."/></div><div class="field"><label class="label">Nhà cung cấp</label><input class="input" id="bVendor" value="${i?Util.esc(i.vendor||''):''}"/></div></div>
-      <div class="field"><label class="label">Mô tả</label><input class="input" id="bDesc" value="${i?Util.esc(i.description||''):''}"/></div>
-      <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" type="number" id="bEst" value="${i?i.estimated_amount||0:0}"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" type="number" id="bAct" value="${i?i.actual_amount||0:0}"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" type="number" id="bPaid" value="${i?i.paid_amount||0:0}"/></div></div>
-      <div class="row"><div class="field"><label class="label">Hạn thanh toán</label><input class="input" type="date" id="bDue" value="${i?i.due_date||'':''}"/></div><div class="field"><label class="label">Trạng thái</label><select class="select" id="bStatus"><option value="planned" ${!i||i.status==='planned'?'selected':''}>Dự kiến</option><option value="booked" ${i&&i.status==='booked'?'selected':''}>Đã đặt</option><option value="paid" ${i&&i.status==='paid'?'selected':''}>Đã trả</option><option value="cancelled" ${i&&i.status==='cancelled'?'selected':''}>Đã hủy</option></select></div></div>
-      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="bNotes">${i?Util.esc(i.notes||''):''}</textarea></div>`;
-    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Budget.save('${i?i.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
-    UI.openDrawer(isEdit?'Sửa khoản chi':'Thêm khoản chi', body, foot);
-  },
-  async save(id){
-    const row={ category:document.getElementById('bCat').value.trim(), description:document.getElementById('bDesc').value.trim()||null, vendor:document.getElementById('bVendor').value.trim()||null, estimated_amount:parseFloat(document.getElementById('bEst').value)||0, actual_amount:parseFloat(document.getElementById('bAct').value)||0, paid_amount:parseFloat(document.getElementById('bPaid').value)||0, due_date:document.getElementById('bDue').value||null, status:document.getElementById('bStatus').value, notes:document.getElementById('bNotes').value.trim()||null };
-    if(!row.category){ Toast.err('Nhập danh mục'); return; }
-    try{ if(id) await DB.update('wed_budget_items',id,row); else await DB.insert('wed_budget_items',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.render(); }
-    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
-  },
-  confirmDelete(id){ UI.confirm('Xóa khoản chi?','',()=>this.doDelete(id),'Xóa',true); },
-  async doDelete(id){ try{ await DB.remove('wed_budget_items',id); Toast.ok('Đã xóa'); await this.render(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },
-  openAddGift(){
-    const guests=this.guests||[];
-    const body=`<div class="field"><label class="label">Người tặng</label><input class="input" id="gGiver" placeholder="Tên khách"/></div>
-      <div class="row"><div class="field"><label class="label">Số tiền (₫)</label><input class="input" type="number" id="gAmount" value="0"/></div><div class="field"><label class="label">Ngày nhận</label><input class="input" type="date" id="gDate" value="${new Date().toISOString().slice(0,10)}"/></div></div>
-      <div class="field"><label class="label">Mô tả quà</label><input class="input" id="gDesc" placeholder="Phong bì / quà vật chất..."/></div>
-      <div class="field"><label class="label">Đã cảm ơn?</label><select class="select" id="gThank"><option value="false">Chưa</option><option value="true">Rồi</option></select></div>`;
-    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Budget.saveGift()">Lưu</button>`;
-    UI.openDrawer('Thêm quà mừng', body, foot);
-  },
-  async saveGift(){
-    const row={ giver_name:document.getElementById('gGiver').value.trim()||null, amount:parseFloat(document.getElementById('gAmount').value)||0, received_date:document.getElementById('gDate').value||null, gift_description:document.getElementById('gDesc').value.trim()||null, thank_you_sent:document.getElementById('gThank').value==='true' };
-    try{ await DB.insert('wed_gifts',row); Toast.ok('Đã lưu quà mừng'); UI.closeDrawer(); await this.render(); }
-    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
-  }
-};
 
 /* ============================================================
    VIEW: SETTINGS
