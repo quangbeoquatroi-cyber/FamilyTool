@@ -340,6 +340,29 @@ a{color:inherit;text-decoration:none}
 .gx-money{position:relative}.gx-money .input{padding-right:30px;font-weight:600;text-align:right}.gx-money span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
 .gx-chk{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer}
 @media(max-width:820px){.gx-sides,.gx-cols{grid-template-columns:1fr}}
+
+/* ===== SƠ ĐỒ PHÒNG TIỆC ===== */
+.sp-seg{display:inline-flex;gap:2px;padding:3px;background:var(--ivory-2);border-radius:10px}
+.sp-seg button{padding:7px 12px;border-radius:7px;font-size:12.5px;color:var(--ink-2)}.sp-seg button.on{background:var(--paper);color:var(--burgundy);font-weight:600;box-shadow:var(--shadow-sm)}
+.sp-wrap{overflow-x:auto;border-radius:16px}
+.sp-floor{position:relative;min-width:780px;border:2px solid var(--line-2);border-radius:16px;overflow:hidden;background-color:#FCFAF5;background-image:radial-gradient(var(--line-2) 1px,transparent 1px);background-size:22px 22px;touch-action:pan-y}
+.sp-stage{position:absolute;top:0;left:50%;transform:translateX(-50%);width:46%;height:92px;border-radius:0 0 34px 34px;background:linear-gradient(180deg,#5A1F2E,#873347);color:#F7E9C8;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(107,39,55,.28);z-index:2;border-bottom:5px solid var(--champagne)}
+.sp-stage b{font-family:var(--serif);font-size:22px;letter-spacing:5px}.sp-stage small{font-size:11px;opacity:.85;letter-spacing:1px}
+.sp-aisle{position:absolute;top:92px;bottom:0;left:50%;transform:translateX(-50%);width:100px;background:repeating-linear-gradient(180deg,rgba(255,255,255,.0) 0 38px,rgba(255,255,255,.10) 38px 40px),linear-gradient(90deg,#8E2F45,#B24A5E 50%,#8E2F45);border-left:3px solid var(--champagne);border-right:3px solid var(--champagne);display:flex;align-items:center;justify-content:center;z-index:1;opacity:.93}
+.sp-aisle i{writing-mode:vertical-rl;transform:rotate(180deg);color:#F7E9C8;font-style:normal;font-size:11px;font-weight:600;letter-spacing:4px;white-space:nowrap}
+.sp-door{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:200px;height:34px;background:var(--forest);color:#fff;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:2px;z-index:3}
+.sp-t{position:absolute;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:conic-gradient(var(--champagne) var(--p),var(--ivory-2) 0);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;user-select:none;box-shadow:var(--shadow);z-index:4;transition:box-shadow .15s}
+.sp-t.long{width:124px;height:62px;border-radius:16px;background:linear-gradient(90deg,var(--champagne) var(--p),var(--ivory-2) 0)}
+.sp-t.full{background:var(--danger)}.sp-t.drag-over{box-shadow:0 0 0 4px var(--burgundy-soft),0 0 0 6px var(--burgundy)}
+.sp-t.moving{cursor:grabbing;box-shadow:var(--shadow-lg);z-index:9;transform:translate(-50%,-50%) scale(1.06)}
+.sp-in{width:calc(100% - 10px);height:calc(100% - 10px);background:var(--paper);border-radius:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;pointer-events:none}
+.sp-t:not(.long) .sp-in{border-radius:50%}
+.sp-in b{font-size:12px;color:var(--ink);max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sp-in span{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sp-sd{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);display:flex;gap:3px;pointer-events:none}
+.sp-sd i{font-style:normal;font-size:10px;font-weight:700;color:#fff;padding:1px 6px;border-radius:9px;box-shadow:var(--shadow-sm)}.sp-sd .g{background:#3A3A6B}.sp-sd .b{background:var(--burgundy)}
+.sp-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.sp-legend span{display:inline-flex;align-items:center;gap:6px}.lg{display:inline-block;width:14px;height:14px;border-radius:4px}
+.lg.stage{background:#873347}.lg.aisle{background:#B24A5E;border:2px solid var(--champagne)}.lg.door{background:var(--forest)}.lg.g{background:#3A3A6B;border-radius:50%}.lg.b{background:var(--burgundy);border-radius:50%}.lg.full{background:var(--danger);border-radius:50%}
 </style>
 <style id="wa-overrides">
 /* ============================================================
@@ -1455,7 +1478,7 @@ const Guestbook = {
   openEdit(id){ this.openDrawer(this.guests.find(x=>x.id===id)); },
   openDrawer(g){
     const side=g?g.side:'groom', cur=g?this.tableOf(g.id):null;
-    const grpOpts=this.groups.map(x=>`<option value="${x.id}" data-side="${x.side}" ${g&&g.group_id===x.id?'selected':''}>${Util.esc(x.name)} · ${Util.esc(this.sideLabel(x.side))}</option>`).join('');
+    const grpOpts=this.groupOpts(side,g?g.group_id:'');
     const used=tid=>this.assigns.filter(a=>a.table_id===tid&&(!g||a.guest_id!==g.id)).reduce((s,a)=>s+(a.seat_count||1),0);
     const tblOpts=this.tables.map(t=>{const u=used(t.id);return `<option value="${t.id}" ${cur&&cur.id===t.id?'selected':''}>${Util.esc(t.name)} (${u}/${t.capacity})${u>=t.capacity?' · đầy':''}</option>`;}).join('');
     const inviters=[...new Set(this.guests.map(x=>x.inviter_name).filter(Boolean))].map(n=>`<option value="${Util.esc(n)}">`).join('');
@@ -1482,8 +1505,10 @@ const Guestbook = {
       <div class="field"><label class="label">Sự kiện được mời</label>${ev}</div>
       <div class="field"><label class="label">Ghi chú nội bộ</label><textarea class="textarea" id="gNotes" placeholder="Ghi chú riêng">${v('notes')}</textarea></div>`;
     UI.openDrawer(g?'Sửa khách mời':'Thêm khách mời',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" id="btnSaveGuest" onclick="Guestbook.save('${g?g.id:''}')">${g?'Lưu thay đổi':'Thêm khách'}</button>`);
-    document.querySelectorAll('#gSideSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#gSideSeg button').forEach(x=>x.classList.toggle('on',x===b));});
+    document.querySelectorAll('#gSideSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#gSideSeg button').forEach(x=>x.classList.toggle('on',x===b));this.refreshGroups(b.dataset.v);});
   },
+  groupOpts(side,sel){ return this.groups.filter(x=>x.side===side).map(x=>`<option value="${x.id}" ${sel===x.id?'selected':''}>${Util.esc(x.name)}</option>`).join(''); },
+  refreshGroups(side){ const el=document.getElementById('gGroup'); el.innerHTML='<option value="">— Chưa phân nhóm —</option>'+this.groupOpts(side,el.value); },
   fmtMoney(el){ const d=el.value.replace(/\D/g,''); el.value=d?Number(d).toLocaleString('vi-VN'):''; },
   async save(id){
     const btn=document.getElementById('btnSaveGuest'), lbl=id?'Lưu thay đổi':'Thêm khách';
@@ -1569,12 +1594,12 @@ const RSVP = {
 const Seating = {
   tables:[], guests:[], assignments:[], unseated:[],
   async render(){
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Seating.toggleView()">${this.view==='list'?'Sơ đồ':'Danh sách'}</button><button class="btn btn-primary" onclick="Seating.openAddTable()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm bàn</button>`;
+    document.getElementById('topbarActions').innerHTML=`<div class="sp-seg">${[['plan','Sơ đồ phòng'],['grid','Thẻ bàn'],['list','Danh sách']].map(v=>`<button class="${this.view===v[0]?'on':''}" onclick="Seating.setView('${v[0]}')">${v[1]}</button>`).join('')}</div>${this.view==='plan'?'<button class="btn btn-ghost" onclick="Seating.autoLayout()">Xếp lại tự động</button>':''}<button class="btn btn-primary" onclick="Seating.openAddTable()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm bàn</button>`;
     const c=document.getElementById('content');
     c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
     await this.load();
   },
-  view:'grid',
+  view:'plan',
   async load(){
     try{
       const [t,g,a]=await Promise.all([ DB.list('wed_tables',{order:['display_order']}), DB.list('wed_guests',{order:['full_name']}), DB.list('wed_seating_assignments') ]);
@@ -1590,9 +1615,8 @@ const Seating = {
     this.unseated=this.guests.filter(g=>!seatedIds.has(g.id) && (g.rsvp_status!=='declined'));
   },
   renderView(){
-    if(this.view==='list') this.renderList(); else this.renderGrid();
+    if(this.view==='list') this.renderList(); else if(this.view==='grid') this.renderGrid(); else this.renderPlan();
   },
-  toggleView(){ this.view=this.view==='grid'?'list':'grid'; this.render(); },
   renderGrid(){
     const guestMap={}; this.guests.forEach(g=>guestMap[g.id]=g);
     let html='<div class="section-h">Khách chưa xếp bàn <span class="sub">'+this.unseated.length+' người</span></div>';
@@ -1693,7 +1717,105 @@ const Seating = {
       if(tid){ await this.unassign(assignmentId); await this.assign(guestId, tid); }
     }, 'Di chuyển');
   },
-  openAddTable(){ this.openTableDrawer(null); },
+  /* ===== SƠ ĐỒ PHÒNG TIỆC (kéo thả bàn) ===== */
+  AISLE:100, STAGE:92, DOOR:34,
+  setView(v){ this.view=v; this.render(); },
+  tSize(t){ return t.table_type==='long'?{hw:62,hh:32}:{hw:38,hh:38}; },
+  slot(k){ const s=k%2,i=(k-s)/2,c=i%3,r=Math.floor(i/3); return {x:s?86-c*11:14+c*11,y:150+r*112}; },
+  freeSlot(list){ for(let k=0;k<400;k++){ const p=this.slot(k); if(!list.some(t=>t.pos_x!=null&&Math.abs(t.pos_x-p.x)*9<90&&Math.abs(t.pos_y-p.y)<90)) return p; } return this.slot(0); },
+  ensurePos(){
+    const miss=this.tables.filter(t=>t.pos_x==null||t.pos_y==null); if(!miss.length) return;
+    const placed=this.tables.filter(t=>t.pos_x!=null&&t.pos_y!=null);
+    miss.forEach(t=>{ const p=this.freeSlot(placed); t.pos_x=p.x; t.pos_y=p.y; placed.push(t); });
+    this.persist(miss);
+  },
+  async persist(list){
+    try{ await Promise.all(list.map(t=>DB.update('wed_tables',t.id,{pos_x:t.pos_x,pos_y:t.pos_y}))); }
+    catch(e){ if(!this._warned){ this._warned=1; Toast.warn('Chưa lưu được vị trí bàn — hãy chạy file SQL cập nhật'); } }
+  },
+  autoLayout(){ UI.confirm('Xếp lại tự động?','Tất cả bàn sẽ được xếp lại gọn gàng hai bên lối đi. Vị trí kéo thả hiện tại sẽ mất.',async()=>{ this.tables.forEach((t,i)=>{const p=this.slot(i);t.pos_x=p.x;t.pos_y=p.y;}); await this.persist(this.tables); this.renderView(); Toast.ok('Đã xếp lại'); },'Xếp lại'); },
+  renderPlan(){
+    this.ensurePos();
+    const gm={}; this.guests.forEach(g=>gm[g.id]=g);
+    let h=`<div class="section-h">Khách chưa xếp bàn <span class="sub">${this.unseated.length} người · kéo thả vào bàn, hoặc bấm để chọn bàn</span></div><div class="unseated-list mb-24" id="unseatedDrop" ondrop="Seating.dropUnseated(event)" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">`;
+    if(!this.unseated.length) h+='<div class="text-xs muted" style="padding:8px;text-align:center">Tất cả khách đã có bàn</div>';
+    this.unseated.forEach(g=>{ h+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}</span></div>`; });
+    h+='</div><div class="section-h">Sơ đồ phòng tiệc <span class="sub">'+this.tables.length+' bàn · kéo bàn để đổi vị trí</span></div>';
+    if(!this.tables.length){ document.getElementById('content').innerHTML=h+UI.empty(I.seating,'Chưa có bàn nào','Bấm “Thêm bàn”, nhập số bàn cần tổ chức, hệ thống sẽ tự tạo và xếp vị trí.',`<button class="btn btn-primary" onclick="Seating.openAddTable()">Thêm bàn</button>`); return; }
+    const H=Math.max(660,Math.max(...this.tables.map(t=>t.pos_y))+130);
+    h+=`<div class="sp-wrap"><div class="sp-floor" id="spFloor" style="height:${H}px">
+      <div class="sp-stage"><b>SÂN KHẤU</b><small>♥ Cô dâu &amp; Chú rể ♥</small></div>
+      <div class="sp-aisle"><i>LỐI ĐI CÔ DÂU – CHÚ RỂ</i></div>
+      <div class="sp-door"><span>▲</span> CỬA VÀO</div>`;
+    this.tables.forEach(t=>{
+      const ta=this.assignments.filter(a=>a.table_id===t.id), used=ta.reduce((s,a)=>s+(a.seat_count||1),0), full=used>=t.capacity, pct=Math.min(100,Math.round(used/(t.capacity||1)*100));
+      const gN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='groom').length, bN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='bride').length;
+      h+=`<div class="sp-t ${t.table_type==='long'?'long':''} ${full?'full':''}" id="sp-${t.id}" style="left:${t.pos_x}%;top:${t.pos_y}px;--p:${pct}%" title="${Util.esc(t.name)}: ${used}/${t.capacity} chỗ" onpointerdown="Seating.tDown(event,'${t.id}')" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)"><div class="sp-in"><b>${Util.esc(t.name)}</b><span>${used}/${t.capacity}</span></div>${gN+bN?`<div class="sp-sd"><i class="g">${gN}</i><i class="b">${bN}</i></div>`:''}</div>`;
+    });
+    h+=`</div></div><div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
+    document.getElementById('content').innerHTML=h;
+  },
+  clampPos(x,y,W,H,d){
+    x=Math.min(W-d.hw-6,Math.max(d.hw+6,x)); y=Math.min(H-d.hh-this.DOOR-8,Math.max(this.STAGE+d.hh+12,y));
+    const cx=W/2, half=this.AISLE/2+d.hw+8;
+    if(Math.abs(x-cx)<half){ x=x<cx?cx-half:cx+half; }
+    return [Math.min(W-d.hw-6,Math.max(d.hw+6,x)),y];
+  },
+  tDown(e,id){
+    if(e.button!==0&&e.pointerType==='mouse') return;
+    const el=document.getElementById('sp-'+id), fl=document.getElementById('spFloor'), t=this.tables.find(x=>x.id===id), r=fl.getBoundingClientRect(), s=this.tSize(t);
+    this.drag={id,el,fl,t,sx:e.clientX,sy:e.clientY,ox:t.pos_x/100*r.width,oy:t.pos_y,moved:false,hw:s.hw,hh:s.hh};
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+    el.onpointermove=ev=>this.tMove(ev); el.onpointerup=el.onpointercancel=ev=>this.tUp(ev);
+  },
+  tMove(e){
+    const d=this.drag; if(!d) return; const dx=e.clientX-d.sx, dy=e.clientY-d.sy;
+    if(!d.moved){ if(Math.hypot(dx,dy)<5) return; d.moved=true; d.el.classList.add('moving'); }
+    const W=d.fl.clientWidth, [x,y]=this.clampPos(d.ox+dx,d.oy+dy,W,d.fl.clientHeight,d);
+    d.x=x; d.y=y; d.el.style.left=(x/W*100)+'%'; d.el.style.top=y+'px';
+  },
+  async tUp(e){
+    const d=this.drag; if(!d) return; this.drag=null; d.el.classList.remove('moving'); d.el.onpointermove=d.el.onpointerup=d.el.onpointercancel=null;
+    if(!d.moved){ this.openTableInfo(d.id); return; }
+    d.t.pos_x=Math.round(d.x/d.fl.clientWidth*1000)/10; d.t.pos_y=Math.round(d.y);
+    await this.persist([d.t]);
+  },
+  openTableInfo(id){
+    const t=this.tables.find(x=>x.id===id), gm={}; this.guests.forEach(g=>gm[g.id]=g);
+    const ta=this.assignments.filter(a=>a.table_id===id), used=ta.reduce((s,a)=>s+(a.seat_count||1),0);
+    const rows=ta.map(a=>{const g=gm[a.guest_id]; return g?`<div class="gx-mem" style="cursor:default"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div style="flex:1"><div class="gx-mem-n">${Util.esc(g.full_name)}</div><div class="text-xs muted">${g.side==='groom'?'Nhà trai':'Nhà gái'}</div></div><button class="btn-close" title="Rút khỏi bàn" onclick="UI.closeModal();Seating.unassign('${a.id}')">✕</button></div>`:'';}).join('')||'<div class="text-xs muted" style="padding:12px 0">Bàn đang trống</div>';
+    const opts=this.unseated.map(g=>`<option value="${g.id}">${Util.esc(g.full_name)} (${g.side==='groom'?'Trai':'Gái'})</option>`).join('');
+    UI.modal(`<div class="modal-title">${Util.esc(t.name)} <span class="text-sm muted" style="font-family:var(--sans)">· ${used}/${t.capacity} chỗ</span></div><div class="modal-body"><div style="max-height:260px;overflow:auto">${rows}</div>
+      ${opts&&used<t.capacity?`<div style="display:flex;gap:8px;margin-top:14px"><select class="select" id="spAdd">${opts}</select><button class="btn btn-primary btn-sm" onclick="const v=document.getElementById('spAdd').value;UI.closeModal();Seating.assign(v,'${id}')">Xếp vào</button></div>`:''}</div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="UI.closeModal();Seating.openEditTable('${id}')">Sửa bàn</button><button class="btn btn-ghost" onclick="UI.closeModal();Seating.confirmDeleteTable('${id}')">Xóa bàn</button><button class="btn btn-primary" onclick="UI.closeModal()">Đóng</button></div>`);
+  },
+  /* ===== THÊM NHIỀU BÀN ===== */
+  nextNo(){ let m=0; this.tables.forEach(t=>{const x=/(\d+)\s*$/.exec(t.name||''); if(x) m=Math.max(m,+x[1]);}); return Math.max(m,this.tables.length)+1; },
+  openAddTable(){
+    const body=`<div class="gx-box" style="background:var(--burgundy-soft);border-color:#E7CDD3"><div class="field" style="margin-bottom:0"><label class="label">Bạn tổ chức bao nhiêu bàn? *</label><input class="input" type="number" id="bnCount" min="1" max="200" value="10" style="font-size:20px;font-weight:600;text-align:center" oninput="Seating.bnPrev()"/></div></div>
+      <div class="row"><div class="field"><label class="label">Sức chứa mỗi bàn</label><input class="input" type="number" id="bnCap" min="1" value="10" oninput="Seating.bnPrev()"/></div><div class="field"><label class="label">Loại bàn</label><select class="select" id="bnType"><option value="round">Tròn</option><option value="long">Dài</option></select></div></div>
+      <div class="row"><div class="field"><label class="label">Tên bàn</label><input class="input" id="bnPre" value="Bàn" oninput="Seating.bnPrev()"/></div><div class="field"><label class="label">Bắt đầu từ số</label><input class="input" type="number" id="bnStart" min="1" value="${this.nextNo()}" oninput="Seating.bnPrev()"/></div></div>
+      <div class="gx-box" id="bnPrev" style="font-size:13px"></div>`;
+    UI.openDrawer('Thêm bàn tiệc',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" id="bnSave" onclick="Seating.saveBulk()">Tạo bàn</button>`);
+    this.bnPrev();
+  },
+  bnPrev(){
+    const n=Math.min(200,parseInt(document.getElementById('bnCount').value)||0), c=parseInt(document.getElementById('bnCap').value)||0, s=parseInt(document.getElementById('bnStart').value)||1, p=document.getElementById('bnPre').value.trim()||'Bàn';
+    document.getElementById('bnPrev').innerHTML=n?`Sẽ tạo <b>${n} bàn</b>: ${Util.esc(p)} ${s} → ${Util.esc(p)} ${s+n-1}<br>Tổng sức chứa: <b>${n*c} chỗ</b> · Các bàn tự động xếp hai bên lối đi, sau đó bạn kéo thả để chỉnh.`:'Nhập số bàn cần tạo.';
+  },
+  async saveBulk(){
+    const n=Math.min(200,parseInt(document.getElementById('bnCount').value)||0), cap=parseInt(document.getElementById('bnCap').value)||10, type=document.getElementById('bnType').value, s=parseInt(document.getElementById('bnStart').value)||1, p=document.getElementById('bnPre').value.trim()||'Bàn';
+    if(n<1){ Toast.err('Nhập số bàn từ 1 trở lên'); return; }
+    const placed=this.tables.filter(t=>t.pos_x!=null).map(t=>({pos_x:t.pos_x,pos_y:t.pos_y})), base=this.tables.length, rows=[];
+    for(let i=0;i<n;i++){ const pos=this.freeSlot(placed); placed.push({pos_x:pos.x,pos_y:pos.y}); rows.push({name:`${p} ${s+i}`,capacity:cap,table_type:type,display_order:base+i+1,pos_x:pos.x,pos_y:pos.y}); }
+    const btn=document.getElementById('bnSave'); btn.disabled=true; btn.textContent='Đang tạo...';
+    try{
+      let {error}=await sb.from('wed_tables').insert(rows);
+      if(error&&/pos_x|pos_y/.test(error.message||'')){ ({error}=await sb.from('wed_tables').insert(rows.map(({pos_x,pos_y,...r})=>r))); if(!error) Toast.warn('Chưa có cột vị trí — hãy chạy file SQL để lưu vị trí bàn'); }
+      if(error) throw error;
+      Toast.ok(`Đã tạo ${n} bàn`); UI.closeDrawer(); await this.load();
+    }catch(e){ Toast.err('Tạo bàn thất bại: '+(e.message||'')); btn.disabled=false; btn.textContent='Tạo bàn'; }
+  },
   openEditTable(id){ this.openTableDrawer(this.tables.find(t=>t.id===id)); },
   openTableDrawer(t){
     const isEdit=!!t;
