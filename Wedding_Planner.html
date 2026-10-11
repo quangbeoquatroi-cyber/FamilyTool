@@ -917,7 +917,14 @@ const DB = {
     return data||[];
   },
   async insert(table, row){ const {data,error}=await sb.from(table).insert(row).select().single(); if(error) throw error; return data; },
-  async update(table, id, patch){ const {data,error}=await sb.from(table).update({...patch, updated_at:new Date().toISOString()}).eq('id',id).select().single(); if(error) throw error; return data; },
+  async update(table, id, patch){
+    let {data,error}=await sb.from(table).update({...patch, updated_at:new Date().toISOString()}).eq('id',id).select().single();
+    // Bảng chưa có cột updated_at -> thử lại không kèm cột này (tương thích schema cũ)
+    if(error && /updated_at/i.test(error.message||'')){
+      ({data,error}=await sb.from(table).update(patch).eq('id',id).select().single());
+    }
+    if(error) throw error; return data;
+  },
   async remove(table, id){ const {error}=await sb.from(table).delete().eq('id',id); if(error) throw error; },
   async count(table, eq){ let q=sb.from(table).select('*',{count:'exact',head:true}); if(eq) for(const k in eq) q=q.eq(k,eq[k]); const {count,error}=await q; if(error) throw error; return count; }
 };
