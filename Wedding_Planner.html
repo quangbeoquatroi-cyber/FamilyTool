@@ -676,6 +676,15 @@ textarea{ line-height:1.5; }
 @media (prefers-reduced-motion:reduce){
   .modal-overlay,.drawer,.toast,.skeleton{ animation:none!important; transition:none!important; }
 }
+
+/* ---- Fix: icons injected without .ico class rendered at intrinsic size ---- */
+.search-box > svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+:where(svg:not([width]):not([height])){width:1.15em;height:1.15em}
+/* ---- Fix: stacked row actions + closed-drawer shadow bleeding onto page edge ---- */
+.tbl td .btn-close{display:inline-flex;vertical-align:middle}
+.tbl td.right{white-space:nowrap}
+.drawer:not(.show){box-shadow:none;visibility:hidden;transition:transform .3s var(--ease),visibility 0s .3s}
+.drawer.show{visibility:visible;transition:transform .3s var(--ease)}
 </style>
 </head>
 <body>
