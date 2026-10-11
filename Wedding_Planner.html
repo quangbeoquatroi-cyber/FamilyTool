@@ -625,7 +625,7 @@ const I = {
 
 /* ---------- ROUTER ---------- */
 const Router = {
-  routes:{ overview:Overview, guest:Guestbook, groups:Groups, rsvp:RSVP, seating:Seating, events:Events, tasks:Tasks, budget:Budget, settings:Settings },
+  get routes(){ return { overview:Overview, guest:Guestbook, groups:Groups, rsvp:RSVP, seating:Seating, events:Events, tasks:Tasks, budget:Budget, settings:Settings }; },
   current:'overview',
   navItems:[
     {id:'overview',label:'Tổng quan',ico:I.overview,group:'Chính'},
