@@ -321,8 +321,8 @@ a{color:inherit;text-decoration:none}
 <div id="denied">
   <div class="denied-icon">✕</div>
   <div class="denied-title">Truy cập bị từ chối</div>
-  <div class="denied-msg">Tài khoản này không nằm trong danh sách được phê duyệt. Vui lòng đăng xuất và liên hệ người tổ chức.</div>
-  <button class="btn btn-ghost" onclick="Auth.signOut()">Đăng xuất</button>
+  <div class="denied-msg">Tài khoản này không nằm trong danh sách được phê duyệt. Hãy đăng nhập bằng tài khoản khác.</div>
+  <button class="btn btn-ghost" onclick="Auth.signOut()">Đăng nhập tài khoản khác</button>
 </div>
 
 <!-- APP -->
@@ -518,19 +518,26 @@ const Auth = {
     const {data:{session}} = await sb.auth.getSession();
     if(session){ await this.handleSession(session); }
     else { this.showLogin(); }
-    sb.auth.onAuthStateChange(async (evt, session)=>{
-      if(evt==='SIGNED_OUT'){ this.user=null; this.showLogin(); }
-      else if(session && evt!=='INITIAL_SESSION'){ await this.handleSession(session); }
+    // QUAN TRỌNG: không await/gọi API supabase bên trong callback này (gây deadlock -> treo).
+    // Luôn đẩy sang tick sau bằng setTimeout.
+    sb.auth.onAuthStateChange((evt, session)=>{
+      if(evt==='SIGNED_OUT'){ setTimeout(()=>{ this.user=null; this.showLogin(); },0); }
+      else if(session && (evt==='SIGNED_IN' || evt==='USER_UPDATED') && !this.user && !this._handling){
+        setTimeout(()=>this.handleSession(session),0);
+      }
     });
   },
   async handleSession(session){
-    const email = session.user.email;
-    // Frontend allowlist check
-    const allowed = await this.checkAllowed(email);
-    if(!allowed){ await this.deny(); return; }
-    this.user = session.user;
-    this.showTransition();
-    setTimeout(()=>{ this.showApp(); }, 900);
+    if(this._handling) return;
+    this._handling = true;
+    try{
+      const email = session.user.email;
+      const allowed = await this.checkAllowed(email);
+      if(!allowed){ await this.deny(email); return; }
+      this.user = session.user;
+      this.showTransition();
+      setTimeout(()=>{ this.showApp(); }, 900);
+    }finally{ this._handling = false; }
   },
   async checkAllowed(email){
     // 1) Frontend check
@@ -602,14 +609,31 @@ const Auth = {
     window.addEventListener('message', onMsg);
     const timer=setInterval(()=>{ if(popup.closed){ done(); const b=document.getElementById('btnGoogleLogin'); if(b && !Auth.user){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } } }, 600);
   },
-  async deny(){
-    try{ await sb.auth.signOut(); }catch(e){}
+  async deny(email){
+    await this._hardSignOut();
     this.user=null;
+    const dm=document.querySelector('#denied .denied-msg');
+    if(dm) dm.textContent='Tài khoản '+(email||'này')+' không nằm trong danh sách được phê duyệt. Hãy đăng nhập bằng tài khoản khác.';
     document.getElementById('login').style.display='none';
     document.getElementById('transition').classList.remove('show');
     document.getElementById('denied').classList.add('show');
   },
+  async _hardSignOut(){
+    // signOut local (không phụ thuộc mạng, có timeout) rồi xoá sạch token còn sót
+    try{ await Promise.race([ sb.auth.signOut({scope:'local'}), new Promise(r=>setTimeout(r,2500)) ]); }catch(e){}
+    try{
+      [localStorage, sessionStorage].forEach(st=>{
+        Object.keys(st).filter(k=>/^sb-|supabase/i.test(k)).forEach(k=>st.removeItem(k));
+      });
+    }catch(e){}
+  },
+  resetLoginUI(){
+    const b=document.getElementById('btnGoogleLogin'), t=document.getElementById('googleBtnText'), e=document.getElementById('loginError');
+    if(b) b.disabled=false; if(t) t.textContent='Tiếp tục với Google'; if(e) e.classList.remove('show');
+  },
   showLogin(){
+    this.resetLoginUI();
+    try{ if(location.hash||location.search) history.replaceState(null,'',location.pathname); }catch(e){}
     document.getElementById('app').classList.remove('show');
     document.getElementById('transition').classList.remove('show');
     document.getElementById('denied').classList.remove('show');
@@ -632,8 +656,9 @@ const Auth = {
     Router.init();
   },
   async signOut(){
-    try{ await sb.auth.signOut(); }catch(e){}
+    await this._hardSignOut();
     this.user=null;
+    this._handling=false;
     this.showLogin();
   }
 };
