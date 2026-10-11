@@ -397,6 +397,12 @@ const CONFIG = {
 };
 
 /* ---------- SUPABASE CLIENT ---------- */
+/* localStorage có thể bị chặn trong iframe/sandbox -> fallback bộ nhớ tạm */
+function safeStorage(){
+  try{ const k='__wed_t'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return localStorage; }
+  catch(e){ const m={}; return { getItem:k=>(k in m?m[k]:null), setItem:(k,v)=>{m[k]=String(v)}, removeItem:k=>{delete m[k]} }; }
+}
+const POPUP_NAME='wed_oauth_popup';
 let sb = null;
 function initSupabase(){
   if(sb) return sb;
@@ -404,7 +410,7 @@ function initSupabase(){
     throw new Error("Không tải được thư viện Supabase. Kiểm tra kết nối mạng.");
   }
   sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit', storage: safeStorage() }
   });
   return sb;
 }
@@ -548,14 +554,27 @@ const Auth = {
       showError('Bạn đang mở file trực tiếp trên máy. Google OAuth cần host qua http/https (GitHub Pages, Netlify...). Vui lòng upload file lên web rồi mở bằng URL https.');
       return;
     }
-    if(window.top!==window.self){
-      showError('Trang đang chạy trong khung nhúng (iframe). Google chặn đăng nhập trong iframe. Hãy mở trang trong tab riêng.');
-      return;
-    }
     if(!sb){ showError('Ứng dụng chưa khởi tạo được Supabase. Tải lại trang hoặc kiểm tra kết nối mạng.'); return; }
+    const inIframe = (()=>{ try{ return window.top!==window.self; }catch(e){ return true; } })();
+    // Redirect URL phải là chính trang này (đã khai báo trong Supabase → Redirect URLs)
+    const pageUrl = window.location.origin + window.location.pathname;
     try{
-      const redirectTo = window.location.origin + window.location.pathname.replace(/\/[^/]*$/,'/');
-      const {error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo, scopes:'openid email profile' } });
+      if(inIframe){
+        // ---- POPUP FLOW: chạy được trong iframe vì Google mở ở cửa sổ top-level ----
+        // Mở popup NGAY trong sự kiện click (đồng bộ) để không bị chặn popup
+        const w=500,h=650, left=Math.max(0,(screen.width-w)/2), top=Math.max(0,(screen.height-h)/2);
+        const popup = window.open('about:blank', POPUP_NAME, `width=${w},height=${h},left=${left},top=${top}`);
+        if(!popup){ showError('Trình duyệt đã chặn cửa sổ đăng nhập. Hãy cho phép popup cho trang này rồi bấm lại, hoặc mở trang trong tab riêng.'); return; }
+        try{ popup.document.write('<p style="font-family:sans-serif;padding:24px;color:#555">Đang mở Google…</p>'); }catch(e){}
+        const {data,error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:pageUrl, scopes:'openid email profile', skipBrowserRedirect:true, queryParams:{ prompt:'select_account' } } });
+        if(error || !data?.url){ popup.close(); throw error || new Error('Không lấy được URL đăng nhập'); }
+        popup.location.href = data.url;
+        Auth._waitPopup(popup, showError);
+        return;
+      }
+      // ---- REDIRECT FLOW (tab riêng) ----
+      const redirectTo = pageUrl;
+      const {error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo, scopes:'openid email profile', queryParams:{ prompt:'select_account' } } });
       if(error) throw error;
       // signInWithOAuth tự chuyển hướng trình duyệt; nếu vẫn ở đây sau 1.5s thì có thể redirect URL chưa được thêm vào Supabase
       setTimeout(()=>{ if(document.visibilityState==='visible'){ showError('Không chuyển hướng được. Kiểm tra: 1) đã bật Google provider trong Supabase Auth, 2) đã thêm "'+redirectTo+'" vào Redirect URLs (Supabase → Authentication → URL Configuration).'); } }, 4000);
@@ -566,6 +585,22 @@ const Auth = {
       else if(/redirect|url/i.test(m)) hint='URL chuyển hướng chưa được thêm. Vào Supabase → Authentication → URL Configuration → thêm: '+(window.location.origin+window.location.pathname.replace(/\/[^/]*$/,'/'));
       showError(hint);
     }
+  },
+  _waitPopup(popup, showError){
+    const done=()=>{ window.removeEventListener('message', onMsg); clearInterval(timer); };
+    const onMsg=async (e)=>{
+      if(e.source!==popup || !e.data || e.data.type!=='wed-oauth') return;
+      done();
+      try{ popup.close(); }catch(_){}
+      if(e.data.error){ showError('Đăng nhập thất bại: '+e.data.error); return; }
+      try{
+        const {error}=await sb.auth.setSession({ access_token:e.data.access_token, refresh_token:e.data.refresh_token });
+        if(error) throw error;
+        // onAuthStateChange(SIGNED_IN) sẽ tự gọi handleSession
+      }catch(err){ showError('Không thiết lập được phiên đăng nhập: '+(err.message||err)); }
+    };
+    window.addEventListener('message', onMsg);
+    const timer=setInterval(()=>{ if(popup.closed){ done(); const b=document.getElementById('btnGoogleLogin'); if(b && !Auth.user){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } } }, 600);
   },
   async deny(){
     try{ await sb.auth.signOut(); }catch(e){}
@@ -1636,6 +1671,18 @@ const Settings = {
 
 /* ---------- BOOT ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
+  // Đây là cửa sổ popup OAuth: chỉ chuyển token về trang gốc rồi đóng, KHÔNG chạy app
+  if(window.name===POPUP_NAME && window.opener){
+    const qp=new URLSearchParams(location.search.slice(1)+'&'+location.hash.replace(/^#/,''));
+    const at=qp.get('access_token'), rt=qp.get('refresh_token');
+    const err=qp.get('error_description')||qp.get('error');
+    if(at || err){
+      document.body.innerHTML='<p style="font-family:sans-serif;padding:24px;color:#555">Đăng nhập xong, đang quay lại…</p>';
+      try{ window.opener.postMessage({ type:'wed-oauth', access_token:at, refresh_token:rt, error: err?err.replace(/\+/g,' '):null }, '*'); }catch(e){}
+      setTimeout(()=>window.close(), 300);
+      return;
+    }
+  }
   document.getElementById('btnGoogleLogin').addEventListener('click', ()=>Auth.signInWithGoogle());
   window.addEventListener('pageshow', ()=>{ const b=document.getElementById('btnGoogleLogin'); if(b){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } });
   try{
