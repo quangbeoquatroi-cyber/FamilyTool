@@ -2224,10 +2224,10 @@ const Seating = {
 const Plan = {
   phases:[], events:[], tasks:[], items:[], gifts:[], guests:[], guestGifts:[], cfg:{},
   tab:'route', ok:true, inited:false, open:new Set(), closedPh:new Set(),
-  fStatus:'', fAssignee:'', fEvent:'',
   nat:new Intl.Collator('vi',{numeric:true,sensitivity:'base'}),
   ST:{todo:'Cần làm',in_progress:'Đang làm',done:'Hoàn thành',cancelled:'Đã hủy'},
   BST:{planned:['Dự kiến','pill-notsent'],booked:['Đã đặt','pill-sent'],paid:['Đã trả','pill-confirmed'],cancelled:['Đã hủy','pill-declined']},
+  dbHint:'<div class="text-xs muted" style="margin-top:6px">Database chưa có cột liên kết — chạy file <b>wedding-plan-phases.sql</b> trong Supabase SQL Editor rồi tải lại trang.</div>',
   ic(i){ return i.replace('<svg','<svg style="width:15px;height:15px"'); },
   chev:'<svg class="pl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>',
   money(n){ n=Number(n)||0; const a=Math.abs(n); if(a>=1e9) return (n/1e9).toLocaleString('vi-VN',{maximumFractionDigits:2})+' tỷ'; if(a>=1e6) return (n/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tr'; return n.toLocaleString('vi-VN')+' ₫'; },
@@ -2239,10 +2239,7 @@ const Plan = {
   /* ---------- tải dữ liệu ---------- */
   actions(){
     const P=this.ic(I.plus);
-    const a={ route:`<button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button><button class="btn btn-primary" onclick="Plan.openEvent()">${P} Thêm sự kiện</button>`,
-      tasks:`<button class="btn btn-primary" onclick="Plan.openTask()">${P} Thêm công việc</button>`,
-      budget:`<button class="btn btn-ghost" onclick="Plan.openGift()">Quà mừng</button><button class="btn btn-primary" onclick="Plan.openBudget()">${P} Thêm khoản chi</button>` };
-    document.getElementById('topbarActions').innerHTML=a[this.tab]||'';
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Plan.openGift()">Quà mừng</button><button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button><button class="btn btn-primary" onclick="Plan.openEvent()">${P} Thêm sự kiện</button>`;
   },
   async render(){
     this.actions();
@@ -2291,7 +2288,6 @@ const Plan = {
   },
 
   /* ---------- khung chung ---------- */
-  setTab(t){ this.tab=t; this.actions(); this.paint(); },
   paint(){
     const c=document.getElementById('content'), sc=this.scroller(), top=sc?sc.scrollTop:0;
     const all=this.agg(this.tasks,this.items), {g}=this.groups(), doneP=g.filter(x=>this.phDone(x)).length;
@@ -2304,10 +2300,10 @@ const Plan = {
       <div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Công việc</div><div class="stat-value">${all.td}/${all.tt}</div><div class="stat-sub">${all.pct}% hoàn thành${all.od?` · <span style="color:var(--danger)">${all.od} quá hạn</span>`:''}</div></div>
       <div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Chi phí thực tế</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(all.act)}</div><div class="stat-sub">dự kiến ${this.money(all.est)} · đã trả ${this.money(all.paid)}</div></div>
       <div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Quà mừng</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(totalGifts)}</div><div class="stat-sub">${this.gifts.length} món · ${this.guestGifts.length} khách mừng</div></div></div>
-      <div class="gx-tabs">${[['route','Lộ trình & sự kiện'],['tasks','Công việc'],['budget','Ngân sách & quà']].map(t=>`<button class="gx-tab ${this.tab===t[0]?'on':''}" onclick="Plan.setTab('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="plBody"></div>`;
+      <div id="plBody"></div>`;
     c.innerHTML=h; this.paintBody(); if(sc) sc.scrollTop=top;
   },
-  paintBody(){ if(this.tab==='tasks') this.paintTasks(); else if(this.tab==='budget') this.paintBudget(); else this.paintRoute(); },
+  paintBody(){ this.paintRoute(); document.getElementById('plBody').insertAdjacentHTML('beforeend',this.giftsHtml()); },
 
   /* ---------- TAB 1: LỘ TRÌNH ---------- */
   taskRow(t){
@@ -2360,49 +2356,14 @@ const Plan = {
   toggleEv(id){ this.open.has(id)?this.open.delete(id):this.open.add(id); const e=document.getElementById('pev-'+(id||'x')); if(e) e.classList.toggle('open',this.open.has(id)); },
   togglePh(k){ this.closedPh.has(k)?this.closedPh.delete(k):this.closedPh.add(k); const e=document.getElementById('php-'+k); if(e) e.classList.toggle('collapsed',this.closedPh.has(k)); },
 
-  /* ---------- TAB 2: CÔNG VIỆC ---------- */
-  paintTasks(){
-    const el=document.getElementById('plBody'), assignees=[...new Set(this.tasks.map(t=>t.assignee).filter(Boolean))];
-    const ok=t=>(!this.fStatus||t.status===this.fStatus)&&(!this.fAssignee||t.assignee===this.fAssignee)&&(!this.fEvent||(this.fEvent==='__none'?this.evTasks('').includes(t):t.event_id===this.fEvent));
-    let h=`<div class="toolbar"><select class="filter-select" onchange="Plan.fStatus=this.value;Plan.paintBody()"><option value="">Tất cả trạng thái</option>${Object.keys(this.ST).map(k=>`<option value="${k}" ${this.fStatus===k?'selected':''}>${this.ST[k]}</option>`).join('')}</select>
-      <select class="filter-select" onchange="Plan.fAssignee=this.value;Plan.paintBody()"><option value="">Tất cả người phụ trách</option>${assignees.map(a=>`<option ${this.fAssignee===a?'selected':''}>${Util.esc(a)}</option>`).join('')}</select>
-      <select class="filter-select" onchange="Plan.fEvent=this.value;Plan.paintBody()">${this.evOptions(this.fEvent,{all:'Tất cả sự kiện',none:true})}</select></div>`;
-    const {g,none}=this.groups(), secs=[]; let n=0;
-    g.concat([none]).forEach(x=>{ const evs=x.evs.slice(); if(!x.p) evs.push({id:'',name:'Chưa gắn sự kiện'});
-      const parts=evs.map(e=>({e,T:this.evTasks(e.id).filter(ok)})).filter(q=>q.T.length);
-      if(parts.length) secs.push({x,parts}); });
-    secs.forEach(({x,parts})=>{ h+=`<div class="pl-grp"><div class="pl-grp-h"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name:'Khác')}</div><div class="card">`;
-      parts.forEach(({e,T})=>{ n+=T.length; h+=`<div class="pl-sub">${Util.esc(e.name)}${e.event_date?` <small>${Util.fmtDate(e.event_date)}</small>`:''}<em>${T.filter(t=>t.status==='done').length}/${T.length}</em></div>${T.map(t=>this.taskRow(t)).join('')}`; });
-      h+='</div></div>'; });
-    if(!n) h+=UI.empty(I.tasks,'Không có công việc phù hợp','Thêm công việc hoặc đổi bộ lọc.',`<button class="btn btn-primary" onclick="Plan.openTask()">${this.ic(I.plus)} Thêm công việc</button>`);
-    el.innerHTML=h;
-  },
-
-  /* ---------- TAB 3: NGÂN SÁCH & QUÀ ---------- */
-  paintBudget(){
-    const el=document.getElementById('plBody'), {g,none}=this.groups(), cells=[];
-    g.concat([none]).forEach(x=>{ const A=this.gAgg(x); if(x.p||x.evs.length||A.est||A.act) cells.push({x,A}); });
+  /* ---------- QUÀ MỪNG (cuối trang lộ trình) ---------- */
+  giftsHtml(){
     let h='';
-    const withMoney=cells.filter(c=>c.A.est||c.A.act);
-    if(withMoney.length){ h+='<div class="section-h">Chi phí theo giai đoạn</div><div class="pl-bgrid">'+withMoney.map(({x,A})=>{ const base=Math.max(A.act,A.est)||1, pa=Math.min(100,A.paid/base*100), pb=Math.min(100,A.act/base*100), pe=Math.min(100,A.est/base*100), over=A.est>0&&A.act>A.est;
-      return `<div class="pl-bc"><div class="pl-bc-h"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name:'Khác')}</div><div class="pl-bc-v">${Util.fmtMoney(A.act||A.est)}<small>${A.act?'thực tế':'dự kiến'}</small></div>
-      <div class="pl-stack"><i class="e" style="width:${pe}%"></i><i class="a ${over?'over':''}" style="width:${pb}%"></i><i class="p" style="width:${pa}%"></i></div>
-      <div class="pl-bc-f"><span>Dự kiến ${this.money(A.est)}</span><span>Đã trả ${this.money(A.paid)}</span>${over?`<span class="od">Vượt ${this.money(A.act-A.est)}</span>`:''}</div></div>`; }).join('')+'</div>'; }
-    h+='<div class="section-h" style="margin-top:8px">Khoản chi<span class="sub">nhóm theo giai đoạn & sự kiện</span></div>';
-    const parts=[]; g.concat([none]).forEach(x=>{ const evs=x.evs.slice(); if(!x.p) evs.push({id:'',name:'Chưa gắn sự kiện'}); evs.forEach(e=>{ const B=this.evItems(e.id); if(B.length) parts.push({x,e,B,A:this.agg([],B)}); }); });
-    if(!parts.length) h+=UI.empty(I.budget,'Chưa có khoản chi','Thêm khoản ngân sách và gắn vào sự kiện để theo dõi.',`<button class="btn btn-primary" onclick="Plan.openBudget()">${this.ic(I.plus)} Thêm khoản chi</button>`);
-    else{
-      const tot=this.agg([],this.items);
-      h+='<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl pl-bt"><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Nhà cung cấp</th><th class="right">Dự kiến</th><th class="right">Thực tế</th><th class="right">Đã trả</th><th>Hạn TT</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
-      parts.forEach(({x,e,B,A})=>{ h+=`<tr class="pl-bt-g"><td colspan="3"><span class="pl-grp-n">${x.p?x.idx+1:'–'}</span>${Util.esc(x.p?x.p.name+' · ':'')}<b>${Util.esc(e.name)}</b></td><td class="right">${Util.fmtMoney(A.est)}</td><td class="right">${Util.fmtMoney(A.act)}</td><td class="right">${Util.fmtMoney(A.paid)}</td><td colspan="3"></td></tr>`;
-        B.forEach(i=>{ const s=this.BST[i.status]||this.BST.planned; h+=`<tr ondblclick="Plan.openBudget('${i.id}')"><td><div style="font-weight:500">${Util.esc(i.category)}</div></td><td>${Util.esc(i.description||'—')}</td><td>${Util.esc(i.vendor||'—')}</td><td class="right">${Util.fmtMoney(i.estimated_amount)}</td><td class="right">${Util.fmtMoney(i.actual_amount)}</td><td class="right">${Util.fmtMoney(i.paid_amount)}</td><td>${i.due_date?Util.fmtDate(i.due_date):'—'}</td><td><span class="pill ${s[1]}">${s[0]}</span></td><td class="right" style="white-space:nowrap"><button class="btn-close" onclick="Plan.openBudget('${i.id}')">${this.ic(I.edit)}</button><button class="btn-close" onclick="Plan.delBudget('${i.id}')">${this.ic(I.trash)}</button></td></tr>`; }); });
-      h+=`<tr class="pl-bt-t"><td colspan="3">Tổng cộng</td><td class="right">${Util.fmtMoney(tot.est)}</td><td class="right">${Util.fmtMoney(tot.act)}</td><td class="right">${Util.fmtMoney(tot.paid)}</td><td colspan="3">Còn phải trả: ${Util.fmtMoney(tot.act-tot.paid)}</td></tr></tbody></table></div></div>`;
-    }
     const gGuest=this.guestGifts.reduce((s,x)=>s+Number(x.gift_amount),0), gCash=this.guestGifts.filter(x=>x.gift_method!=='transfer').reduce((s,x)=>s+Number(x.gift_amount),0);
     h+=`<div class="section-h" style="margin-top:34px">Quà mừng<span class="sub">tiền mừng ghi ở danh sách khách: ${Util.fmtMoney(gGuest)} (${this.guestGifts.length} khách · TM ${this.money(gCash)} · CK ${this.money(gGuest-gCash)})</span></div>`;
     if(!this.gifts.length) h+='<div class="card" style="padding:18px 22px;color:var(--muted);font-size:13px">Chưa có quà mừng ghi riêng. Bấm “Quà mừng” để thêm phong bì hoặc quà vật chất ngoài danh sách khách.</div>';
     else h+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Người tặng</th><th class="right">Số tiền</th><th>Ngày nhận</th><th>Mô tả</th><th>Cảm ơn</th><th></th></tr></thead><tbody>${this.gifts.map(x=>`<tr><td style="font-weight:500">${Util.esc(x.giver_name||'—')}</td><td class="right">${Util.fmtMoney(x.amount)}</td><td>${x.received_date?Util.fmtDate(x.received_date):'—'}</td><td>${Util.esc(x.gift_description||'—')}</td><td><button class="pill ${x.thank_you_sent?'pill-confirmed':'pill-pending'}" onclick="Plan.toggleThank('${x.id}')">${x.thank_you_sent?'Đã cảm ơn':'Chưa cảm ơn'}</button></td><td class="right"><button class="btn-close" onclick="Plan.delGift('${x.id}')">${this.ic(I.trash)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
-    el.innerHTML=h;
+    return h;
   },
 
   /* ---------- CÔNG VIỆC: thao tác ---------- */
@@ -2413,7 +2374,7 @@ const Plan = {
   openTask(id,evId){
     const t=id?this.tasks.find(x=>x.id===id):null, ev=t?t.event_id:evId, o=(k,v,l)=>`<option value="${k}" ${(t?t[v]:'')===k||(!t&&k===l)?'selected':''}>`;
     const body=`<div class="field"><label class="label">Công việc *</label><input class="input" id="tkTitle" value="${t?Util.esc(t.title):''}"/></div>
-      ${this.ok?`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="tkEvent">${this.evOptions(ev||'')}</select></div>`:''}
+      <div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="tkEvent" ${this.ok?'':'disabled'}>${this.evOptions(ev||'')}</select>${this.ok?'':this.dbHint}</div>
       <div class="row"><div class="field"><label class="label">Danh mục</label><input class="input" id="tkCat" value="${t?Util.esc(t.category||''):''}" placeholder="Địa điểm / Trang phục..."/></div><div class="field"><label class="label">Người phụ trách</label><input class="input" id="tkAssignee" value="${t?Util.esc(t.assignee||''):''}"/></div></div>
       <div class="row-3"><div class="field"><label class="label">Hạn</label><input class="input" type="date" id="tkDue" value="${t?t.due_date||'':''}"/></div>
       <div class="field"><label class="label">Ưu tiên</label><select class="select" id="tkPrio">${[['low','Thấp'],['medium','Trung bình'],['high','Cao'],['urgent','Khẩn']].map(p=>`<option value="${p[0]}" ${(t?t.priority:'medium')===p[0]?'selected':''}>${p[1]}</option>`).join('')}</select></div>
@@ -2433,7 +2394,7 @@ const Plan = {
   /* ---------- NGÂN SÁCH: thao tác ---------- */
   openBudget(id,evId){
     const i=id?this.items.find(x=>x.id===id):null, ev=i?i.event_id:evId;
-    const body=`${this.ok?`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="bEvent">${this.evOptions(ev||'')}</select></div>`:''}
+    const body=`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="bEvent" ${this.ok?'':'disabled'}>${this.evOptions(ev||'')}</select>${this.ok?'':this.dbHint}</div>
       <div class="row"><div class="field"><label class="label">Danh mục *</label><input class="input" id="bCat" value="${i?Util.esc(i.category):''}" placeholder="Địa điểm / Ảnh cưới..."/></div><div class="field"><label class="label">Nhà cung cấp</label><input class="input" id="bVendor" value="${i?Util.esc(i.vendor||''):''}"/></div></div>
       <div class="field"><label class="label">Mô tả</label><input class="input" id="bDesc" value="${i?Util.esc(i.description||''):''}"/></div>
       <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" type="number" id="bEst" value="${i?i.estimated_amount||0:0}"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" type="number" id="bAct" value="${i?i.actual_amount||0:0}"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" type="number" id="bPaid" value="${i?i.paid_amount||0:0}"/></div></div>
@@ -2465,7 +2426,7 @@ const Plan = {
   openEvent(id,phId){
     const e=id?this.events.find(x=>x.id===id):null, ph=e?e.phase_id:phId;
     const body=`<div class="field"><label class="label">Tên sự kiện *</label><input class="input" id="eName" value="${e?Util.esc(e.name):''}" placeholder="Lễ ăn hỏi / Tiệc cưới"/></div>
-      ${this.ok?`<div class="field"><label class="label">Giai đoạn</label><select class="select" id="ePhase"><option value="">— Chưa phân giai đoạn —</option>${this.phases.map((p,i)=>`<option value="${p.id}" ${ph===p.id?'selected':''}>Giai đoạn ${i+1} · ${Util.esc(p.name)}</option>`).join('')}</select></div>`:''}
+      <div class="field"><label class="label">Giai đoạn</label><select class="select" id="ePhase" ${this.ok?'':'disabled'}><option value="">— Chưa phân giai đoạn —</option>${this.phases.map((p,i)=>`<option value="${p.id}" ${ph===p.id?'selected':''}>Giai đoạn ${i+1} · ${Util.esc(p.name)}</option>`).join('')}</select>${this.ok?(this.phases.length?'':'<div class="text-xs muted" style="margin-top:6px">Chưa có giai đoạn nào — đóng form này, bấm “+ Giai đoạn” để tạo.</div>'):this.dbHint}</div>
       <div class="row"><div class="field"><label class="label">Ngày</label><input class="input" type="date" id="eDate" value="${e?e.event_date||'':''}"/></div><div class="field"><label class="label">Giờ</label><input class="input" type="time" id="eTime" value="${e?e.event_time||'':''}"/></div></div>
       <div class="field"><label class="label">Địa điểm</label><input class="input" id="eVenue" value="${e?Util.esc(e.venue||''):''}"/></div>
       <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="eNotes">${e?Util.esc(e.notes||''):''}</textarea></div>`;
