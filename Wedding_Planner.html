@@ -404,6 +404,11 @@ a{color:inherit;text-decoration:none}
 .imp-check{width:84px;height:84px;margin-bottom:12px}.imp-check circle{fill:none;stroke:var(--forest);stroke-width:3;stroke-dasharray:152;stroke-dashoffset:152;animation:impDraw .6s ease forwards}
 .imp-check path{fill:none;stroke:var(--forest);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:impDraw .4s .5s ease forwards}@keyframes impDraw{to{stroke-dashoffset:0}}
 @media(max-width:760px){.imp-grid,.imp-cards{grid-template-columns:1fr}.imp-stats{grid-template-columns:1fr 1fr}.imp-foot{flex-direction:column-reverse}.imp-foot .btn{width:100%;justify-content:center}}
+
+.gx-tb{table-layout:fixed;width:100%}.gx-tb th{font-size:10px;letter-spacing:.5px;padding:11px 8px}.gx-tb td{padding:11px 8px;font-size:12.5px;word-break:break-word;vertical-align:middle}
+.gx-tb th:nth-child(1){width:21%}.gx-tb th:nth-child(2){width:8%}.gx-tb th:nth-child(3){width:10%}.gx-tb th:nth-child(4){width:11%}.gx-tb th:nth-child(5){width:11%}.gx-tb th:nth-child(6){width:7%}.gx-tb th:nth-child(7){width:13%}.gx-tb th:nth-child(8){width:11%}.gx-tb th:nth-child(9){width:8%}
+.gx-tb .pill{white-space:nowrap;padding:2px 8px;font-size:11px}.gx-tb .btn-close{padding:4px}
+@media(max-width:900px){.gx-tb{min-width:880px}}
 </style>
 <style id="wa-overrides">
 /* ============================================================
@@ -944,6 +949,7 @@ const Util = {
   fmtMoney(n){ return (Number(n)||0).toLocaleString('vi-VN')+' ₫'; },
   debounce(fn,ms=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; },
   daysUntil(d){ if(!d) return null; const dt=new Date(d+'T00:00:00'); const now=new Date(); now.setHours(0,0,0,0); return Math.ceil((dt-now)/86400000); },
+  headcount(g){ const c=Number(g.confirmed_count)||0; return (g.rsvp_status==='confirmed'&&c>0)?c:(Number(g.invited_count)||1); },
   uid(){ return 'id'+Math.random().toString(36).slice(2,10); },
   initials(name){ if(!name) return '?'; const p=name.trim().split(/\s+/); return (p.length>1?p[0][0]+p[p.length-1][0]:p[0].slice(0,2)).toUpperCase(); },
   csvEscape(v){ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; },
@@ -1293,7 +1299,7 @@ const Overview = {
       const groomCount = guests.filter(g=>g.side==='groom').length;
       const brideCount = guests.filter(g=>g.side==='bride').length;
       const totalCap = tables.reduce((a,t)=>a+(t.capacity||0),0);
-      const seated = assignments.reduce((a,x)=>a+(x.seat_count||1),0);
+      const hgm={}; guests.forEach(g=>hgm[g.id]=g); const seated = assignments.reduce((a,x)=>a+(hgm[x.guest_id]?Util.headcount(hgm[x.guest_id]):(x.seat_count||1)),0);
       const overdueTasks = tasks.filter(t=>t.due_date && t.status!=='done' && Util.daysUntil(t.due_date)<0).length;
       const upcomingTasks = tasks.filter(t=>t.due_date && t.status!=='done' && Util.daysUntil(t.due_date)>=0 && Util.daysUntil(t.due_date)<=7).length;
       const days = Util.daysUntil(s.wedding_date);
@@ -1404,6 +1410,14 @@ const Guestbook = {
     const ok=list.filter(g=>g.rsvp_status==='confirmed');
     return { guests:list.length, invited:list.reduce((s,g)=>s+(Number(g.invited_count)||1),0), confirmed:ok.reduce((s,g)=>s+(Number(g.confirmed_count)||Number(g.invited_count)||1),0), replied:list.filter(g=>['confirmed','declined'].includes(g.rsvp_status)).length, gift:list.reduce((s,g)=>s+(Number(g.gift_amount)||0),0) };
   },
+  seatsUsed(tid,ex){ return this.assigns.filter(a=>a.table_id===tid&&a.guest_id!==ex).reduce((s,a)=>{const g=this.guests.find(x=>x.id===a.guest_id);return s+(g?Util.headcount(g):(a.seat_count||1));},0); },
+  seatHint(){
+    const el=document.getElementById('gSeatHint'); if(!el) return; const v=i=>document.getElementById(i).value;
+    const need=Util.headcount({rsvp_status:v('gRsvp'),confirmed_count:parseInt(v('gConfirmed'))||0,invited_count:parseInt(v('gInvited'))||1}), tid=v('gTable');
+    if(!tid){ el.style.color='var(--muted)'; el.textContent='Khách này cần '+need+' chỗ ngồi'; return; }
+    const t=this.tables.find(x=>x.id===tid), left=t.capacity-this.seatsUsed(tid,this.editId);
+    el.style.color=need>left?'var(--danger)':'var(--forest)'; el.textContent=need>left?`Không đủ chỗ: ${t.name} còn ${Math.max(0,left)} chỗ, khách đi ${need} người`:`Cần ${need} chỗ · ${t.name} còn ${left} chỗ`;
+  },
   tableOf(id){ const a=this.assigns.find(x=>x.guest_id===id); const t=a&&this.tables.find(x=>x.id===a.table_id); return t?t:null; },
   paint(){
     const tabs=[['list','Danh sách khách'],['groups','Nhóm & gia đình'],['rsvp','Thiệp & xác nhận']];
@@ -1442,17 +1456,17 @@ const Guestbook = {
     const ic=i=>i.replace('<svg','<svg style="width:15px;height:15px"');
     const rows=l.map(g=>{ const r=RS_MAP[g.rsvp_status||'not_sent']||RS_MAP.not_sent, t=this.tableOf(g.id), amt=Number(g.gift_amount)||0;
       return `<tr ondblclick="Guestbook.openEdit('${g.id}')">
-      <td><div class="gx-name"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div><div style="font-weight:600;color:var(--ink)">${Util.esc(g.full_name)}</div><div class="text-xs muted">${Util.esc(g.display_name||g.relationship||'')}</div></div></div></td>
+      <td><div class="gx-name"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div><div style="font-weight:600;color:var(--ink)">${Util.esc(g.full_name)}</div><div class="text-xs muted">${[g.display_name||g.relationship,Util.headcount(g)>1?Util.headcount(g)+' người':''].filter(Boolean).map(x=>Util.esc(x)).join(' · ')}</div></div></div></td>
       <td><span class="pill ${g.side==='groom'?'pill-side-groom':'pill-side-bride'}">${Util.esc(this.sideLabel(g.side))}</span></td>
       <td>${g.group_id?Util.esc(gm[g.group_id]||'—'):'<span class="muted">—</span>'}</td>
       <td>${g.phone?Util.esc(g.phone):'<span class="muted">—</span>'}</td>
       <td>${g.inviter_name?Util.esc(g.inviter_name):'<span class="muted">—</span>'}</td>
       <td>${t?`<span class="gx-tbl">${Util.esc(t.name)}</span>`:'<span class="muted">—</span>'}</td>
-      <td style="white-space:nowrap">${amt?`<b style="color:var(--ink)">${Util.fmtMoney(amt)}</b> <span class="pill ${g.gift_method==='transfer'?'pill-sent':'pill-confirmed'}">${PAY_MAP[g.gift_method]||'Tiền mặt'}</span>`:'<span class="muted">—</span>'}</td>
+      <td>${amt?`<b style="color:var(--ink)">${Util.fmtMoney(amt)}</b><br><span class="pill ${g.gift_method==='transfer'?'pill-sent':'pill-confirmed'}">${PAY_MAP[g.gift_method]||'Tiền mặt'}</span>`:'<span class="muted">—</span>'}</td>
       <td><span class="pill ${r[1]}">${r[0]}</span>${g.confirmed_count?` <span class="text-xs muted">(${g.confirmed_count})</span>`:''}</td>
       <td class="right" style="white-space:nowrap"><button class="btn-close" onclick="Guestbook.openEdit('${g.id}')" title="Sửa">${ic(I.edit)}</button><button class="btn-close" onclick="Guestbook.confirmDelete('${g.id}')" title="Xóa">${ic(I.trash)}</button></td></tr>`; }).join('');
     const x=this.stats(l);
-    el.innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Khách mời</th><th>Bên</th><th>Nhóm</th><th>Điện thoại</th><th>Người mời</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    el.innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl gx-tb"><thead><tr><th>Khách mời</th><th>Bên</th><th>Nhóm</th><th>Điện thoại</th><th>Người mời</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
     <div class="text-xs muted" style="margin-top:10px">${l.length}/${this.guests.length} khách · ${x.invited} người được mời · ${x.confirmed} xác nhận · Tiền mừng ${Util.fmtMoney(x.gift)}</div>`;
   },
   /* ---------- TAB 2: NHÓM & GIA ĐÌNH ---------- */
@@ -1519,9 +1533,9 @@ const Guestbook = {
   openAdd(){ this.openDrawer(null); },
   openEdit(id){ this.openDrawer(this.guests.find(x=>x.id===id)); },
   openDrawer(g){
-    const side=g?g.side:'groom', cur=g?this.tableOf(g.id):null;
+    this.editId=g?g.id:null; const side=g?g.side:'groom', cur=g?this.tableOf(g.id):null;
     const grpOpts=this.groupOpts(side,g?g.group_id:'');
-    const used=tid=>this.assigns.filter(a=>a.table_id===tid&&(!g||a.guest_id!==g.id)).reduce((s,a)=>s+(a.seat_count||1),0);
+    const used=tid=>this.seatsUsed(tid,g?g.id:null);
     const tblOpts=this.tables.map(t=>{const u=used(t.id);return `<option value="${t.id}" ${cur&&cur.id===t.id?'selected':''}>${Util.esc(t.name)} (${u}/${t.capacity})${u>=t.capacity?' · đầy':''}</option>`;}).join('');
     const inviters=[...new Set(this.guests.map(x=>x.inviter_name).filter(Boolean))].map(n=>`<option value="${Util.esc(n)}">`).join('');
     const ev=this.events.length?this.events.map(e=>`<label class="gx-chk"><input type="checkbox" class="ev-chk" value="${e.id}" ${g&&(g.event_ids||[]).includes(e.id)?'checked':''}/> ${Util.esc(e.name)}${e.event_date?` <span class="text-xs muted">(${Util.fmtDate(e.event_date)})</span>`:''}</label>`).join(''):'<div class="text-xs muted">Chưa có sự kiện. Tạo trong mục Sự kiện.</div>';
@@ -1533,12 +1547,12 @@ const Guestbook = {
       <div class="row"><div class="field"><label class="label">Nhóm</label><select class="select" id="gGroup"><option value="">— Chưa phân nhóm —</option>${grpOpts}</select></div><div class="field"><label class="label">Mối quan hệ</label><input class="input" id="gRel" value="${v('relationship')}" placeholder="Anh em / bạn học..."/></div></div>
       <div class="row"><div class="field"><label class="label">Số điện thoại</label><input class="input" id="gPhone" value="${v('phone')}" placeholder="09xx..."/></div><div class="field"><label class="label">Email</label><input class="input" id="gEmail" value="${v('email')}"/></div></div>
       <div class="gx-sec">Lời mời & xác nhận</div>
-      <div class="row-3"><div class="field"><label class="label">Số người mời</label><input class="input" type="number" min="1" id="gInvited" value="${g?(g.invited_count||1):1}"/></div><div class="field"><label class="label">Số người xác nhận</label><input class="input" type="number" min="0" id="gConfirmed" value="${g?(g.confirmed_count||0):0}"/></div><div class="field"><label class="label">Trạng thái RSVP</label><select class="select" id="gRsvp">${Object.keys(RS_MAP).map(k=>`<option value="${k}" ${(g?(g.rsvp_status||'not_sent'):'not_sent')===k?'selected':''}>${RS_MAP[k][0]}</option>`).join('')}</select></div></div>
+      <div class="row-3"><div class="field"><label class="label">Số người mời</label><input class="input" type="number" min="1" id="gInvited" oninput="Guestbook.seatHint()" value="${g?(g.invited_count||1):1}"/></div><div class="field"><label class="label">Số người xác nhận</label><input class="input" type="number" min="0" id="gConfirmed" oninput="Guestbook.seatHint()" value="${g?(g.confirmed_count||0):0}"/></div><div class="field"><label class="label">Trạng thái RSVP</label><select class="select" id="gRsvp" onchange="Guestbook.seatHint()">${Object.keys(RS_MAP).map(k=>`<option value="${k}" ${(g?(g.rsvp_status||'not_sent'):'not_sent')===k?'selected':''}>${RS_MAP[k][0]}</option>`).join('')}</select></div></div>
       <div class="field"><label class="label">Người đại diện</label><select class="select" id="gRep"><option value="false">Không</option><option value="true" ${g&&g.is_representative?'selected':''}>Đại diện hộ</option></select></div>
       <div class="gx-sec gx-sec-gold">Người mời · Bàn · Tiền mừng</div>
       <div class="gx-box">
         <div class="row"><div class="field"><label class="label">Người mời</label><input class="input" id="gInviter" list="gInvList" value="${v('inviter_name')}" placeholder="Ai mời khách này?"/><datalist id="gInvList">${inviters}</datalist></div>
-        <div class="field"><label class="label">Số bàn</label><select class="select" id="gTable"><option value="">— Chưa xếp bàn —</option>${tblOpts}</select>${this.tables.length?'':'<div class="text-xs muted" style="margin-top:4px">Chưa có bàn. Tạo ở mục Sơ đồ bàn tiệc.</div>'}</div></div>
+        <div class="field"><label class="label">Số bàn</label><select class="select" id="gTable" onchange="Guestbook.seatHint()"><option value="">— Chưa xếp bàn —</option>${tblOpts}</select>${this.tables.length?'':'<div class="text-xs muted" style="margin-top:4px">Chưa có bàn. Tạo ở mục Sơ đồ bàn tiệc.</div>'}<div class="text-xs" id="gSeatHint" style="margin-top:4px;font-weight:600"></div></div></div>
         <div class="row"><div class="field" style="margin-bottom:0"><label class="label">Số tiền mừng</label><div class="gx-money"><input class="input" id="gAmount" inputmode="numeric" placeholder="0" value="${g&&g.gift_amount?Number(g.gift_amount).toLocaleString('vi-VN'):''}" oninput="Guestbook.fmtMoney(this)"/><span>₫</span></div></div>
         <div class="field" style="margin-bottom:0"><label class="label">Hình thức</label><select class="select" id="gMethod"><option value="cash" ${!g||g.gift_method!=='transfer'?'selected':''}>Tiền mặt</option><option value="transfer" ${g&&g.gift_method==='transfer'?'selected':''}>Chuyển khoản</option></select></div></div>
       </div>
@@ -1548,6 +1562,7 @@ const Guestbook = {
       <div class="field"><label class="label">Ghi chú nội bộ</label><textarea class="textarea" id="gNotes" placeholder="Ghi chú riêng">${v('notes')}</textarea></div>`;
     UI.openDrawer(g?'Sửa khách mời':'Thêm khách mời',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" id="btnSaveGuest" onclick="Guestbook.save('${g?g.id:''}')">${g?'Lưu thay đổi':'Thêm khách'}</button>`);
     document.querySelectorAll('#gSideSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#gSideSeg button').forEach(x=>x.classList.toggle('on',x===b));this.refreshGroups(b.dataset.v);});
+    this.seatHint();
   },
   groupOpts(side,sel){ return this.groups.filter(x=>x.side===side).map(x=>`<option value="${x.id}" ${sel===x.id?'selected':''}>${Util.esc(x.name)}</option>`).join(''); },
   refreshGroups(side){ const el=document.getElementById('gGroup'); el.innerHTML='<option value="">— Chưa phân nhóm —</option>'+this.groupOpts(side,el.value); },
@@ -1559,19 +1574,20 @@ const Guestbook = {
     if(!row.full_name){Toast.err('Vui lòng nhập họ tên');return;}
     const grp=this.groups.find(x=>x.id===row.group_id); if(grp&&grp.side!==row.side) Toast.warn('Nhóm đã chọn thuộc bên '+this.sideLabel(grp.side));
     const tid=$('gTable')||null;
+    if(tid){ const t=this.tables.find(x=>x.id===tid), need=Util.headcount(row), left=t.capacity-this.seatsUsed(tid,id||null); if(need>left){ Toast.err(`${t.name} chỉ còn ${Math.max(0,left)} chỗ, khách này đi ${need} người`); return; } }
     btn.disabled=true; btn.textContent='Đang lưu...';
     try{
       const saved=id?await DB.update('wed_guests',id,row):await DB.insert('wed_guests',row);
-      await this.syncTable(saved.id,tid);
+      await this.syncTable(saved.id,tid,Util.headcount(row));
       Toast.ok(id?'Đã lưu thay đổi':'Đã thêm khách'); UI.closeDrawer(); await this.load();
     }catch(e){ const m=e.message||''; Toast.err(/inviter_name|gift_amount|gift_method/.test(m)?'Thiếu cột mới trong database — hãy chạy file SQL cập nhật':'Lưu thất bại: '+m); btn.disabled=false; btn.textContent=lbl; }
   },
-  async syncTable(gid,tid){
+  async syncTable(gid,tid,need){
     const ex=this.assigns.filter(a=>a.guest_id===gid);
-    if(ex.length===1&&ex[0].table_id===tid) return;
+    if(ex.length===1&&ex[0].table_id===tid){ if((ex[0].seat_count||1)!==need) await DB.update('wed_seating_assignments',ex[0].id,{seat_count:need}); return; }
     if(!ex.length&&!tid) return;
     for(const a of ex) await DB.remove('wed_seating_assignments',a.id);
-    if(tid) await DB.insert('wed_seating_assignments',{guest_id:gid,table_id:tid,seat_count:1});
+    if(tid) await DB.insert('wed_seating_assignments',{guest_id:gid,table_id:tid,seat_count:need});
   },
   confirmDelete(id){
     const g=this.guests.find(x=>x.id===id);
@@ -1704,10 +1720,10 @@ const Guestbook = {
       if(newG.length){ setP(8,`Tạo ${newG.length} nhóm mới...`); const {error}=await sb.from('wed_guest_groups').insert(newG); if(error) throw error; this.groups=await DB.list('wed_guest_groups',{order:['name']}); }
       const rows=list.map(x=>{ const gr=this.groups.find(g=>g.side===x.side&&norm(g.name)===norm(x.groupName)); return {full_name:x.full_name,display_name:x.display_name,side:x.side,group_id:gr?gr.id:null,relationship:x.relationship,phone:x.phone,email:x.email,is_representative:x.is_representative,invited_count:x.invited_count,confirmed_count:x.confirmed_count,rsvp_status:x.rsvp_status,inviter_name:x.inviter_name,gift_amount:x.gift_amount,gift_method:x.gift_method,dietary:x.dietary,event_ids:x.event_ids,notes:x.notes}; });
       const ids=[]; for(let i=0;i<rows.length;i+=100){ setP(15+Math.round(i/rows.length*75),`Đang nhập ${Math.min(i+100,rows.length)}/${rows.length} khách...`); const {data,error}=await sb.from('wed_guests').insert(rows.slice(i,i+100)).select('id'); if(error) throw error; ids.push(...(data||[])); }
-      const asg=[]; ids.forEach((d,i)=>{ if(list[i].tableId) asg.push({guest_id:d.id,table_id:list[i].tableId,seat_count:1}); });
+      const useMap={}; this.tables.forEach(t=>useMap[t.id]=this.seatsUsed(t.id,null)); let skipT=0; const asg=[]; ids.forEach((d,i)=>{ const x=list[i]; if(!x.tableId) return; const need=Util.headcount(x), t=this.tables.find(t=>t.id===x.tableId); if(useMap[x.tableId]+need<=t.capacity){ useMap[x.tableId]+=need; asg.push({guest_id:d.id,table_id:x.tableId,seat_count:need}); } else skipT++; });
       if(asg.length){ setP(94,'Xếp bàn...'); await sb.from('wed_seating_assignments').insert(asg); }
       setP(100,'Hoàn tất'); await new Promise(r=>setTimeout(r,350));
-      this.wide(`<div class="imp-body imp-center imp-done"><svg viewBox="0 0 52 52" class="imp-check"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg><div class="imp-t">Nhập thành công!</div><div class="imp-s">Đã thêm <b>${ids.length}</b> khách${newG.length?`, tạo <b>${newG.length}</b> nhóm mới`:''}${asg.length?`, xếp <b>${asg.length}</b> khách vào bàn`:''}.</div><button class="btn btn-primary" style="margin-top:20px" onclick="UI.closeModal()">Xong</button></div>`);
+      this.wide(`<div class="imp-body imp-center imp-done"><svg viewBox="0 0 52 52" class="imp-check"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg><div class="imp-t">Nhập thành công!</div><div class="imp-s">Đã thêm <b>${ids.length}</b> khách${newG.length?`, tạo <b>${newG.length}</b> nhóm mới`:''}${asg.length?`, xếp <b>${asg.length}</b> khách vào bàn`:''}${skipT?`, <b>${skipT}</b> khách chưa xếp được bàn vì bàn không đủ chỗ`:''}.</div><button class="btn btn-primary" style="margin-top:20px" onclick="UI.closeModal()">Xong</button></div>`);
       await this.load();
     }catch(e){ const m=e.message||''; Toast.err(/inviter_name|gift_amount|gift_method/.test(m)?'Thiếu cột mới trong database — hãy chạy file SQL cập nhật':'Nhập thất bại: '+m); this.impPreview(); }
   }
@@ -1741,6 +1757,8 @@ const Seating = {
       document.getElementById('content').innerHTML=UI.empty(I.seating,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Seating.load()">Thử lại</button>');
     }
   },
+  seatsOf(a){ const g=this.guests.find(x=>x.id===a.guest_id); return g?Util.headcount(g):(a.seat_count||1); },
+  unseatedPeople(){ return this.unseated.reduce((s,g)=>s+Util.headcount(g),0); },
   computeUnseated(){
     const seatedIds=new Set(this.assignments.map(a=>a.guest_id));
     this.unseated=this.guests.filter(g=>!seatedIds.has(g.id) && (g.rsvp_status!=='declined'));
@@ -1750,18 +1768,18 @@ const Seating = {
   },
   renderGrid(){
     const guestMap={}; this.guests.forEach(g=>guestMap[g.id]=g);
-    let html='<div class="section-h">Khách chưa xếp bàn <span class="sub">'+this.unseated.length+' người</span></div>';
+    let html='<div class="section-h">Khách chưa xếp bàn <span class="sub">'+this.unseatedPeople()+' người</span></div>';
     html+='<div class="unseated-list mb-24" id="unseatedDrop" ondrop="Seating.dropUnseated(event)" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">';
     if(!this.unseated.length) html+='<div class="text-xs muted" style="padding:8px;text-align:center">Tất cả khách đã có bàn</div>';
     this.unseated.forEach(g=>{
-      html+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}</span></div>`;
+      html+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}${Util.headcount(g)>1?' · '+Util.headcount(g)+' người':''}</span></div>`;
     });
     html+='</div>';
     html+='<div class="section-h">Sơ đồ bàn tiệc <span class="sub">'+this.tables.length+' bàn</span></div>';
     html+='<div class="seating-grid">';
     this.tables.forEach(t=>{
       const tAssign=this.assignments.filter(a=>a.table_id===t.id);
-      const used=tAssign.reduce((s,a)=>s+(a.seat_count||1),0);
+      const used=tAssign.reduce((s,a)=>s+this.seatsOf(a),0);
       const full=used>=t.capacity;
       html+=`<div class="table-card ${full?'full':''}" id="table-${t.id}" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">
         <div class="table-head">
@@ -1779,7 +1797,7 @@ const Seating = {
         const g=guestMap[a.guest_id];
         if(!g) return;
         html+=`<div class="seat-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openMove('${a.id}','${g.id}')">
-          <span>${Util.esc(g.full_name)} <span class="muted text-xs">${g.side==='groom'?'T':'G'}</span></span>
+          <span>${Util.esc(g.full_name)} <span class="muted text-xs">${g.side==='groom'?'T':'G'}${Util.headcount(g)>1?' · '+Util.headcount(g)+' người':''}</span></span>
           <span class="remove" onclick="event.stopPropagation();Seating.unassign('${a.id}')">✕</span>
         </div>`;
       });
@@ -1793,7 +1811,7 @@ const Seating = {
     const guestMap={}; this.guests.forEach(g=>guestMap[g.id]=g);
     let rows=this.tables.map(t=>{
       const tAssign=this.assignments.filter(a=>a.table_id===t.id);
-      const used=tAssign.reduce((s,a)=>s+(a.seat_count||1),0);
+      const used=tAssign.reduce((s,a)=>s+this.seatsOf(a),0);
       const groomN=tAssign.filter(a=>{const g=guestMap[a.guest_id];return g&&g.side==='groom';}).length;
       const brideN=tAssign.length-groomN;
       return `<tr><td><div style="font-weight:500">${Util.esc(t.name)}</div></td><td>${used}/${t.capacity}</td><td><span class="pill pill-side-groom">${groomN} trai</span> <span class="pill pill-side-bride">${brideN} gái</span></td><td>${tAssign.map(a=>{const g=guestMap[a.guest_id];return g?Util.esc(g.full_name):''}).join(', ')||'<span class="muted">—</span>'}</td>
@@ -1818,11 +1836,11 @@ const Seating = {
   },
   async assign(guestId, tableId){
     const t=this.tables.find(x=>x.id===tableId);
-    const used=this.assignments.filter(a=>a.table_id===tableId).reduce((s,a)=>s+(a.seat_count||1),0);
-    if(used>=t.capacity){ Toast.err('Bàn đã đầy ('+t.capacity+' chỗ)'); return; }
+    const used=this.assignments.filter(a=>a.table_id===tableId).reduce((s,a)=>s+this.seatsOf(a),0);
+    const gg=this.guests.find(x=>x.id===guestId), need=gg?Util.headcount(gg):1; if(used+need>t.capacity){ Toast.err(`${t.name} còn ${Math.max(0,t.capacity-used)} chỗ, khách này đi ${need} người`); return; }
     if(this.assignments.some(a=>a.guest_id===guestId)){ Toast.warn('Khách đã được xếp bàn. Di chuyển trước.'); return; }
     try{
-      await DB.insert('wed_seating_assignments',{guest_id:guestId, table_id:tableId, seat_count:1});
+      await DB.insert('wed_seating_assignments',{guest_id:guestId, table_id:tableId, seat_count:need});
       Toast.ok('Đã xếp bàn');
       await this.load();
     }catch(e){ Toast.err('Xếp bàn thất bại: '+(e.message||'')); }
@@ -1833,19 +1851,19 @@ const Seating = {
   },
   openAssign(guestId){
     const g=this.guests.find(x=>x.id===guestId);
-    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id).reduce((s,a)=>s+(a.seat_count||1),0);return `<option value="${t.id}" ${used>=t.capacity?'disabled':''}>${Util.esc(t.name)} (${used}/${t.capacity})${used>=t.capacity?' - Đầy':''}</option>`;}).join('');
-    UI.confirm('Xếp bàn cho '+g.full_name, `<div class="field"><label class="label">Chọn bàn</label><select class="select" id="assignTable">${opts}</select></div>`, async ()=>{
+    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id).reduce((s,a)=>s+this.seatsOf(a),0);return `<option value="${t.id}" ${used+Util.headcount(g)>t.capacity?'disabled':''}>${Util.esc(t.name)} (${used}/${t.capacity})${used+Util.headcount(g)>t.capacity?' - Không đủ chỗ':''}</option>`;}).join('');
+    UI.confirm('Xếp bàn cho '+g.full_name+' ('+Util.headcount(g)+' người)', `<div class="field"><label class="label">Chọn bàn</label><select class="select" id="assignTable">${opts}</select></div>`, async ()=>{
       const tid=document.getElementById('assignTable').value;
       if(tid) await this.assign(guestId, tid);
     }, 'Xếp bàn');
   },
   openMove(assignmentId, guestId){
     const g=this.guests.find(x=>x.id===guestId);
-    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id&&a.guest_id!==guestId).reduce((s,a)=>s+(a.seat_count||1),0);return `<option value="${t.id}">${Util.esc(t.name)} (${used}/${t.capacity})</option>`;}).join('');
+    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id&&a.guest_id!==guestId).reduce((s,a)=>s+this.seatsOf(a),0);return `<option value="${t.id}">${Util.esc(t.name)} (${used}/${t.capacity})</option>`;}).join('');
     UI.confirm('Di chuyển '+g.full_name, `<div class="field"><label class="label">Chuyển sang bàn</label><select class="select" id="moveTable">${opts}</select></div>
       <div style="margin-top:12px"><button class="btn btn-danger btn-sm" onclick="Seating.unassign('${assignmentId}');UI.closeModal();">Rút khỏi bàn</button></div>`, async ()=>{
       const tid=document.getElementById('moveTable').value;
-      if(tid){ await this.unassign(assignmentId); await this.assign(guestId, tid); }
+      if(tid){ const tt=this.tables.find(x=>x.id===tid), need=Util.headcount(g), u=this.assignments.filter(a=>a.table_id===tid&&a.guest_id!==guestId).reduce((s,a)=>s+this.seatsOf(a),0); if(u+need>tt.capacity){ Toast.err(`${tt.name} còn ${Math.max(0,tt.capacity-u)} chỗ, khách này đi ${need} người`); return; } await this.unassign(assignmentId); await this.assign(guestId, tid); }
     }, 'Di chuyển');
   },
   /* ===== SƠ ĐỒ PHÒNG TIỆC (kéo thả bàn) ===== */
@@ -1872,9 +1890,9 @@ const Seating = {
   renderPlan(){
     this.ensurePos();
     const gm={}; this.guests.forEach(g=>gm[g.id]=g);
-    let h=`<div class="section-h">Khách chưa xếp bàn <span class="sub">${this.unseated.length} người · kéo thả vào bàn, hoặc bấm để chọn bàn</span></div><div class="unseated-list mb-24" id="unseatedDrop" ondrop="Seating.dropUnseated(event)" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">`;
+    let h=`<div class="section-h">Khách chưa xếp bàn <span class="sub">${this.unseatedPeople()} người · kéo thả vào bàn, hoặc bấm để chọn bàn</span></div><div class="unseated-list mb-24" id="unseatedDrop" ondrop="Seating.dropUnseated(event)" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">`;
     if(!this.unseated.length) h+='<div class="text-xs muted" style="padding:8px;text-align:center">Tất cả khách đã có bàn</div>';
-    this.unseated.forEach(g=>{ h+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}</span></div>`; });
+    this.unseated.forEach(g=>{ h+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}${Util.headcount(g)>1?' · '+Util.headcount(g)+' người':''}</span></div>`; });
     h+='</div><div class="section-h">Sơ đồ phòng tiệc <span class="sub">'+this.tables.length+' bàn · kéo bàn thả lên bàn khác để đổi chỗ</span></div>';
     if(!this.tables.length){ document.getElementById('content').innerHTML=h+UI.empty(I.seating,'Chưa có bàn nào','Bấm “Thêm bàn”, nhập số bàn cần tổ chức, hệ thống sẽ tự tạo và xếp vị trí.',`<button class="btn btn-primary" onclick="Seating.openAddTable()">Thêm bàn</button>`); return; }
     const H=Math.max(660,Math.max(...this.tables.map(t=>t.pos_y))+130);
@@ -1883,8 +1901,8 @@ const Seating = {
       <div class="sp-aisle"><i>LỐI ĐI CÔ DÂU – CHÚ RỂ</i></div>
       <div class="sp-door"><span>▲</span> CỬA VÀO</div>`;
     this.tables.forEach(t=>{
-      const ta=this.assignments.filter(a=>a.table_id===t.id), used=ta.reduce((s,a)=>s+(a.seat_count||1),0), full=used>=t.capacity, pct=Math.min(100,Math.round(used/(t.capacity||1)*100));
-      const gN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='groom').length, bN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='bride').length;
+      const ta=this.assignments.filter(a=>a.table_id===t.id), used=ta.reduce((s,a)=>s+this.seatsOf(a),0), full=used>=t.capacity, pct=Math.min(100,Math.round(used/(t.capacity||1)*100));
+      const gN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='groom').reduce((x,a)=>x+this.seatsOf(a),0), bN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='bride').reduce((x,a)=>x+this.seatsOf(a),0);
       h+=`<div class="sp-t ${t.table_type==='long'?'long':''} ${full?'full':''}" id="sp-${t.id}" style="left:${t.pos_x}%;top:${t.pos_y}px;--p:${pct}%" title="${Util.esc(t.name)}: ${used}/${t.capacity} chỗ" onpointerdown="Seating.tDown(event,'${t.id}')" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)"><div class="sp-in"><b>${Util.esc(t.name)}</b><span>${used}/${t.capacity}</span></div>${gN+bN?`<div class="sp-sd"><i class="g">${gN}</i><i class="b">${bN}</i></div>`:''}</div>`;
     });
     h+=`</div></div><div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
@@ -1924,8 +1942,8 @@ const Seating = {
   },
   openTableInfo(id){
     const t=this.tables.find(x=>x.id===id), gm={}; this.guests.forEach(g=>gm[g.id]=g);
-    const ta=this.assignments.filter(a=>a.table_id===id), used=ta.reduce((s,a)=>s+(a.seat_count||1),0);
-    const rows=ta.map(a=>{const g=gm[a.guest_id]; return g?`<div class="gx-mem" style="cursor:default"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div style="flex:1"><div class="gx-mem-n">${Util.esc(g.full_name)}</div><div class="text-xs muted">${g.side==='groom'?'Nhà trai':'Nhà gái'}</div></div><button class="btn-close" title="Rút khỏi bàn" onclick="UI.closeModal();Seating.unassign('${a.id}')">✕</button></div>`:'';}).join('')||'<div class="text-xs muted" style="padding:12px 0">Bàn đang trống</div>';
+    const ta=this.assignments.filter(a=>a.table_id===id), used=ta.reduce((s,a)=>s+this.seatsOf(a),0);
+    const rows=ta.map(a=>{const g=gm[a.guest_id]; return g?`<div class="gx-mem" style="cursor:default"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div style="flex:1"><div class="gx-mem-n">${Util.esc(g.full_name)}</div><div class="text-xs muted">${g.side==='groom'?'Nhà trai':'Nhà gái'}${Util.headcount(g)>1?' · '+Util.headcount(g)+' người':''}</div></div><button class="btn-close" title="Rút khỏi bàn" onclick="UI.closeModal();Seating.unassign('${a.id}')">✕</button></div>`:'';}).join('')||'<div class="text-xs muted" style="padding:12px 0">Bàn đang trống</div>';
     const opts=this.unseated.map(g=>`<option value="${g.id}">${Util.esc(g.full_name)} (${g.side==='groom'?'Trai':'Gái'})</option>`).join('');
     UI.modal(`<div class="modal-title">${Util.esc(t.name)} <span class="text-sm muted" style="font-family:var(--sans)">· ${used}/${t.capacity} chỗ</span></div><div class="modal-body"><div style="max-height:260px;overflow:auto">${rows}</div>
       ${opts&&used<t.capacity?`<div style="display:flex;gap:8px;margin-top:14px"><select class="select" id="spAdd">${opts}</select><button class="btn btn-primary btn-sm" onclick="const v=document.getElementById('spAdd').value;UI.closeModal();Seating.assign(v,'${id}')">Xếp vào</button></div>`:''}</div>
