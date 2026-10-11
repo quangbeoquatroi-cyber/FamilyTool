@@ -192,7 +192,7 @@ a{color:inherit;text-decoration:none}
 .modal-foot{display:flex;gap:10px;justify-content:flex-end}
 
 /* Toast */
-#toaster{position:fixed;bottom:24px;right:24px;z-index:80;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+#toaster{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px;pointer-events:none}
 .toast{pointer-events:auto;background:var(--ink);color:#fff;padding:13px 18px;border-radius:10px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;max-width:360px}
 .toast.success{background:var(--forest)}
 .toast.error{background:var(--danger)}
@@ -521,7 +521,7 @@ const Auth = {
     // QUAN TRỌNG: không await/gọi API supabase bên trong callback này (gây deadlock -> treo).
     // Luôn đẩy sang tick sau bằng setTimeout.
     sb.auth.onAuthStateChange((evt, session)=>{
-      if(evt==='SIGNED_OUT'){ setTimeout(()=>{ this.user=null; this.showLogin(); },0); }
+      if(evt==='SIGNED_OUT'){ setTimeout(()=>{ if(this._denied||this._manualOut) return; this.user=null; this.showLogin(); },0); }
       else if(session && (evt==='SIGNED_IN' || evt==='USER_UPDATED') && !this.user && !this._handling){
         setTimeout(()=>this.handleSession(session),0);
       }
@@ -530,6 +530,7 @@ const Auth = {
   async handleSession(session){
     if(this._handling) return;
     this._handling = true;
+    this._denied = false;
     try{
       const email = session.user.email;
       const allowed = await this.checkAllowed(email);
@@ -610,13 +611,16 @@ const Auth = {
     const timer=setInterval(()=>{ if(popup.closed){ done(); const b=document.getElementById('btnGoogleLogin'); if(b && !Auth.user){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } } }, 600);
   },
   async deny(email){
+    this._denied=true;
     await this._hardSignOut();
     this.user=null;
     const dm=document.querySelector('#denied .denied-msg');
     if(dm) dm.textContent='Tài khoản '+(email||'này')+' không nằm trong danh sách được phê duyệt. Hãy đăng nhập bằng tài khoản khác.';
     document.getElementById('login').style.display='none';
     document.getElementById('transition').classList.remove('show');
+    document.getElementById('app').classList.remove('show');
     document.getElementById('denied').classList.add('show');
+    Toast.err('Tài khoản '+(email||'này')+' không được phép truy cập');
   },
   async _hardSignOut(){
     // signOut local (không phụ thuộc mạng, có timeout) rồi xoá sạch token còn sót
@@ -654,12 +658,18 @@ const Auth = {
     document.getElementById('userEmail').textContent=u.email;
     document.getElementById('userAvatar').textContent=Util.initials(u.user_metadata?.full_name || u.email);
     Router.init();
+    Toast.ok('Đăng nhập thành công — chào '+(u.user_metadata?.full_name || u.email.split('@')[0]));
   },
   async signOut(){
+    const wasDenied=this._denied;
+    this._manualOut=true;
     await this._hardSignOut();
+    setTimeout(()=>{ this._manualOut=false; },300);
     this.user=null;
     this._handling=false;
+    this._denied=false;
     this.showLogin();
+    if(!wasDenied) Toast.ok('Đã đăng xuất');
   }
 };
 
