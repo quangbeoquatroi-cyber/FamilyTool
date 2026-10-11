@@ -601,6 +601,81 @@ textarea{ line-height:1.5; }
   .modal{ animation:none; }
   .stat,.event-card,.table-card,.btn{ transition:none; }
 }
+
+/* ============================================================
+   REFINEMENT PASS — contrast, numerals, tables, touch, toasts, motion
+   ============================================================ */
+:root{
+  --muted:#6B6155; --muted-2:#8C8174;           /* AA contrast on ivory/paper */
+  --line-2:#D6C9B7;
+}
+.pill-sent{ color:#76601F; } .pill-pending,.pill-priority-medium{ color:#8A6213; }
+.pill-notsent,.pill-priority-low{ color:#5F564B; }
+.pill{ white-space:nowrap; }
+.pill::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; }
+
+/* Lining, tabular numerals (Cormorant defaults to old-style figures) */
+.stat-value,.event-stat b,.topbar-title,.section-h,.table-cap,.progress-label{ font-feature-settings:'lnum' 1,'tnum' 1; font-variant-numeric:lining-nums tabular-nums; }
+.tbl td,.stat-sub,.task-meta,.event-meta,.badge{ font-variant-numeric:tabular-nums; }
+.tbl td.right,.tbl th.right{ text-align:right; }
+
+/* Long Vietnamese names / emails never overflow */
+.tbl td,.task-title,.event-name,.event-meta,.seat-chip,.unseated-chip,.table-name,.card{ overflow-wrap:anywhere; }
+.user-name,.user-email{ max-width:100%; }
+
+/* Navigation clarity */
+.nav-item{ position:relative; }
+.nav-item.active::before{ content:''; position:absolute; left:-16px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--burgundy); }
+.nav-section{ color:var(--muted); }
+.login-divider{ color:var(--muted); }
+.stat-label,.tbl th{ color:var(--muted); }
+
+/* Interaction states */
+.btn,.nav-item,.mn-item,.btn-close,.task-check{ -webkit-tap-highlight-color:transparent; }
+.btn:active:not(:disabled){ transform:scale(.98); }
+.btn-primary:hover{ box-shadow:0 4px 14px rgba(107,39,55,.22); }
+.btn:disabled,.btn-google:disabled{ opacity:.55; filter:saturate(.7); }
+.input:focus,.select:focus,.textarea:focus,.search-box input:focus,.filter-select:focus{ border-color:var(--burgundy); box-shadow:var(--ring); outline:none; }
+.input::placeholder,.textarea::placeholder,.search-box input::placeholder{ color:var(--muted-2); }
+
+/* Overlays: soft fade, no layout shift */
+.modal-overlay{ animation:fadeIn .2s ease; }
+@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+.drawer{ height:100vh; height:100dvh; }
+.drawer-body{ overscroll-behavior:contain; }
+.modal{ overscroll-behavior:contain; max-height:min(86vh,86dvh); }
+
+/* Toast: leave exit smoothly, above mobile nav, safe-area aware */
+#toaster{ bottom:calc(24px + env(safe-area-inset-bottom)); right:max(24px,env(safe-area-inset-right)); }
+.toast{ line-height:1.4; }
+.toast.success::before{ content:'✓'; font-weight:700; } .toast.error::before{ content:'!'; font-weight:700; }
+
+/* Tables: deliberate horizontal scroll with sticky first column */
+.tbl-scroll{ -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+@media (max-width:820px){
+  .tbl-scroll .tbl{ min-width:640px; }
+  .tbl-scroll .tbl td:first-child,.tbl-scroll .tbl th:first-child{ position:sticky; left:0; z-index:1; background:var(--paper); box-shadow:1px 0 0 var(--line); }
+  .tbl-scroll .tbl tr:hover td:first-child{ background:var(--ivory-2); }
+}
+
+@media (max-width:768px){
+  /* 16px inputs stop iOS Safari from zooming on focus */
+  .input,.select,.textarea,.search-box input,.filter-select{ font-size:16px; }
+  #toaster{ left:14px; right:14px; bottom:calc(84px + env(safe-area-inset-bottom)); align-items:stretch; }
+  .toast{ max-width:none; }
+  .drawer-foot{ padding-bottom:calc(16px + env(safe-area-inset-bottom)); background:var(--paper); }
+  .drawer-foot .btn{ flex:1; justify-content:center; }
+  .modal-foot .btn{ flex:1; justify-content:center; }
+  .topbar-actions{ max-width:60%; }
+}
+@media (pointer:coarse){
+  .btn,.filter-select,.input,.select{ min-height:44px; }
+  .btn-sm{ min-height:40px; }
+  .mobile-nav .mn-item{ min-height:48px; }
+}
+@media (prefers-reduced-motion:reduce){
+  .modal-overlay,.drawer,.toast,.skeleton{ animation:none!important; transition:none!important; }
+}
 </style>
 </head>
 <body>
@@ -2042,6 +2117,35 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     err.classList.add('show');
   }
 });
+</script>
+
+<script id="wa-ux">
+/* UX helpers only — no business logic. Escape to close, ARIA names, live toasts. */
+(function(){
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape') return;
+    var m=document.getElementById('modalOverlay'), d=document.getElementById('drawer');
+    try{
+      if(m && m.classList.contains('show')) UI.closeModal();
+      else if(d && d.classList.contains('show')) UI.closeDrawer();
+    }catch(_){}
+  });
+  function label(){
+    document.querySelectorAll('button:not([aria-label])').forEach(function(b){
+      if(!b.textContent.trim()){ var t=b.getAttribute('title'); if(t) b.setAttribute('aria-label',t); else if(b.classList.contains('btn-close')) b.setAttribute('aria-label','Đóng'); }
+    });
+    document.querySelectorAll('.task-check:not([role])').forEach(function(c){ c.setAttribute('role','checkbox'); c.setAttribute('aria-checked',c.classList.contains('done')?'true':'false'); });
+  }
+  function setup(){
+    var t=document.getElementById('toaster'); if(t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
+    var m=document.querySelector('#modalOverlay .modal'); if(m){ m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); }
+    var d=document.getElementById('drawer'); if(d){ d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); }
+    label();
+    var pend=false;
+    new MutationObserver(function(){ if(pend) return; pend=true; requestAnimationFrame(function(){ pend=false; label(); }); }).observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setup); else setup();
+})();
 </script>
 </body>
 </html>
