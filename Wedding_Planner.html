@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Wedding Atelier — Private Wedding Planner</title>
+<meta name="description" content="Private wedding command center"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.4.3/dist/umd/supabase.min.js"></script>
+<script>if(!window.supabase){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.4.3/dist/umd/supabase.min.js"><\/script>');}</script>
+<style>
+:root{
+  --ivory:#FAF6F0; --ivory-2:#F4EDE3; --paper:#FFFFFF;
+  --ink:#2B2522; --ink-2:#5A5048; --muted:#9A8F84; --muted-2:#C4B9AD;
+  --line:#E8E0D5; --line-2:#D9CDBD;
+  --burgundy:#6B2737; --burgundy-2:#8B3A4C; --burgundy-soft:#F3E8EA;
+  --forest:#3D5A45; --forest-soft:#EAF0EA;
+  --champagne:#C9A961; --champagne-soft:#F7F0DF;
+  --danger:#B5453A; --danger-soft:#F8E8E5;
+  --warn:#B8862F; --warn-soft:#F9F0DC;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Inter',system-ui,-apple-system,sans-serif;
+  --shadow:0 1px 2px rgba(43,37,34,.04),0 4px 16px rgba(43,37,34,.06);
+  --shadow-lg:0 8px 40px rgba(43,37,34,.12);
+  --radius:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--ivory);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--burgundy-soft)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== LOGIN ===== */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+  radial-gradient(ellipse at 20% 10%,#F7F0E4 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 90%,#F3E8EA 0%,transparent 50%),
+  var(--ivory);z-index:100}
+.login-card{width:min(440px,92vw);padding:56px 48px 48px;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);text-align:center;position:relative}
+.login-card::before{content:'';position:absolute;top:16px;left:16px;right:16px;bottom:16px;border:1px solid var(--line);border-radius:10px;pointer-events:none;opacity:.5}
+.login-monogram{width:64px;height:64px;margin:0 auto 24px;border:1px solid var(--champagne);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:30px;font-style:italic;color:var(--burgundy);letter-spacing:-1px}
+.login-title{font-family:var(--serif);font-size:34px;font-weight:500;letter-spacing:-.5px;color:var(--ink);line-height:1.1}
+.login-sub{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--muted);margin-top:8px;letter-spacing:.3px}
+.login-divider{display:flex;align-items:center;gap:14px;margin:32px 0 24px;color:var(--muted-2);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 20px;background:var(--paper);border:1px solid var(--line-2);border-radius:8px;font-size:14px;font-weight:500;color:var(--ink);transition:all .2s}
+.btn-google:hover{border-color:var(--burgundy);box-shadow:0 2px 8px rgba(107,39,55,.08)}
+.btn-google:active{transform:scale(.99)}
+.btn-google svg{width:18px;height:18px}
+.btn-google:disabled{opacity:.6;cursor:not-allowed}
+.login-foot{margin-top:24px;font-size:12px;color:var(--muted);font-family:var(--serif);font-style:italic}
+.login-error{margin-top:18px;padding:12px 16px;background:var(--danger-soft);border:1px solid #E8C9C4;border-radius:8px;font-size:13px;color:var(--danger);display:none}
+.login-error.show{display:block}
+
+/* ===== TRANSITION ===== */
+#transition{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--ivory);z-index:99}
+#transition.show{display:flex}
+.trans-monogram{width:80px;height:80px;border:1px solid var(--champagne);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:38px;font-style:italic;color:var(--burgundy);animation:pop .6s ease}
+.trans-text{margin-top:24px;font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-2);animation:fadeUp .8s ease .2s both}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fadeUp{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+
+/* ===== DENIED ===== */
+#denied{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--ivory);z-index:98;padding:40px;text-align:center}
+#denied.show{display:flex}
+.denied-icon{width:64px;height:64px;border:1px solid var(--danger);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:28px;margin-bottom:24px}
+.denied-title{font-family:var(--serif);font-size:28px;color:var(--ink);margin-bottom:8px}
+.denied-msg{max-width:380px;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:16px;margin-bottom:28px}
+
+/* ===== APP SHELL ===== */
+#app{display:none;height:100vh;height:100dvh}
+#app.show{display:grid;grid-template-columns:248px 1fr}
+.sidebar{background:var(--paper);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:28px 0;overflow-y:auto}
+.brand{padding:0 28px 28px;border-bottom:1px solid var(--line)}
+.brand-mono{font-family:var(--serif);font-size:24px;font-style:italic;color:var(--burgundy);letter-spacing:-.5px}
+.brand-sub{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.nav{padding:20px 16px;flex:1}
+.nav-section{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted-2);padding:16px 12px 8px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:13.5px;color:var(--ink-2);cursor:pointer;transition:all .15s;margin-bottom:2px;width:100%;text-align:left}
+.nav-item:hover{background:var(--ivory-2);color:var(--ink)}
+.nav-item.active{background:var(--burgundy-soft);color:var(--burgundy);font-weight:500}
+.nav-item .ico{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .ico{opacity:1}
+.nav-item .badge{margin-left:auto;font-size:11px;background:var(--ivory-2);color:var(--muted);padding:2px 8px;border-radius:10px;font-weight:500}
+.nav-item.active .badge{background:var(--burgundy);color:#fff}
+.sidebar-foot{padding:16px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.user-chip{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--burgundy-soft);color:var(--burgundy);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.user-name{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-email{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-logout{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);transition:color .15s}
+.btn-logout:hover{color:var(--danger)}
+
+.main{overflow-y:auto;position:relative}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(250,246,240,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:var(--serif);font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-.3px}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-family:var(--serif);font-style:italic}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.content{padding:32px 40px 80px;max-width:1200px}
+
+/* ===== COMPONENTS ===== */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:all .15s;border:1px solid transparent}
+.btn-primary{background:var(--burgundy);color:#fff}
+.btn-primary:hover{background:var(--burgundy-2)}
+.btn-ghost{background:var(--paper);border-color:var(--line-2);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--burgundy);color:var(--burgundy)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{background:var(--paper);border-color:var(--line-2);color:var(--danger)}
+.btn-danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.input,.select,.textarea{width:100%;padding:9px 12px;background:var(--paper);border:1px solid var(--line-2);border-radius:8px;font-size:13px;transition:border .15s}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--burgundy)}
+.textarea{resize:vertical;min-height:72px}
+.label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-2);margin-bottom:5px;letter-spacing:.2px}
+.field{margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;position:relative;overflow:hidden}
+.stat-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stat-value{font-family:var(--serif);font-size:38px;font-weight:500;color:var(--ink);line-height:1.1;margin-top:6px;letter-spacing:-1px}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.stat .accent-bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--burgundy)}
+.stat.forest .accent-bar{background:var(--forest)}
+.stat.champagne .accent-bar{background:var(--champagne)}
+.stat.danger .accent-bar{background:var(--danger)}
+.stat.warn .accent-bar{background:var(--warn)}
+
+/* Section heading */
+.section-h{font-family:var(--serif);font-size:20px;font-weight:500;color:var(--ink);margin:0 0 16px;display:flex;align-items:center;justify-content:space-between}
+.section-h .sub{font-size:12px;font-family:var(--sans);font-style:normal;color:var(--muted);font-weight:400}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 14px;border-bottom:1px solid var(--line)}
+.tbl td{padding:13px 14px;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.tbl tr:hover td{background:var(--ivory-2)}
+.tbl-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.tbl-scroll{overflow-x:auto}
+
+/* Badges / pills */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500}
+.pill-confirmed{background:var(--forest-soft);color:var(--forest)}
+.pill-declined{background:var(--danger-soft);color:var(--danger)}
+.pill-pending{background:var(--warn-soft);color:var(--warn)}
+.pill-sent{background:var(--champagne-soft);color:#8A6F2A}
+.pill-notsent{background:var(--ivory-2);color:var(--muted)}
+.pill-need{background:#F0E4F0;color:#7B4A7B}
+.pill-side-groom{background:#EAEAF2;color:#3A3A6B}
+.pill-side-bride{background:var(--burgundy-soft);color:var(--burgundy)}
+.pill-priority-high{background:var(--danger-soft);color:var(--danger)}
+.pill-priority-medium{background:var(--warn-soft);color:var(--warn)}
+.pill-priority-low{background:var(--ivory-2);color:var(--muted)}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-box{position:relative;flex:1;min-width:200px;max-width:360px}
+.search-box input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--line-2);border-radius:8px;background:var(--paper);font-size:13px}
+.search-box input:focus{outline:none;border-color:var(--burgundy)}
+.search-box .ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted)}
+.filter-select{padding:9px 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--paper);font-size:13px;cursor:pointer}
+.filter-select:focus{outline:none;border-color:var(--burgundy)}
+
+/* Drawer */
+.drawer-overlay{position:fixed;inset:0;background:rgba(43,37,34,.3);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,92vw);background:var(--paper);z-index:51;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.show{transform:translateX(0)}
+.drawer-head{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.drawer-title{font-family:var(--serif);font-size:22px;font-weight:500}
+.drawer-body{flex:1;overflow-y:auto;padding:24px 28px}
+.drawer-foot{padding:18px 28px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.btn-close{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s}
+.btn-close:hover{background:var(--ivory-2);color:var(--ink)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(43,37,34,.4);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{width:min(480px,94vw);max-height:86vh;overflow-y:auto;background:var(--paper);border-radius:14px;box-shadow:var(--shadow-lg);padding:28px;animation:modalIn .2s ease}
+@keyframes modalIn{0%{transform:scale(.96);opacity:0}100%{transform:scale(1);opacity:1}}
+.modal-title{font-family:var(--serif);font-size:22px;font-weight:500;margin-bottom:8px}
+.modal-body{color:var(--ink-2);font-size:14px;margin:16px 0 24px;line-height:1.6}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end}
+
+/* Toast */
+#toaster{position:fixed;bottom:24px;right:24px;z-index:80;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--ink);color:#fff;padding:13px 18px;border-radius:10px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;max-width:360px}
+.toast.success{background:var(--forest)}
+.toast.error{background:var(--danger)}
+.toast.warn{background:var(--warn)}
+@keyframes toastIn{0%{transform:translateX(40px);opacity:0}100%{transform:translateX(0);opacity:1}}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{width:56px;height:56px;margin:0 auto 16px;border:1px solid var(--line-2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted-2)}
+.empty-title{font-family:var(--serif);font-size:20px;color:var(--ink-2);margin-bottom:6px;font-weight:500}
+.empty-msg{font-size:13px;max-width:340px;margin:0 auto 20px;font-family:var(--serif);font-style:italic}
+
+/* Loading */
+.skeleton{background:linear-gradient(90deg,var(--ivory-2) 25%,var(--line) 37%,var(--ivory-2) 63%);background-size:400% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.spin{width:18px;height:18px;border:2px solid var(--line-2);border-top-color:var(--burgundy);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-center{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--muted);font-size:13px}
+
+/* Progress */
+.progress{height:6px;background:var(--ivory-2);border-radius:6px;overflow:hidden}
+.progress-bar{height:100%;background:var(--burgundy);border-radius:6px;transition:width .4s ease}
+.progress-bar.forest{background:var(--forest)}
+.progress-bar.champagne{background:var(--champagne)}
+
+/* Seating */
+.seating-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.table-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);transition:all .2s}
+.table-card.drag-over{border-color:var(--burgundy);box-shadow:0 0 0 3px var(--burgundy-soft)}
+.table-card.full{border-color:var(--danger)}
+.table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.table-name{font-family:var(--serif);font-size:18px;font-weight:600}
+.table-cap{font-size:11px;color:var(--muted);font-weight:500}
+.table-seats{display:flex;flex-direction:column;gap:6px;min-height:40px}
+.seat-chip{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--ivory-2);border-radius:7px;font-size:12.5px;cursor:grab;transition:all .15s}
+.seat-chip:hover{background:var(--burgundy-soft)}
+.seat-chip.dragging{opacity:.4}
+.seat-chip .remove{opacity:0;transition:opacity .15s;color:var(--muted);cursor:pointer}
+.seat-chip:hover .remove{opacity:1}
+.seat-chip .remove:hover{color:var(--danger)}
+.unseated-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.unseated-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--ivory-2);border-radius:20px;font-size:12.5px;margin:4px;cursor:grab;transition:all .15s;border:1px dashed var(--line-2)}
+.unseated-chip:hover{background:var(--burgundy-soft);border-color:var(--burgundy)}
+.unseated-chip.dragging{opacity:.4}
+
+/* Checklist */
+.task-row{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);transition:background .15s}
+.task-row:hover{background:var(--ivory-2)}
+.task-check{width:20px;height:20px;border:1.5px solid var(--line-2);border-radius:50%;flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.task-check.done{background:var(--forest);border-color:var(--forest);color:#fff}
+.task-check.done svg{width:12px;height:12px}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:13.5px;color:var(--ink);font-weight:500}
+.task-title.done{text-decoration:line-through;color:var(--muted)}
+.task-meta{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* Timeline / events */
+.event-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px;position:relative;overflow:hidden}
+.event-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--champagne)}
+.event-name{font-family:var(--serif);font-size:20px;font-weight:600}
+.event-meta{font-size:12.5px;color:var(--muted);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap}
+.event-stats{display:flex;gap:24px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.event-stat{font-size:12px;color:var(--muted)}
+.event-stat b{font-family:var(--serif);font-size:20px;color:var(--ink);display:block;font-weight:600}
+
+/* Two-column */
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:900px){.col2{grid-template-columns:1fr}}
+
+/* Mobile */
+.mobile-nav{display:none}
+@media(max-width:768px){
+  #app.show{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);z-index:30;padding:8px;justify-content:space-around;box-shadow:0 -2px 12px rgba(0,0,0,.04)}
+  .mobile-nav .mn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;font-size:10px;color:var(--muted);border-radius:8px}
+  .mobile-nav .mn-item.active{color:var(--burgundy)}
+  .mobile-nav .mn-item .ico{width:18px;height:18px}
+  .content{padding:20px 18px 90px}
+  .topbar{padding:16px 18px}
+  .topbar-title{font-size:22px}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .stat-value{font-size:30px}
+  .row,.row-3{grid-template-columns:1fr}
+  .seating-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.serif{font-family:var(--serif)}
+.italic{font-style:italic}
+.right{text-align:right}
+.flex{display:flex}
+.gap-8{gap:8px}.gap-12{gap:12px}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.text-sm{font-size:12px}.text-xs{font-size:11px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-monogram">W</div>
+    <div class="login-title">The Wedding Atelier</div>
+    <div class="login-sub">Private Wedding Planner</div>
+    <div class="login-divider">Đăng nhập riêng tư</div>
+    <button class="btn-google" id="btnGoogleLogin">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.5l-6.6-5.6C29.6 34.5 26.9 35.5 24 35.5c-5.2 0-9.6-3.3-11.2-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.4l6.6 5.6C41.9 36.5 44 30.8 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+      <span id="googleBtnText">Tiếp tục với Google</span>
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-foot">Chỉ hai tài khoản được phê duyệt có thể truy cập</div>
+  </div>
+</div>
+
+<!-- TRANSITION -->
+<div id="transition">
+  <div class="trans-monogram">W</div>
+  <div class="trans-text">Chào mừng trở lại</div>
+</div>
+
+<!-- DENIED -->
+<div id="denied">
+  <div class="denied-icon">✕</div>
+  <div class="denied-title">Truy cập bị từ chối</div>
+  <div class="denied-msg">Tài khoản này không nằm trong danh sách được phê duyệt. Vui lòng đăng xuất và liên hệ người tổ chức.</div>
+  <button class="btn btn-ghost" onclick="Auth.signOut()">Đăng xuất</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mono">Wedding Atelier</div>
+      <div class="brand-sub">Private Planner</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div style="overflow:hidden;flex:1">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="Auth.signOut()">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Đăng xuất
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="viewTitle">Tổng quan</div>
+        <div class="topbar-sub" id="viewSub"></div>
+      </div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+
+  <nav class="mobile-nav" id="mobileNav"></nav>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="UI.closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-title" id="drawerTitle">—</div>
+    <button class="btn-close" onclick="UI.closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- TOASTER -->
+<div id="toaster"></div>
+
+<script>
+/* ============================================================
+   THE WEDDING ATELIER — Single-file Wedding Command Center
+   Modules: Config · Auth · DB · UI · Router · Views
+   ============================================================ */
+
+/* ---------- CONFIG ---------- */
+const CONFIG = {
+  SUPABASE_URL: "https://acwlagoieszpydklikqw.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd2xhZ29pZXN6cHlka2xpa3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODc5MDYsImV4cCI6MjA5MzE2MzkwNn0.I50smOD2_phj8PSSg4A0KzepYliWQinGXVmZpop9ljI",
+  ALLOWED_EMAILS: ["quangphamit2018@gmail.com","quynhanhphameng@gmail.com"]
+};
+
+/* ---------- SUPABASE CLIENT ---------- */
+let sb = null;
+function initSupabase(){
+  if(sb) return sb;
+  if(!window.supabase || !window.supabase.createClient){
+    throw new Error("Không tải được thư viện Supabase. Kiểm tra kết nối mạng.");
+  }
+  sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  return sb;
+}
+
+/* ---------- UTIL ---------- */
+const Util = {
+  esc(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  fmtDate(d){ if(!d) return "—"; const dt = typeof d==='string'?new Date(d+'T00:00:00'):new Date(d); if(isNaN(dt)) return "—"; return dt.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); },
+  fmtDateLong(d){ if(!d) return "—"; const dt = typeof d==='string'?new Date(d+'T00:00:00'):new Date(d); if(isNaN(dt)) return "—"; return dt.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); },
+  fmtMoney(n){ return (Number(n)||0).toLocaleString('vi-VN')+' ₫'; },
+  debounce(fn,ms=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; },
+  daysUntil(d){ if(!d) return null; const dt=new Date(d+'T00:00:00'); const now=new Date(); now.setHours(0,0,0,0); return Math.ceil((dt-now)/86400000); },
+  uid(){ return 'id'+Math.random().toString(36).slice(2,10); },
+  initials(name){ if(!name) return '?'; const p=name.trim().split(/\s+/); return (p.length>1?p[0][0]+p[p.length-1][0]:p[0].slice(0,2)).toUpperCase(); },
+  csvEscape(v){ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; },
+  parseCSV(text){
+    const rows=[]; let row=[]; let cell=''; let inQ=false;
+    text = text.replace(/^\uFEFF/,'');
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(inQ){ if(c==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else inQ=false; } else cell+=c; }
+      else { if(c==='"') inQ=true; else if(c===','){ row.push(cell); cell=''; } else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; } else if(c!=='\r') cell+=c; }
+    }
+    if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+    return rows.filter(r=>r.some(c=>c.trim()!==''));
+  }
+};
+
+/* ---------- TOAST ---------- */
+const Toast = {
+  show(msg, type='info', ms=3000){
+    const el=document.createElement('div');
+    el.className='toast '+type;
+    el.textContent=msg;
+    document.getElementById('toaster').appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(40px)'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),300); }, ms);
+  },
+  ok(m){ this.show(m,'success'); },
+  err(m){ this.show(m,'error',4000); },
+  warn(m){ this.show(m,'warn',3500); }
+};
+
+/* ---------- UI HELPERS ---------- */
+const UI = {
+  drawerOpen:false,
+  openDrawer(title, bodyHTML, footHTML){
+    document.getElementById('drawerTitle').textContent=title;
+    document.getElementById('drawerBody').innerHTML=bodyHTML;
+    document.getElementById('drawerFoot').innerHTML=footHTML||'';
+    document.getElementById('drawer').classList.add('show');
+    document.getElementById('drawerOverlay').classList.add('show');
+    this.drawerOpen=true;
+  },
+  closeDrawer(){
+    document.getElementById('drawer').classList.remove('show');
+    document.getElementById('drawerOverlay').classList.remove('show');
+    this.drawerOpen=false;
+  },
+  modal(innerHTML){
+    document.getElementById('modal').innerHTML=innerHTML;
+    document.getElementById('modalOverlay').classList.add('show');
+  },
+  confirm(title, body, onYes, yesLabel='Xác nhận', danger=false){
+    this.modal(`<div class="modal-title">${Util.esc(title)}</div><div class="modal-body">${body}</div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="UI.closeModal()">Hủy</button>
+        <button class="btn ${danger?'btn-danger':'btn-primary'}" id="modalYes">${Util.esc(yesLabel)}</button>
+      </div>`);
+    document.getElementById('modalYes').onclick=()=>{ onYes(); this.closeModal(); };
+  },
+  closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); },
+  skeleton(rows=5){
+    let h='<div style="padding:8px">';
+    for(let i=0;i<rows;i++) h+=`<div class="skeleton" style="height:42px;margin-bottom:10px"></div>`;
+    return h+'</div>';
+  },
+  empty(icon, title, msg, btn){
+    return `<div class="empty"><div class="empty-icon">${icon||''}</div><div class="empty-title">${title}</div><div class="empty-msg">${msg}</div>${btn||''}</div>`;
+  }
+};
+document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') UI.closeModal(); });
+
+/* ---------- DB ---------- */
+const DB = {
+  async list(table, opts={}){
+    let q = sb.from(table).select(opts.select||'*');
+    if(opts.eq) for(const k in opts.eq) q=q.eq(k, opts.eq[k]);
+    if(opts.order) q=q.order(opts.order[0],{ascending:opts.order[1]!==false});
+    if(opts.limit) q=q.limit(opts.limit);
+    const {data,error} = await q;
+    if(error) throw error;
+    return data||[];
+  },
+  async insert(table, row){ const {data,error}=await sb.from(table).insert(row).select().single(); if(error) throw error; return data; },
+  async update(table, id, patch){ const {data,error}=await sb.from(table).update({...patch, updated_at:new Date().toISOString()}).eq('id',id).select().single(); if(error) throw error; return data; },
+  async remove(table, id){ const {error}=await sb.from(table).delete().eq('id',id); if(error) throw error; },
+  async count(table, eq){ let q=sb.from(table).select('*',{count:'exact',head:true}); if(eq) for(const k in eq) q=q.eq(k,eq[k]); const {count,error}=await q; if(error) throw error; return count; }
+};
+
+/* ---------- AUTH ---------- */
+const Auth = {
+  user:null,
+  async init(){
+    initSupabase();
+    const {data:{session}} = await sb.auth.getSession();
+    if(session){ await this.handleSession(session); }
+    else { this.showLogin(); }
+    sb.auth.onAuthStateChange(async (evt, session)=>{
+      if(evt==='SIGNED_OUT'){ this.user=null; this.showLogin(); }
+      else if(session && evt!=='INITIAL_SESSION'){ await this.handleSession(session); }
+    });
+  },
+  async handleSession(session){
+    const email = session.user.email;
+    // Frontend allowlist check
+    const allowed = await this.checkAllowed(email);
+    if(!allowed){ await this.deny(); return; }
+    this.user = session.user;
+    this.showTransition();
+    setTimeout(()=>{ this.showApp(); }, 900);
+  },
+  async checkAllowed(email){
+    // 1) Frontend check
+    if(!CONFIG.ALLOWED_EMAILS.includes(email)) return false;
+    // 2) Backend allowlist table check (RLS-protected)
+    try{
+      const {data,error} = await sb.from('wed_allowed_users').select('email').eq('email',email).maybeSingle();
+      if(error) { console.warn('Allowlist check error'); return false; }
+      return !!data;
+    }catch(e){ return false; }
+  },
+  async signInWithGoogle(){
+    const btn=document.getElementById('btnGoogleLogin');
+    const txt=document.getElementById('googleBtnText');
+    btn.disabled=true; txt.textContent='Đang chuyển hướng...';
+    document.getElementById('loginError').classList.remove('show');
+    try{
+      const redirectTo = window.location.origin + window.location.pathname.replace(/\/[^/]*$/,'/');
+      const {error} = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo, scopes:'openid email profile' } });
+      if(error) throw error;
+    }catch(e){
+      btn.disabled=false; txt.textContent='Tiếp tục với Google';
+      const errEl=document.getElementById('loginError');
+      errEl.textContent='Đăng nhập thất bại: '+ (e.message||'Lỗi không xác định');
+      errEl.classList.add('show');
+    }
+  },
+  async deny(){
+    try{ await sb.auth.signOut(); }catch(e){}
+    this.user=null;
+    document.getElementById('login').style.display='none';
+    document.getElementById('transition').classList.remove('show');
+    document.getElementById('denied').classList.add('show');
+  },
+  showLogin(){
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('transition').classList.remove('show');
+    document.getElementById('denied').classList.remove('show');
+    document.getElementById('login').style.display='flex';
+  },
+  showTransition(){
+    document.getElementById('login').style.display='none';
+    document.getElementById('denied').classList.remove('show');
+    document.getElementById('transition').classList.add('show');
+  },
+  showApp(){
+    document.getElementById('login').style.display='none';
+    document.getElementById('transition').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    // user chip
+    const u=this.user;
+    document.getElementById('userName').textContent=u.user_metadata?.full_name || u.email.split('@')[0];
+    document.getElementById('userEmail').textContent=u.email;
+    document.getElementById('userAvatar').textContent=Util.initials(u.user_metadata?.full_name || u.email);
+    Router.init();
+  },
+  async signOut(){
+    try{ await sb.auth.signOut(); }catch(e){}
+    this.user=null;
+    this.showLogin();
+  }
+};
+
+/* ---------- ICONS (inline SVG) ---------- */
+const I = {
+  overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>',
+  guest:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  groups:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  rsvp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>',
+  seating:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+  events:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  tasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  budget:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>'
+};
+
+/* ---------- ROUTER ---------- */
+const Router = {
+  routes:{ overview:Overview, guest:Guestbook, groups:Groups, rsvp:RSVP, seating:Seating, events:Events, tasks:Tasks, budget:Budget, settings:Settings },
+  current:'overview',
+  navItems:[
+    {id:'overview',label:'Tổng quan',ico:I.overview,group:'Chính'},
+    {id:'guest',label:'Sổ khách mời',ico:I.guest,group:'Chính'},
+    {id:'groups',label:'Nhóm & gia đình',ico:I.groups,group:'Chính'},
+    {id:'rsvp',label:'Thiệp & xác nhận',ico:I.rsvp,group:'Chính'},
+    {id:'seating',label:'Sơ đồ bàn tiệc',ico:I.seating,group:'Chính'},
+    {id:'events',label:'Sự kiện & lịch trình',ico:I.events,group:'Chính'},
+    {id:'tasks',label:'Công việc chuẩn bị',ico:I.tasks,group:'Chính'},
+    {id:'budget',label:'Ngân sách & quà',ico:I.budget,group:'Tài chính'},
+    {id:'settings',label:'Cấu hình',ico:I.settings,group:'Hệ thống'}
+  ],
+  init(){
+    this.renderNav();
+    const hash = location.hash.slice(2) || 'overview';
+    this.go(this.routes[hash]?hash:'overview');
+    window.addEventListener('hashchange', ()=> this.go(location.hash.slice(2)||'overview'));
+  },
+  renderNav(){
+    let lastGroup='';
+    let navHTML='';
+    let mobHTML='';
+    const mobileSet = new Set(['overview','guest','groups','rsvp','seating','events','tasks']);
+    this.navItems.forEach(it=>{
+      if(it.group!==lastGroup){ navHTML+=`<div class="nav-section">${it.group}</div>`; lastGroup=it.group; }
+      navHTML+=`<button class="nav-item" data-route="${it.id}" onclick="Router.go('${it.id}')">${it.ico.replace('<svg','<svg class="ico"')}<span>${it.label}</span><span class="badge" id="badge-${it.id}" style="display:none">0</span></button>`;
+      if(mobileSet.has(it.id)) mobHTML+=`<button class="mn-item" data-route="${it.id}" onclick="Router.go('${it.id}')">${it.ico.replace('<svg','<svg class="ico"')}<span>${it.label}</span></button>`;
+    });
+    document.getElementById('nav').innerHTML=navHTML;
+    document.getElementById('mobileNav').innerHTML=mobHTML;
+  },
+  go(route){
+    if(!this.routes[route]) route='overview';
+    this.current=route;
+    location.hash='#/'+route;
+    document.querySelectorAll('.nav-item,.mn-item').forEach(el=>{
+      el.classList.toggle('active', el.dataset.route===route);
+    });
+    const item=this.navItems.find(i=>i.id===route);
+    document.getElementById('viewTitle').textContent=item.label;
+    document.getElementById('topbarActions').innerHTML='';
+    document.getElementById('content').innerHTML='';
+    this.routes[route].render();
+  }
+};
+
+/* ============================================================
+   VIEW: OVERVIEW
+   ============================================================ */
+const Overview = {
+  async render(){
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải dữ liệu...</div>`;
+    try{
+      const [settings, guests, events, tasks, tables, assignments] = await Promise.all([
+        DB.list('wed_wedding_settings').catch(()=>[]),
+        DB.list('wed_guests').catch(()=>[]),
+        DB.list('wed_events',{order:['event_date']}).catch(()=>[]),
+        DB.list('wed_tasks').catch(()=>[]),
+        DB.list('wed_tables').catch(()=>[]),
+        DB.list('wed_seating_assignments').catch(()=>[])
+      ]);
+      const s = settings[0]||{};
+      const totalInvited = guests.reduce((a,g)=>a+(g.invited_count||1),0);
+      const confirmed = guests.filter(g=>(g.rsvp_status||'')==='confirmed').reduce((a,g)=>a+(g.confirmed_count||0),0);
+      const declined = guests.filter(g=>(g.rsvp_status||'')==='declined').length;
+      const pending = guests.filter(g=>!g.rsvp_status||['not_sent','sent','pending'].includes(g.rsvp_status)).length;
+      const groomCount = guests.filter(g=>g.side==='groom').length;
+      const brideCount = guests.filter(g=>g.side==='bride').length;
+      const totalCap = tables.reduce((a,t)=>a+(t.capacity||0),0);
+      const seated = assignments.reduce((a,x)=>a+(x.seat_count||1),0);
+      const overdueTasks = tasks.filter(t=>t.due_date && t.status!=='done' && Util.daysUntil(t.due_date)<0).length;
+      const upcomingTasks = tasks.filter(t=>t.due_date && t.status!=='done' && Util.daysUntil(t.due_date)>=0 && Util.daysUntil(t.due_date)<=7).length;
+      const days = Util.daysUntil(s.wedding_date);
+
+      let html='<div class="stat-grid">';
+      if(s.wedding_date){
+        html+=`<div class="stat"><div class="accent-bar"></div><div class="stat-label">Ngày cưới</div><div class="stat-value">${days!==null&&days>=0?days:'—'}</div><div class="stat-sub">${days>=0?'ngày nữa · '+Util.esc(s.groom_name||'')+' & '+Util.esc(s.bride_name||''):Util.fmtDate(s.wedding_date)}</div></div>`;
+      }
+      html+=`<div class="stat"><div class="accent-bar"></div><div class="stat-label">Tổng khách mời</div><div class="stat-value">${guests.length}</div><div class="stat-sub">${totalInvited} người được mời</div></div>`;
+      html+=`<div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Đã xác nhận</div><div class="stat-value">${confirmed}</div><div class="stat-sub">sẽ tham dự</div></div>`;
+      html+=`<div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Chưa phản hồi</div><div class="stat-value">${pending}</div><div class="stat-sub">cần liên hệ</div></div>`;
+      html+=`<div class="stat danger"><div class="accent-bar"></div><div class="stat-label">Từ chối</div><div class="stat-value">${declined}</div><div class="stat-sub">không tham dự</div></div>`;
+      html+=`<div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Bàn tiệc</div><div class="stat-value">${seated}/${totalCap}</div><div class="stat-sub">${tables.length} bàn · ${totalCap-seated} chỗ trống</div></div>`;
+      html+='</div>';
+
+      // Two sides
+      html+='<div class="col2 mb-24">';
+      html+=this.sideCard('Nhà trai', groomCount, guests.filter(g=>g.side==='groom'), s.groom_side_label||'Nhà trai');
+      html+=this.sideCard('Nhà gái', brideCount, guests.filter(g=>g.side==='bride'), s.bride_side_label||'Nhà gái');
+      html+='</div>';
+
+      // Alerts
+      const alerts=[];
+      if(pending>0) alerts.push({ico:'!',msg:`${pending} khách chưa phản hồi lời mời`,action:'rsvp'});
+      if(overdueTasks>0) alerts.push({ico:'!',msg:`${overdueTasks} công việc đã quá hạn`,action:'tasks'});
+      if(totalCap>0 && seated>totalCap) alerts.push({ico:'!',msg:'Số chỗ đã vượt sức chứa bàn tiệc',action:'seating'});
+      if(totalCap>0 && confirmed>totalCap) alerts.push({ico:'!',msg:`Khách xác nhận (${confirmed}) nhiều hơn chỗ ngồi (${totalCap})`,action:'seating'});
+      if(upcomingTasks>0) alerts.push({ico:'i',msg:`${upcomingTasks} công việc sắp đến hạn trong 7 ngày`,action:'tasks'});
+      if(alerts.length){
+        html+='<div class="section-h">Cần xử lý</div><div class="card" style="padding:8px 16px;margin-bottom:24px">';
+        alerts.forEach(a=>{ html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="color:${a.ico==='!'?'var(--warn)':'var(--champagne)'};font-weight:700">${a.ico==='!'?'!':'i'}</span><span style="flex:1;font-size:13px">${a.msg}</span><button class="btn btn-ghost btn-sm" onclick="Router.go('${a.action}')">Xem</button></div>`; });
+        html+='</div>';
+      }
+
+      // Upcoming events
+      if(events.length){
+        html+='<div class="section-h">Sự kiện sắp tới</div>';
+        events.slice(0,3).forEach(e=>{
+          const evGuests = guests.filter(g=>g.event_ids&&g.event_ids.includes(e.id)).length;
+          html+=`<div class="event-card"><div class="event-name">${Util.esc(e.name)}</div><div class="event-meta"><span>${Util.fmtDateLong(e.event_date)}</span>${e.event_time?`<span>· ${e.event_time}</span>`:''}${e.venue?`<span>· ${Util.esc(e.venue)}</span>`:''}</div></div>`;
+        });
+      }
+      c.innerHTML=html;
+    }catch(e){
+      c.innerHTML=`<div class="empty"><div class="empty-title">Không tải được dữ liệu</div><div class="empty-msg">${Util.esc(e.message||'Lỗi kết nối')}</div><button class="btn btn-ghost" onclick="Overview.render()">Thử lại</button></div>`;
+    }
+  },
+  sideCard(label, count, guests, fullLabel){
+    const confirmed = guests.filter(g=>(g.rsvp_status||'')==='confirmed').length;
+    const pct = count?Math.round(confirmed/count*100):0;
+    return `<div class="card" style="padding:22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div><div style="font-family:var(--serif);font-size:20px;font-weight:600">${Util.esc(fullLabel)}</div><div class="muted text-sm">${count} khách</div></div>
+        <div style="text-align:right"><div style="font-family:var(--serif);font-size:28px;font-weight:600">${confirmed}</div><div class="muted text-xs">đã xác nhận</div></div>
+      </div>
+      <div class="progress"><div class="progress-bar ${label==='Nhà gái'?'':''}" style="width:${pct}%"></div></div>
+      <div class="text-xs muted" style="margin-top:6px">${pct}% phản hồi</div>
+    </div>`;
+  }
+};
+
+/* ============================================================
+   VIEW: GUESTBOOK
+   ============================================================ */
+const Guestbook = {
+  guests:[], groups:[], filtered:[],
+  search:'', filterSide:'', filterGroup:'', filterRsvp:'',
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Guestbook.importCSV()">${I.upload.replace('<svg','<svg style="width:15px;height:15px"')} Nhập CSV</button><button class="btn btn-ghost" onclick="Guestbook.exportCSV()">${I.download.replace('<svg','<svg style="width:15px;height:15px"')} Xuất CSV</button><button class="btn btn-primary" onclick="Guestbook.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khách</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=this.toolbarHTML()+`<div id="guestList">${UI.skeleton(6)}</div>`;
+    document.getElementById('gSearch').addEventListener('input', Util.debounce(e=>{ this.search=e.target.value.toLowerCase(); this.renderList(); },250));
+    document.getElementById('fSide').addEventListener('change', e=>{ this.filterSide=e.target.value; this.renderList(); });
+    document.getElementById('fGroup').addEventListener('change', e=>{ this.filterGroup=e.target.value; this.renderList(); });
+    document.getElementById('fRsvp').addEventListener('change', e=>{ this.filterRsvp=e.target.value; this.renderList(); });
+    await this.load();
+  },
+  toolbarHTML(){
+    return `<div class="toolbar">
+      <div class="search-box">${I.search}<input id="gSearch" placeholder="Tìm theo tên, số điện thoại..." value="${Util.esc(this.search)}"/></div>
+      <select class="filter-select" id="fSide"><option value="">Tất cả bên</option><option value="groom">Nhà trai</option><option value="bride">Nhà gái</option></select>
+      <select class="filter-select" id="fGroup"><option value="">Tất cả nhóm</option></select>
+      <select class="filter-select" id="fRsvp"><option value="">Tất cả RSVP</option><option value="not_sent">Chưa gửi</option><option value="sent">Đã gửi</option><option value="pending">Chờ phản hồi</option><option value="confirmed">Xác nhận</option><option value="declined">Từ chối</option><option value="need_contact">Cần liên hệ</option></select>
+    </div>`;
+  },
+  async load(){
+    try{
+      const [g, gr] = await Promise.all([ DB.list('wed_guests',{order:['full_name']}), DB.list('wed_guest_groups',{order:['name']}) ]);
+      this.guests=g; this.groups=gr;
+      const grpSel=document.getElementById('fGroup');
+      const cur=grpSel.value;
+      grpSel.innerHTML='<option value="">Tất cả nhóm</option>'+gr.map(x=>`<option value="${x.id}">${Util.esc(x.name)}</option>`).join('');
+      grpSel.value=cur;
+      this.renderList();
+    }catch(e){
+      document.getElementById('guestList').innerHTML=UI.empty(I.guest,'Không tải được danh sách',e.message,'<button class="btn btn-ghost" onclick="Guestbook.load()">Thử lại</button>');
+    }
+  },
+  renderList(){
+    let list=this.guests;
+    if(this.search) list=list.filter(g=>(g.full_name||'').toLowerCase().includes(this.search)||(g.phone||'').includes(this.search));
+    if(this.filterSide) list=list.filter(g=>g.side===this.filterSide);
+    if(this.filterGroup) list=list.filter(g=>g.group_id===this.filterGroup);
+    if(this.filterRsvp) list=list.filter(g=>(g.rsvp_status||'not_sent')===this.filterRsvp);
+    this.filtered=list;
+    const el=document.getElementById('guestList');
+    if(!list.length){
+      el.innerHTML=UI.empty(I.guest,'Chưa có khách mời','Thêm khách đầu tiên hoặc nhập từ CSV để bắt đầu quản lý.',`<button class="btn btn-primary" onclick="Guestbook.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khách</button>`);
+      return;
+    }
+    const grpMap={}; this.groups.forEach(g=>grpMap[g.id]=g.name);
+    let rows=list.map(g=>{
+      const grp=grpMap[g.group_id]||'—';
+      const rsvp = g.rsvp_status||'not_sent';
+      const pill = {confirmed:'pill-confirmed',declined:'pill-declined',pending:'pill-pending',sent:'pill-sent',need_contact:'pill-need'}[rsvp]||'pill-notsent';
+      const pillLabel = {confirmed:'Xác nhận',declined:'Từ chối',pending:'Chờ phản hồi',sent:'Đã gửi',need_contact:'Cần liên hệ',not_sent:'Chưa gửi'}[rsvp];
+      return `<tr ondblclick="Guestbook.openEdit('${g.id}')">
+        <td><div style="font-weight:500;color:var(--ink)">${Util.esc(g.full_name)}</div>${g.display_name?`<div class="text-xs muted">${Util.esc(g.display_name)}</div>`:''}</td>
+        <td><span class="pill ${g.side==='groom'?'pill-side-groom':'pill-side-bride'}">${g.side==='groom'?'Trai':'Gái'}</span></td>
+        <td>${Util.esc(grp)}</td>
+        <td>${g.phone?Util.esc(g.phone):'<span class="muted">—</span>'}</td>
+        <td><span class="pill ${pill}">${pillLabel}</span>${g.confirmed_count?` <span class="text-xs muted">(${g.confirmed_count})</span>`:''}</td>
+        <td class="right" style="white-space:nowrap">
+          <button class="btn-close" onclick="Guestbook.openEdit('${g.id}')" title="Sửa">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button>
+          <button class="btn-close" onclick="Guestbook.confirmDelete('${g.id}')" title="Xóa">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button>
+        </td>
+      </tr>`;
+    }).join('');
+    el.innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl">
+      <thead><tr><th>Họ tên</th><th>Bên</th><th>Nhóm</th><th>Điện thoại</th><th>RSVP</th><th class="right"></th></tr></thead>
+      <tbody>${rows}</tbody></table></div></div>
+      <div class="text-xs muted" style="margin-top:10px">${list.length} / ${this.guests.length} khách</div>`;
+  },
+  openAdd(){ this.openDrawer(null); },
+  openEdit(id){
+    const g=this.guests.find(x=>x.id===id);
+    this.openDrawer(g);
+  },
+  async openDrawer(g){
+    const isEdit=!!g;
+    const grpOpts=this.groups.map(gr=>`<option value="${gr.id}" ${g&&g.group_id===gr.id?'selected':''}>${Util.esc(gr.name)}</option>`).join('');
+    let events=[]; try{ events=await DB.list('wed_events',{order:['event_date']}); }catch(e){}
+    const checkedIds=g&&g.event_ids?g.event_ids:[];
+    const eventChk=events.length?events.map(e=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;cursor:pointer"><input type="checkbox" class="ev-chk" value="${e.id}" ${checkedIds.includes(e.id)?'checked':''}/> ${Util.esc(e.name)}${e.event_date?` <span class="text-xs muted">(${Util.fmtDate(e.event_date)})</span>`:''}</label>`).join(''):'<div class="text-xs muted">Chưa có sự kiện. Tạo trong mục Sự kiện.</div>';
+    const body=`
+      <div class="field"><label class="label">Họ tên *</label><input class="input" id="fName" value="${g?Util.esc(g.full_name):''}" placeholder="Nguyễn Văn A"/></div>
+      <div class="field"><label class="label">Tên hiển thị</label><input class="input" id="fDisplay" value="${g?Util.esc(g.display_name||''):''}" placeholder="Bí danh / tên gọi"/></div>
+      <div class="row">
+        <div class="field"><label class="label">Bên gia đình *</label><select class="select" id="fSide"><option value="groom" ${g&&g.side==='groom'?'selected':''}>Nhà trai</option><option value="bride" ${g&&g.side==='bride'?'selected':''}>Nhà gái</option></select></div>
+        <div class="field"><label class="label">Nhóm</label><select class="select" id="fGroup"><option value="">—</option>${grpOpts}</select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label class="label">Số điện thoại</label><input class="input" id="fPhone" value="${g?Util.esc(g.phone||''):''}" placeholder="09xx..."/></div>
+        <div class="field"><label class="label">Email</label><input class="input" id="fEmail" value="${g?Util.esc(g.email||''):''}"/></div>
+      </div>
+      <div class="row">
+        <div class="field"><label class="label">Mối quan hệ</label><input class="input" id="fRel" value="${g?Util.esc(g.relationship||''):''}" placeholder="Anh em / bạn học..."/></div>
+        <div class="field"><label class="label">Người đại diện</label><select class="select" id="fRep"><option value="false" ${!g||!g.is_representative?'selected':''}>Không</option><option value="true" ${g&&g.is_representative?'selected':''}>Đại diện hộ</option></select></div>
+      </div>
+      <div class="row-3">
+        <div class="field"><label class="label">Số người mời</label><input class="input" type="number" id="fInvited" value="${g?(g.invited_count||1):1}" min="1"/></div>
+        <div class="field"><label class="label">Số người xác nhận</label><input class="input" type="number" id="fConfirmed" value="${g?(g.confirmed_count||0):0}" min="0"/></div>
+        <div class="field"><label class="label">Trạng thái RSVP</label><select class="select" id="fRsvp">
+          <option value="not_sent" ${!g||(g.rsvp_status||'not_sent')==='not_sent'?'selected':''}>Chưa gửi</option>
+          <option value="sent" ${g&&g.rsvp_status==='sent'?'selected':''}>Đã gửi</option>
+          <option value="pending" ${g&&g.rsvp_status==='pending'?'selected':''}>Chờ phản hồi</option>
+          <option value="confirmed" ${g&&g.rsvp_status==='confirmed'?'selected':''}>Xác nhận</option>
+          <option value="declined" ${g&&g.rsvp_status==='declined'?'selected':''}>Từ chối</option>
+          <option value="need_contact" ${g&&g.rsvp_status==='need_contact'?'selected':''}>Cần liên hệ</option>
+        </select></div>
+      </div>
+      <div class="field"><label class="label">Nhu cầu ăn uống / hỗ trợ đặc biệt</label><input class="input" id="fDiet" value="${g?Util.esc(g.dietary||''):''}" placeholder="Ăn chay, dị ứng..."/></div>
+      <div class="field"><label class="label">Sự kiện được mời</label><div style="padding:4px 0">${eventChk}</div></div>
+      <div class="field"><label class="label">Ghi chú nội bộ</label><textarea class="textarea" id="fNotes" placeholder="Ghi chú riêng">${g?Util.esc(g.notes||''):''}</textarea></div>
+    `;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" id="btnSaveGuest" onclick="Guestbook.save('${g?g.id:''}')">${isEdit?'Lưu thay đổi':'Thêm khách'}</button>`;
+    UI.openDrawer(isEdit?'Sửa khách mời':'Thêm khách mời', body, foot);
+  },
+  async save(id){
+    const btn=document.getElementById('btnSaveGuest');
+    btn.disabled=true; btn.textContent='Đang lưu...';
+    const row={
+      full_name: document.getElementById('fName').value.trim(),
+      display_name: document.getElementById('fDisplay').value.trim()||null,
+      side: document.getElementById('fSide').value,
+      group_id: document.getElementById('fGroup').value||null,
+      phone: document.getElementById('fPhone').value.trim()||null,
+      email: document.getElementById('fEmail').value.trim()||null,
+      relationship: document.getElementById('fRel').value.trim()||null,
+      is_representative: document.getElementById('fRep').value==='true',
+      invited_count: parseInt(document.getElementById('fInvited').value)||1,
+      confirmed_count: parseInt(document.getElementById('fConfirmed').value)||0,
+      rsvp_status: document.getElementById('fRsvp').value,
+      dietary: document.getElementById('fDiet').value.trim()||null,
+      event_ids: Array.from(document.querySelectorAll('.ev-chk:checked')).map(c=>c.value),
+      notes: document.getElementById('fNotes').value.trim()||null
+    };
+    if(!row.full_name){ Toast.err('Vui lòng nhập họ tên'); btn.disabled=false; btn.textContent=id?'Lưu thay đổi':'Thêm khách'; return; }
+    try{
+      if(id){ await DB.update('wed_guests', id, row); Toast.ok('Đã lưu thay đổi'); }
+      else { await DB.insert('wed_guests', row); Toast.ok('Đã thêm khách'); }
+      UI.closeDrawer();
+      await this.load();
+    }catch(e){
+      Toast.err('Lưu thất bại: '+(e.message||''));
+      btn.disabled=false; btn.textContent=id?'Lưu thay đổi':'Thêm khách';
+    }
+  },
+  confirmDelete(id){
+    const g=this.guests.find(x=>x.id===id);
+    const hasRsvp = g&&g.rsvp_status&&g.rsvp_status!=='not_sent';
+    UI.confirm('Xóa khách mời?', `Bạn có chắc muốn xóa <b>${Util.esc(g.full_name)}</b>?${hasRsvp?'<br><br>Khách này đã có phản hồi RSVP — hành động không thể hoàn tác.':''}`, ()=>this.doDelete(id), 'Xóa', true);
+  },
+  async doDelete(id){
+    try{ await DB.remove('wed_guests', id); Toast.ok('Đã xóa khách'); await this.load(); }
+    catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); }
+  },
+  exportCSV(){
+    const headers=['full_name','display_name','side','group','relationship','phone','email','is_representative','invited_count','confirmed_count','rsvp_status','dietary','notes'];
+    const grpMap={}; this.groups.forEach(g=>grpMap[g.id]=g.name);
+    let csv='\uFEFF'+headers.join(',')+'\n';
+    this.guests.forEach(g=>{
+      const vals=[g.full_name,g.display_name,g.side,grpMap[g.group_id]||'',g.relationship,g.phone,g.email,g.is_representative?'1':'0',g.invited_count,g.confirmed_count,g.rsvp_status,g.dietary,g.notes];
+      csv+=vals.map(v=>Util.csvEscape(v)).join(',')+'\n';
+    });
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='khach-moi.csv'; a.click();
+    Toast.ok('Đã xuất CSV');
+  },
+  importCSV(){
+    const input=document.createElement('input'); input.type='file'; input.accept='.csv,text/csv';
+    input.onchange=async (e)=>{
+      const file=e.target.files[0]; if(!file) return;
+      try{
+        const text=await file.text();
+        const rows=Util.parseCSV(text);
+        if(rows.length<2){ Toast.err('File CSV trống hoặc không đúng định dạng'); return; }
+        const headers=rows[0].map(h=>h.trim().toLowerCase());
+        const dataRows=rows.slice(1);
+        const nameIdx=headers.indexOf('full_name'); if(nameIdx<0){ Toast.err('Thiếu cột full_name'); return; }
+        const sideIdx=headers.indexOf('side');
+        const phoneIdx=headers.indexOf('phone');
+        const invIdx=headers.indexOf('invited_count');
+        const confIdx=headers.indexOf('confirmed_count');
+        const rsvpIdx=headers.indexOf('rsvp_status');
+        // preview
+        const previewHTML=`<div class="text-sm muted mb-16">Tìm thấy <b>${dataRows.length}</b> dòng. Kiểm tra trước khi nhập:</div>
+          <div class="tbl-wrap" style="max-height:300px;overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>Họ tên</th><th>Bên</th><th>ĐT</th><th>RSVP</th><th>Trùng?</th></tr></thead><tbody>
+          ${dataRows.slice(0,50).map((r,i)=>{
+            const name=r[nameIdx]||''; const side=sideIdx>=0?(r[sideIdx]||'groom'):'groom';
+            const dup=this.guests.some(x=>x.full_name.toLowerCase()===name.toLowerCase()&&x.side===side);
+            return `<tr><td>${i+1}</td><td>${Util.esc(name)}</td><td>${Util.esc(side)}</td><td>${phoneIdx>=0?Util.esc(r[phoneIdx]||''):''}</td><td>${rsvpIdx>=0?Util.esc(r[rsvpIdx]||''):''}</td><td>${dup?'<span class="pill pill-warn">Trùng</span>':'—'}</td></tr>`;
+          }).join('')}</tbody></table></div>
+          ${dataRows.length>50?`<div class="text-xs muted mt-16">... và ${dataRows.length-50} dòng nữa</div>`:''}`;
+        UI.confirm('Nhập '+dataRows.length+' khách?', previewHTML, ()=>this.doImport(dataRows, headers), 'Nhập tất cả');
+      }catch(e){ Toast.err('Đọc file thất bại: '+(e.message||'')); }
+    };
+    input.click();
+  },
+  async doImport(dataRows, headers){
+    const nameIdx=headers.indexOf('full_name');
+    const sideIdx=headers.indexOf('side');
+    const phoneIdx=headers.indexOf('phone');
+    const emailIdx=headers.indexOf('email');
+    const relIdx=headers.indexOf('relationship');
+    const invIdx=headers.indexOf('invited_count');
+    const confIdx=headers.indexOf('confirmed_count');
+    const rsvpIdx=headers.indexOf('rsvp_status');
+    const dispIdx=headers.indexOf('display_name');
+    const dietIdx=headers.indexOf('dietary');
+    const notesIdx=headers.indexOf('notes');
+    let ok=0, fail=0;
+    const toInsert=[];
+    for(const r of dataRows){
+      const name=(r[nameIdx]||'').trim();
+      if(!name){ fail++; continue; }
+      let side=sideIdx>=0?(r[sideIdx]||'groom').trim():'groom';
+      if(!['groom','bride'].includes(side)) side='groom';
+      toInsert.push({
+        full_name:name,
+        display_name: dispIdx>=0?(r[dispIdx]||'').trim()||null:null,
+        side,
+        phone: phoneIdx>=0?(r[phoneIdx]||'').trim()||null:null,
+        email: emailIdx>=0?(r[emailIdx]||'').trim()||null:null,
+        relationship: relIdx>=0?(r[relIdx]||'').trim()||null:null,
+        invited_count: invIdx>=0?parseInt(r[invIdx])||1:1,
+        confirmed_count: confIdx>=0?parseInt(r[confIdx])||0:0,
+        rsvp_status: rsvpIdx>=0?(r[rsvpIdx]||'not_sent').trim():'not_sent',
+        dietary: dietIdx>=0?(r[dietIdx]||'').trim()||null:null,
+        notes: notesIdx>=0?(r[notesIdx]||'').trim()||null:null
+      });
+    }
+    try{
+      const {data,error}=await sb.from('wed_guests').insert(toInsert).select('id');
+      if(error) throw error;
+      ok=(data||[]).length;
+      Toast.ok(`Đã nhập ${ok} khách${fail?`, ${fail} dòng lỗi`:''}`);
+      await this.load();
+    }catch(e){
+      Toast.err('Nhập thất bại: '+(e.message||''));
+    }
+  }
+};
+
+/* ============================================================
+   VIEW: GROUPS — Family & Group Management (MODULE C)
+   ============================================================ */
+const Groups = {
+  groups:[], guests:[],
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-primary" onclick="Groups.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm nhóm</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    try{
+      const [gr,g]=await Promise.all([DB.list('wed_guest_groups',{order:['name']}),DB.list('wed_guests',{order:['full_name']})]);
+      this.groups=gr; this.guests=g;
+      this.renderList();
+    }catch(e){ c.innerHTML=UI.empty(I.groups,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Groups.render()">Thử lại</button>'); }
+  },
+  renderList(){
+    const c=document.getElementById('content');
+    if(!this.groups.length){
+      c.innerHTML=UI.empty(I.groups,'Chưa có nhóm','Tạo nhóm gia đình, bạn bè, đồng nghiệp để tổ chức khách theo quan hệ.',`<button class="btn btn-primary" onclick="Groups.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm nhóm</button>`);
+      return;
+    }
+    let html='';
+    this.groups.forEach(gr=>{
+      const members=this.guests.filter(g=>g.group_id===gr.id);
+      const confirmed=members.filter(g=>(g.rsvp_status||'')==='confirmed').length;
+      const sideLabel=gr.side==='groom'?'Nhà trai':'Nhà gái';
+      html+=`<div class="card" style="margin-bottom:14px;overflow:hidden">
+        <div style="padding:18px 22px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="Groups.toggle('${gr.id}')">
+          <div><div style="font-family:var(--serif);font-size:20px;font-weight:600">${Util.esc(gr.name)}</div>
+          <div class="text-sm muted" style="margin-top:4px"><span class="pill ${gr.side==='groom'?'pill-side-groom':'pill-side-bride'}">${sideLabel}</span> ${gr.category?`· ${Util.esc(gr.category)}`:''} · ${members.length} thành viên · ${confirmed} xác nhận</div></div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <button class="btn-close" onclick="event.stopPropagation();Groups.openEdit('${gr.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button>
+            <button class="btn-close" onclick="event.stopPropagation();Groups.confirmDelete('${gr.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button>
+            <svg id="chev-${gr.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;color:var(--muted);transition:transform .2s"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div id="members-${gr.id}" style="display:none;padding:0 22px 18px">`;
+      if(!members.length) html+='<div class="text-xs muted" style="padding:12px 0">Chưa có thành viên. Gán nhóm khi thêm/sửa khách.</div>';
+      else{
+        html+='<div style="border-top:1px solid var(--line);padding-top:8px">';
+        members.forEach(m=>{
+          const pill={confirmed:'pill-confirmed',declined:'pill-declined',pending:'pill-pending',sent:'pill-sent',need_contact:'pill-need'}[m.rsvp_status]||'pill-notsent';
+          const stL={confirmed:'Xác nhận',declined:'Từ chối',pending:'Chờ',sent:'Đã gửi',need_contact:'Cần liên hệ',not_sent:'Chưa gửi'}[m.rsvp_status||'not_sent'];
+          html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)">
+            <div><span style="font-size:13.5px;font-weight:500">${Util.esc(m.full_name)}</span>${m.relationship?` <span class="text-xs muted">· ${Util.esc(m.relationship)}</span>`:''}</div>
+            <span class="pill ${pill}">${stL}</span>
+          </div>`;
+        });
+        html+='</div>';
+      }
+      html+=`</div></div>`;
+    });
+    c.innerHTML=html;
+  },
+  toggle(id){
+    const el=document.getElementById('members-'+id);
+    const chev=document.getElementById('chev-'+id);
+    const open=el.style.display!=='none';
+    el.style.display=open?'none':'block';
+    chev.style.transform=open?'':'rotate(180deg)';
+  },
+  openAdd(){ this.openDrawer(null); },
+  openEdit(id){ this.openDrawer(this.groups.find(g=>g.id===id)); },
+  openDrawer(g){
+    const isEdit=!!g;
+    const body=`<div class="field"><label class="label">Tên nhóm *</label><input class="input" id="grName" value="${g?Util.esc(g.name):''}" placeholder="Gia đình nhà trai / Bạn đại học..."/></div>
+      <div class="row"><div class="field"><label class="label">Bên gia đình *</label><select class="select" id="grSide"><option value="groom" ${g&&g.side==='groom'?'selected':''}>Nhà trai</option><option value="bride" ${g&&g.side==='bride'?'selected':''}>Nhà gái</option></select></div>
+      <div class="field"><label class="label">Phân loại</label><select class="select" id="grCat"><option value="">—</option><option value="family" ${g&&g.category==='family'?'selected':''}>Gia đình</option><option value="relatives" ${g&&g.category==='relatives'?'selected':''}>Họ hàng</option><option value="friends" ${g&&g.category==='friends'?'selected':''}>Bạn bè</option><option value="colleagues" ${g&&g.category==='colleagues'?'selected':''}>Đồng nghiệp</option><option value="classmates" ${g&&g.category==='classmates'?'selected':''}>Bạn học</option><option value="custom" ${g&&g.category==='custom'?'selected':''}>Khác</option></select></div></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Groups.save('${g?g.id:''}')">${isEdit?'Lưu':'Thêm nhóm'}</button>`;
+    UI.openDrawer(isEdit?'Sửa nhóm':'Thêm nhóm', body, foot);
+  },
+  async save(id){
+    const row={ name:document.getElementById('grName').value.trim(), side:document.getElementById('grSide').value, category:document.getElementById('grCat').value||null };
+    if(!row.name){ Toast.err('Nhập tên nhóm'); return; }
+    try{ if(id) await DB.update('wed_guest_groups',id,row); else await DB.insert('wed_guest_groups',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.render(); }
+    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  confirmDelete(id){
+    const gr=this.groups.find(x=>x.id===id);
+    const count=this.guests.filter(g=>g.group_id===id).length;
+    UI.confirm('Xóa nhóm?',`Xóa <b>${Util.esc(gr.name)}</b>?${count?`<br><br>${count} khách sẽ bị gỡ khỏi nhóm (không xóa khách).`:''}`,()=>this.doDelete(id),'Xóa',true);
+  },
+  async doDelete(id){
+    try{
+      const members=this.guests.filter(g=>g.group_id===id);
+      if(members.length) await sb.from('wed_guests').update({group_id:null}).in('id',members.map(m=>m.id));
+      await DB.remove('wed_guest_groups',id); Toast.ok('Đã xóa nhóm'); await this.render();
+    }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); }
+  }
+};
+
+/* ============================================================
+   VIEW: RSVP
+   ============================================================ */
+const RSVP = {
+  guests:[],
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="RSVP.copyInviteTemplate()">Mẫu tin nhắn</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    try{
+      this.guests = await DB.list('wed_guests',{order:['full_name']});
+      this.renderBoard();
+    }catch(e){
+      c.innerHTML=UI.empty(I.rsvp,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="RSVP.render()">Thử lại</button>');
+    }
+  },
+  renderBoard(){
+    const cols=[
+      {key:'not_sent',label:'Chưa gửi',cls:'pill-notsent'},
+      {key:'sent',label:'Đã gửi',cls:'pill-sent'},
+      {key:'pending',label:'Chờ phản hồi',cls:'pill-pending'},
+      {key:'confirmed',label:'Xác nhận',cls:'pill-confirmed'},
+      {key:'declined',label:'Từ chối',cls:'pill-declined'},
+      {key:'need_contact',label:'Cần liên hệ',cls:'pill-need'}
+    ];
+    let html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">';
+    cols.forEach(col=>{
+      const items=this.guests.filter(g=>(g.rsvp_status||'not_sent')===col.key);
+      html+=`<div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span class="pill ${col.cls}">${col.label}</span>
+          <span class="text-sm muted">${items.length}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">`;
+      if(!items.length) html+='<div class="text-xs muted" style="padding:12px 0;text-align:center">Trống</div>';
+      items.slice(0,30).forEach(g=>{
+        html+=`<div style="padding:10px 12px;background:var(--ivory-2);border-radius:8px;cursor:pointer" onclick="RSVP.openEdit('${g.id}')">
+          <div style="font-size:13px;font-weight:500">${Util.esc(g.full_name)}</div>
+          <div class="text-xs muted">${g.side==='groom'?'Trai':'Gái'}${g.confirmed_count?` · ${g.confirmed_count} người`:''}</div>
+        </div>`;
+      });
+      if(items.length>30) html+=`<div class="text-xs muted" style="padding:6px;text-align:center">+${items.length-30} nữa</div>`;
+      html+='</div></div>';
+    });
+    html+='</div>';
+    document.getElementById('content').innerHTML=html;
+  },
+  openEdit(id){
+    const g=this.guests.find(x=>x.id===id);
+    const body=`
+      <div style="margin-bottom:20px"><div style="font-family:var(--serif);font-size:22px;font-weight:600">${Util.esc(g.full_name)}</div>
+      <div class="text-sm muted">${g.side==='groom'?'Nhà trai':'Nhà gái'}${g.phone?` · ${Util.esc(g.phone)}`:''}</div></div>
+      <div class="field"><label class="label">Trạng thái RSVP</label><select class="select" id="rRsvp">
+        <option value="not_sent" ${(g.rsvp_status||'not_sent')==='not_sent'?'selected':''}>Chưa gửi</option>
+        <option value="sent" ${g.rsvp_status==='sent'?'selected':''}>Đã gửi</option>
+        <option value="pending" ${g.rsvp_status==='pending'?'selected':''}>Chờ phản hồi</option>
+        <option value="confirmed" ${g.rsvp_status==='confirmed'?'selected':''}>Xác nhận tham dự</option>
+        <option value="declined" ${g.rsvp_status==='declined'?'selected':''}>Từ chối</option>
+        <option value="need_contact" ${g.rsvp_status==='need_contact'?'selected':''}>Cần liên hệ lại</option>
+      </select></div>
+      <div class="row">
+        <div class="field"><label class="label">Số người xác nhận</label><input class="input" type="number" id="rConfirmed" value="${g.confirmed_count||0}" min="0"/></div>
+        <div class="field"><label class="label">Ngày gửi lời mời</label><input class="input" type="date" id="rSent" value="${g.invitation_sent_date||''}"/></div>
+      </div>
+      <div class="field"><label class="label">Phương thức liên hệ</label><select class="select" id="rMethod">
+        <option value="">—</option><option value="phone" ${g.contact_method==='phone'?'selected':''}>Điện thoại</option>
+        <option value="message" ${g.contact_method==='message'?'selected':''}>Tin nhắn</option>
+        <option value="zalo" ${g.contact_method==='zalo'?'selected':''}>Zalo</option>
+      </select></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="rNotes">${Util.esc(g.notes||'')}</textarea></div>
+    `;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="RSVP.save('${g.id}')">Lưu</button>`;
+    UI.openDrawer('Cập nhật xác nhận', body, foot);
+  },
+  async save(id){
+    const g=this.guests.find(x=>x.id===id);
+    const patch={
+      rsvp_status: document.getElementById('rRsvp').value,
+      confirmed_count: parseInt(document.getElementById('rConfirmed').value)||0,
+      invitation_sent_date: document.getElementById('rSent').value||null,
+      contact_method: document.getElementById('rMethod').value||null,
+      notes: document.getElementById('rNotes').value.trim()||null
+    };
+    try{
+      const old=this.guests.find(x=>x.id===id);
+      await DB.update('wed_guests', id, patch);
+      if(old && old.rsvp_status!==patch.rsvp_status && ['confirmed','declined','pending'].includes(patch.rsvp_status)){
+        try{ await sb.from('wed_rsvp_responses').insert({ guest_id:id, status:patch.rsvp_status, attending_count:patch.confirmed_count||0, note:patch.notes||null }); }catch(e){}
+      }
+      Toast.ok('Đã cập nhật');
+      UI.closeDrawer();
+      await this.render();
+    }catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  copyInviteTemplate(){
+    const tpl=`Kính gửi anh/chị [TÊN],\n\nTrân trọng kính mời anh/chị đến dự tiệc chung vui cùng gia đình chúng tôi.\n\n📅 Ngày: [NGÀY]\n🕐 Giờ: [GIỜ]\n📍 Địa điểm: [ĐỊA ĐIỂM]\n\nRất mong nhận được sự hiện diện của anh/chị.\n\nGia đình [TÊN GIA ĐÌNH] xin chân thành cảm ơn! 🙏`;
+    navigator.clipboard.writeText(tpl).then(()=>Toast.ok('Đã sao chép mẫu tin nhắn')).catch(()=>Toast.warn('Không sao chép được, hãy copy thủ công'));
+  }
+};
+
+/* ============================================================
+   VIEW: SEATING
+   ============================================================ */
+const Seating = {
+  tables:[], guests:[], assignments:[], unseated:[],
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Seating.toggleView()">${this.view==='list'?'Sơ đồ':'Danh sách'}</button><button class="btn btn-primary" onclick="Seating.openAddTable()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm bàn</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    await this.load();
+  },
+  view:'grid',
+  async load(){
+    try{
+      const [t,g,a]=await Promise.all([ DB.list('wed_tables',{order:['display_order']}), DB.list('wed_guests',{order:['full_name']}), DB.list('wed_seating_assignments') ]);
+      this.tables=t; this.guests=g; this.assignments=a;
+      this.computeUnseated();
+      this.renderView();
+    }catch(e){
+      document.getElementById('content').innerHTML=UI.empty(I.seating,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Seating.load()">Thử lại</button>');
+    }
+  },
+  computeUnseated(){
+    const seatedIds=new Set(this.assignments.map(a=>a.guest_id));
+    this.unseated=this.guests.filter(g=>!seatedIds.has(g.id) && (g.rsvp_status!=='declined'));
+  },
+  renderView(){
+    if(this.view==='list') this.renderList(); else this.renderGrid();
+  },
+  toggleView(){ this.view=this.view==='grid'?'list':'grid'; this.render(); },
+  renderGrid(){
+    const guestMap={}; this.guests.forEach(g=>guestMap[g.id]=g);
+    let html='<div class="section-h">Khách chưa xếp bàn <span class="sub">'+this.unseated.length+' người</span></div>';
+    html+='<div class="unseated-list mb-24" id="unseatedDrop" ondrop="Seating.dropUnseated(event)" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">';
+    if(!this.unseated.length) html+='<div class="text-xs muted" style="padding:8px;text-align:center">Tất cả khách đã có bàn</div>';
+    this.unseated.forEach(g=>{
+      html+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}</span></div>`;
+    });
+    html+='</div>';
+    html+='<div class="section-h">Sơ đồ bàn tiệc <span class="sub">'+this.tables.length+' bàn</span></div>';
+    html+='<div class="seating-grid">';
+    this.tables.forEach(t=>{
+      const tAssign=this.assignments.filter(a=>a.table_id===t.id);
+      const used=tAssign.reduce((s,a)=>s+(a.seat_count||1),0);
+      const full=used>=t.capacity;
+      html+=`<div class="table-card ${full?'full':''}" id="table-${t.id}" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)">
+        <div class="table-head">
+          <div>
+            <div class="table-name">${Util.esc(t.name)}</div>
+            <div class="table-cap ${full?'':''}" style="color:${full?'var(--danger)':'var(--muted)'}">${used}/${t.capacity} chỗ${full?' · Đầy':''}</div>
+          </div>
+          <div style="display:flex;gap:4px">
+            <button class="btn-close" onclick="Seating.openEditTable('${t.id}')">${I.edit.replace('<svg','<svg style="width:14px;height:14px"')}</button>
+            <button class="btn-close" onclick="Seating.confirmDeleteTable('${t.id}')">${I.trash.replace('<svg','<svg style="width:14px;height:14px"')}</button>
+          </div>
+        </div>
+        <div class="table-seats">`;
+      tAssign.forEach(a=>{
+        const g=guestMap[a.guest_id];
+        if(!g) return;
+        html+=`<div class="seat-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openMove('${a.id}','${g.id}')">
+          <span>${Util.esc(g.full_name)} <span class="muted text-xs">${g.side==='groom'?'T':'G'}</span></span>
+          <span class="remove" onclick="event.stopPropagation();Seating.unassign('${a.id}')">✕</span>
+        </div>`;
+      });
+      if(!tAssign.length) html+='<div class="text-xs muted" style="padding:8px;text-align:center">Kéo khách vào đây</div>';
+      html+=`</div></div>`;
+    });
+    html+='</div>';
+    document.getElementById('content').innerHTML=html;
+  },
+  renderList(){
+    const guestMap={}; this.guests.forEach(g=>guestMap[g.id]=g);
+    let rows=this.tables.map(t=>{
+      const tAssign=this.assignments.filter(a=>a.table_id===t.id);
+      const used=tAssign.reduce((s,a)=>s+(a.seat_count||1),0);
+      const groomN=tAssign.filter(a=>{const g=guestMap[a.guest_id];return g&&g.side==='groom';}).length;
+      const brideN=tAssign.length-groomN;
+      return `<tr><td><div style="font-weight:500">${Util.esc(t.name)}</div></td><td>${used}/${t.capacity}</td><td><span class="pill pill-side-groom">${groomN} trai</span> <span class="pill pill-side-bride">${brideN} gái</span></td><td>${tAssign.map(a=>{const g=guestMap[a.guest_id];return g?Util.esc(g.full_name):''}).join(', ')||'<span class="muted">—</span>'}</td>
+      <td class="right"><button class="btn-close" onclick="Seating.openEditTable('${t.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button></td></tr>`;
+    }).join('');
+    document.getElementById('content').innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Bàn</th><th>Chỗ</th><th>Phân bên</th><th>Khách</th><th class="right"></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  },
+  dragStart(e,guestId){ e.dataTransfer.setData('text/plain', guestId); e.target.classList.add('dragging'); },
+  dragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); },
+  dragLeave(e){ e.currentTarget.classList.remove('drag-over'); },
+  async dropOnTable(e,tableId){
+    e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+    const guestId=e.dataTransfer.getData('text/plain');
+    document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+    await this.assign(guestId, tableId);
+  },
+  async dropUnseated(e){
+    e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+    const guestId=e.dataTransfer.getData('text/plain');
+    const a=this.assignments.find(x=>x.guest_id===guestId);
+    if(a){ await this.unassign(a.id); }
+  },
+  async assign(guestId, tableId){
+    const t=this.tables.find(x=>x.id===tableId);
+    const used=this.assignments.filter(a=>a.table_id===tableId).reduce((s,a)=>s+(a.seat_count||1),0);
+    if(used>=t.capacity){ Toast.err('Bàn đã đầy ('+t.capacity+' chỗ)'); return; }
+    if(this.assignments.some(a=>a.guest_id===guestId)){ Toast.warn('Khách đã được xếp bàn. Di chuyển trước.'); return; }
+    try{
+      await DB.insert('wed_seating_assignments',{guest_id:guestId, table_id:tableId, seat_count:1});
+      Toast.ok('Đã xếp bàn');
+      await this.load();
+    }catch(e){ Toast.err('Xếp bàn thất bại: '+(e.message||'')); }
+  },
+  async unassign(assignmentId){
+    try{ await DB.remove('wed_seating_assignments', assignmentId); Toast.ok('Đã rút khỏi bàn'); await this.load(); }
+    catch(e){ Toast.err('Thất bại: '+(e.message||'')); }
+  },
+  openAssign(guestId){
+    const g=this.guests.find(x=>x.id===guestId);
+    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id).reduce((s,a)=>s+(a.seat_count||1),0);return `<option value="${t.id}" ${used>=t.capacity?'disabled':''}>${Util.esc(t.name)} (${used}/${t.capacity})${used>=t.capacity?' - Đầy':''}</option>`;}).join('');
+    UI.confirm('Xếp bàn cho '+g.full_name, `<div class="field"><label class="label">Chọn bàn</label><select class="select" id="assignTable">${opts}</select></div>`, async ()=>{
+      const tid=document.getElementById('assignTable').value;
+      if(tid) await this.assign(guestId, tid);
+    }, 'Xếp bàn');
+  },
+  openMove(assignmentId, guestId){
+    const g=this.guests.find(x=>x.id===guestId);
+    const opts=this.tables.map(t=>{const used=this.assignments.filter(a=>a.table_id===t.id&&a.guest_id!==guestId).reduce((s,a)=>s+(a.seat_count||1),0);return `<option value="${t.id}">${Util.esc(t.name)} (${used}/${t.capacity})</option>`;}).join('');
+    UI.confirm('Di chuyển '+g.full_name, `<div class="field"><label class="label">Chuyển sang bàn</label><select class="select" id="moveTable">${opts}</select></div>
+      <div style="margin-top:12px"><button class="btn btn-danger btn-sm" onclick="Seating.unassign('${assignmentId}');UI.closeModal();">Rút khỏi bàn</button></div>`, async ()=>{
+      const tid=document.getElementById('moveTable').value;
+      if(tid){ await this.unassign(assignmentId); await this.assign(guestId, tid); }
+    }, 'Di chuyển');
+  },
+  openAddTable(){ this.openTableDrawer(null); },
+  openEditTable(id){ this.openTableDrawer(this.tables.find(t=>t.id===id)); },
+  openTableDrawer(t){
+    const isEdit=!!t;
+    const body=`<div class="field"><label class="label">Tên bàn *</label><input class="input" id="tName" value="${t?Util.esc(t.name):''}" placeholder="Bàn 1"/></div>
+      <div class="row"><div class="field"><label class="label">Sức chứa</label><input class="input" type="number" id="tCap" value="${t?(t.capacity||10):10}" min="1"/></div>
+      <div class="field"><label class="label">Loại bàn</label><select class="select" id="tType"><option value="round" ${!t||t.table_type==='round'?'selected':''}>Tròn</option><option value="long" ${t&&t.table_type==='long'?'selected':''}>Dài</option></select></div></div>
+      <div class="field"><label class="label">Thứ tự hiển thị</label><input class="input" type="number" id="tOrder" value="${t?(t.display_order||0):0}"/></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Seating.saveTable('${t?t.id:''}')">${isEdit?'Lưu':'Thêm bàn'}</button>`;
+    UI.openDrawer(isEdit?'Sửa bàn tiệc':'Thêm bàn tiệc', body, foot);
+  },
+  async saveTable(id){
+    const row={ name:document.getElementById('tName').value.trim(), capacity:parseInt(document.getElementById('tCap').value)||10, table_type:document.getElementById('tType').value, display_order:parseInt(document.getElementById('tOrder').value)||0 };
+    if(!row.name){ Toast.err('Nhập tên bàn'); return; }
+    try{
+      if(id) await DB.update('wed_tables',id,row); else await DB.insert('wed_tables',row);
+      Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load();
+    }catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  confirmDeleteTable(id){
+    const t=this.tables.find(x=>x.id===id);
+    const count=this.assignments.filter(a=>a.table_id===id).length;
+    UI.confirm('Xóa bàn?', `Xóa <b>${Util.esc(t.name)}</b>?${count?`<br><br>${count} khách sẽ được rút khỏi bàn này.`:''}`, ()=>this.doDeleteTable(id), 'Xóa', true);
+  },
+  async doDeleteTable(id){
+    try{ await DB.remove('wed_tables', id); Toast.ok('Đã xóa bàn'); await this.load(); }
+    catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); }
+  }
+};
+
+/* ============================================================
+   VIEW: EVENTS
+   ============================================================ */
+const Events = {
+  events:[],
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-primary" onclick="Events.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm sự kiện</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    try{
+      this.events=await DB.list('wed_events',{order:['event_date']});
+      this.renderList();
+    }catch(e){ c.innerHTML=UI.empty(I.events,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Events.render()">Thử lại</button>'); }
+  },
+  async renderList(){
+    const guests=await DB.list('wed_guests').catch(()=>[]);
+    const c=document.getElementById('content');
+    if(!this.events.length){ c.innerHTML=UI.empty(I.events,'Chưa có sự kiện','Thêm lễ ăn hỏi, lễ cưới, tiệc cưới...',`<button class="btn btn-primary" onclick="Events.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm sự kiện</button>`); return; }
+    let html='';
+    this.events.forEach(e=>{
+      const evGuests=guests.filter(g=>g.event_ids&&g.event_ids.includes(e.id));
+      const confirmed=evGuests.filter(g=>(g.rsvp_status||'')==='confirmed').reduce((s,g)=>s+(g.confirmed_count||0),0);
+      html+=`<div class="event-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="event-name">${Util.esc(e.name)}</div>
+          <div class="event-meta"><span>${Util.fmtDateLong(e.event_date)}</span>${e.event_time?`<span>· ${e.event_time}</span>`:''}${e.venue?`<span>· ${Util.esc(e.venue)}</span>`:''}</div></div>
+          <div style="display:flex;gap:4px"><button class="btn-close" onclick="Events.openEdit('${e.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Events.confirmDelete('${e.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></div>
+        </div>
+        <div class="event-stats"><div class="event-stat"><b>${evGuests.length}</b>khách mời</div><div class="event-stat"><b>${confirmed}</b>xác nhận</div></div>
+      </div>`;
+    });
+    c.innerHTML=html;
+  },
+  openAdd(){ this.openDrawer(null); },
+  openEdit(id){ this.openDrawer(this.events.find(e=>e.id===id)); },
+  openDrawer(e){
+    const isEdit=!!e;
+    const body=`<div class="field"><label class="label">Tên sự kiện *</label><input class="input" id="eName" value="${e?Util.esc(e.name):''}" placeholder="Lễ ăn hỏi / Tiệc cưới"/></div>
+      <div class="row"><div class="field"><label class="label">Ngày</label><input class="input" type="date" id="eDate" value="${e?e.event_date||'':''}"/></div><div class="field"><label class="label">Giờ</label><input class="input" type="time" id="eTime" value="${e?e.event_time||'':''}"/></div></div>
+      <div class="field"><label class="label">Địa điểm</label><input class="input" id="eVenue" value="${e?Util.esc(e.venue||''):''}"/></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="eNotes">${e?Util.esc(e.notes||''):''}</textarea></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Events.save('${e?e.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
+    UI.openDrawer(isEdit?'Sửa sự kiện':'Thêm sự kiện', body, foot);
+  },
+  async save(id){
+    const row={ name:document.getElementById('eName').value.trim(), event_date:document.getElementById('eDate').value||null, event_time:document.getElementById('eTime').value||null, venue:document.getElementById('eVenue').value.trim()||null, notes:document.getElementById('eNotes').value.trim()||null };
+    if(!row.name){ Toast.err('Nhập tên sự kiện'); return; }
+    try{ if(id) await DB.update('wed_events',id,row); else await DB.insert('wed_events',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.render(); }
+    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  confirmDelete(id){ const e=this.events.find(x=>x.id===id); UI.confirm('Xóa sự kiện?',`Xóa <b>${Util.esc(e.name)}</b>?`,()=>this.doDelete(id),'Xóa',true); },
+  async doDelete(id){ try{ await DB.remove('wed_events',id); Toast.ok('Đã xóa'); await this.render(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } }
+};
+
+/* ============================================================
+   VIEW: TASKS
+   ============================================================ */
+const Tasks = {
+  tasks:[],
+  filterStatus:'', filterAssignee:'',
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-primary" onclick="Tasks.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm công việc</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="toolbar"><select class="filter-select" id="tFilterStatus" onchange="Tasks.applyFilter()"><option value="">Tất cả trạng thái</option><option value="todo">Cần làm</option><option value="in_progress">Đang làm</option><option value="done">Hoàn thành</option><option value="cancelled">Đã hủy</option></select><select class="filter-select" id="tFilterAssignee" onchange="Tasks.applyFilter()"><option value="">Tất cả người phụ trách</option></select></div><div id="taskList">${UI.skeleton(5)}</div>`;
+    await this.load();
+  },
+  async load(){
+    try{
+      this.tasks=await DB.list('wed_tasks',{order:['due_date']});
+      const assignees=[...new Set(this.tasks.map(t=>t.assignee).filter(Boolean))];
+      const sel=document.getElementById('tFilterAssignee');
+      sel.innerHTML='<option value="">Tất cả người phụ trách</option>'+assignees.map(a=>`<option value="${Util.esc(a)}">${Util.esc(a)}</option>`).join('');
+      this.renderList();
+    }catch(e){ document.getElementById('taskList').innerHTML=UI.empty(I.tasks,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Tasks.load()">Thử lại</button>'); }
+  },
+  applyFilter(){ this.filterStatus=document.getElementById('tFilterStatus').value; this.filterAssignee=document.getElementById('tFilterAssignee').value; this.renderList(); },
+  renderList(){
+    let list=this.tasks;
+    if(this.filterStatus) list=list.filter(t=>t.status===this.filterStatus);
+    if(this.filterAssignee) list=list.filter(t=>t.assignee===this.filterAssignee);
+    const el=document.getElementById('taskList');
+    if(!list.length){ el.innerHTML=UI.empty(I.tasks,'Chưa có công việc','Thêm công việc hoặc khởi tạo checklist mẫu.',`<div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-ghost" onclick="Tasks.seedTemplate()">Khởi tạo mẫu</button><button class="btn btn-primary" onclick="Tasks.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm</button></div>`); return; }
+    const statusLabel={todo:'Cần làm',in_progress:'Đang làm',done:'Hoàn thành',cancelled:'Đã hủy'};
+    const prioPill={urgent:'pill-priority-high',high:'pill-priority-high',medium:'pill-priority-medium',low:'pill-priority-low'};
+    const prioLabel={urgent:'Khẩn',high:'Cao',medium:'TB',low:'Thấp'};
+    el.innerHTML=`<div class="card">${list.map(t=>{
+      const days=Util.daysUntil(t.due_date);
+      const overdue=days!==null&&days<0&&t.status!=='done';
+      return `<div class="task-row">
+        <div class="task-check ${t.status==='done'?'done':''}" onclick="Tasks.toggle('${t.id}')">${t.status==='done'?I.check:''}</div>
+        <div class="task-body">
+          <div class="task-title ${t.status==='done'?'done':''}">${Util.esc(t.title)}</div>
+          <div class="task-meta">
+            ${t.category?`<span>${Util.esc(t.category)}</span>`:''}
+            ${t.assignee?`<span>· ${Util.esc(t.assignee)}</span>`:''}
+            ${t.due_date?`<span style="color:${overdue?'var(--danger)':'var(--muted)'}">· ${overdue?'Quá hạn ':''}${Util.fmtDate(t.due_date)}</span>`:''}
+            <span class="pill ${prioPill[t.priority]||'pill-priority-low'}">${prioLabel[t.priority]||'TB'}</span>
+            <span class="pill pill-notsent">${statusLabel[t.status]||'Cần làm'}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px"><button class="btn-close" onclick="Tasks.openEdit('${t.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Tasks.confirmDelete('${t.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></div>
+      </div>`;
+    }).join('')}</div>`;
+  },
+  async toggle(id){
+    const t=this.tasks.find(x=>x.id===id);
+    const newStatus=t.status==='done'?'todo':'done';
+    const patch={status:newStatus};
+    if(newStatus==='done') patch.completed_date=new Date().toISOString().slice(0,10);
+    try{ await DB.update('wed_tasks',id,patch); await this.load(); }
+    catch(e){ Toast.err('Cập nhật thất bại: '+(e.message||'')); }
+  },
+  openAdd(){ this.openDrawer(null); },
+  openEdit(id){ this.openDrawer(this.tasks.find(t=>t.id===id)); },
+  openDrawer(t){
+    const isEdit=!!t;
+    const body=`<div class="field"><label class="label">Công việc *</label><input class="input" id="tkTitle" value="${t?Util.esc(t.title):''}"/></div>
+      <div class="row"><div class="field"><label class="label">Danh mục</label><input class="input" id="tkCat" value="${t?Util.esc(t.category||''):''}" placeholder="Địa điểm / Trang phục..."/></div><div class="field"><label class="label">Người phụ trách</label><input class="input" id="tkAssignee" value="${t?Util.esc(t.assignee||''):''}"/></div></div>
+      <div class="row-3"><div class="field"><label class="label">Hạn</label><input class="input" type="date" id="tkDue" value="${t?t.due_date||'':''}"/></div>
+      <div class="field"><label class="label">Ưu tiên</label><select class="select" id="tkPrio"><option value="low" ${t&&t.priority==='low'?'selected':''}>Thấp</option><option value="medium" ${!t||t.priority==='medium'?'selected':''}>Trung bình</option><option value="high" ${t&&t.priority==='high'?'selected':''}>Cao</option><option value="urgent" ${t&&t.priority==='urgent'?'selected':''}>Khẩn</option></select></div>
+      <div class="field"><label class="label">Trạng thái</label><select class="select" id="tkStatus"><option value="todo" ${!t||t.status==='todo'?'selected':''}>Cần làm</option><option value="in_progress" ${t&&t.status==='in_progress'?'selected':''}>Đang làm</option><option value="done" ${t&&t.status==='done'?'selected':''}>Hoàn thành</option><option value="cancelled" ${t&&t.status==='cancelled'?'selected':''}>Đã hủy</option></select></div></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="tkNotes">${t?Util.esc(t.notes||''):''}</textarea></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Tasks.save('${t?t.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
+    UI.openDrawer(isEdit?'Sửa công việc':'Thêm công việc', body, foot);
+  },
+  async save(id){
+    const row={ title:document.getElementById('tkTitle').value.trim(), category:document.getElementById('tkCat').value.trim()||null, assignee:document.getElementById('tkAssignee').value.trim()||null, due_date:document.getElementById('tkDue').value||null, priority:document.getElementById('tkPrio').value, status:document.getElementById('tkStatus').value, notes:document.getElementById('tkNotes').value.trim()||null };
+    if(!row.title){ Toast.err('Nhập tên công việc'); return; }
+    try{ if(id) await DB.update('wed_tasks',id,row); else await DB.insert('wed_tasks',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }
+    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  confirmDelete(id){ UI.confirm('Xóa công việc?','Hành động không thể hoàn tác.',()=>this.doDelete(id),'Xóa',true); },
+  async doDelete(id){ try{ await DB.remove('wed_tasks',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },
+  async seedTemplate(){
+    const template=[
+      {title:'Xác định số khách, ngày, budget, phong cách',category:'Xác định',priority:'high'},
+      {title:'Đi xem và chọn địa điểm tổ chức',category:'Địa điểm',priority:'high'},
+      {title:'Chọn menu và ăn thử',category:'Địa điểm',priority:'medium'},
+      {title:'Đặt cọc lần 1 cho địa điểm',category:'Địa điểm',priority:'high'},
+      {title:'Chốt số lượng khách và đặt cọc lần 2',category:'Địa điểm',priority:'medium'},
+      {title:'Tham khảo quay chụp phóng sự cưới',category:'Quay chụp',priority:'medium'},
+      {title:'Đặt lịch quay phóng sự',category:'Quay chụp',priority:'medium'},
+      {title:'Tư vấn thiết kế trang trí, khảo sát địa hình',category:'Trang trí',priority:'medium'},
+      {title:'Duyệt bản thảo trang trí và đặt cọc',category:'Trang trí',priority:'high'},
+      {title:'Tham khảo và chụp ảnh cưới',category:'Ảnh cưới',priority:'medium'},
+      {title:'Chọn ảnh, in album và ảnh phóng',category:'Ảnh cưới',priority:'low'},
+      {title:'Thử váy, vest, áo dài và đặt trang phục',category:'Trang phục',priority:'high'},
+      {title:'Xem, thử và đặt nhẫn cưới',category:'Nhẫn',priority:'medium'},
+      {title:'Xem, thử và đặt make up',category:'Make up',priority:'medium'},
+      {title:'Tham khảo và đặt tráp ăn hỏi',category:'Tráp ăn hỏi',priority:'medium'},
+      {title:'Chọn thiết kế thiệp cưới, in thử',category:'Thiệp cưới',priority:'medium'},
+      {title:'Đặt và in hàng loạt thiệp cưới',category:'Thiệp cưới',priority:'high'},
+      {title:'Đi phát thiệp cưới',category:'Thiệp cưới',priority:'medium'},
+      {title:'Lên timeline nháp và chốt kịch bản',category:'Kịch bản',priority:'high'},
+      {title:'Playlist nhạc và gửi cho nhà cung cấp',category:'Kịch bản',priority:'medium'},
+      {title:'Đặt xe di chuyển',category:'Đặt nốt',priority:'low'},
+      {title:'Spa, nail cho ngày cưới',category:'Đặt nốt',priority:'low'},
+      {title:'Đặt bánh kẹo',category:'Đặt nốt',priority:'low'}
+    ];
+    try{ await sb.from('wed_tasks').insert(template); Toast.ok('Đã khởi tạo 23 công việc mẫu'); await this.load(); }
+    catch(e){ Toast.err('Khởi tạo thất bại: '+(e.message||'')); }
+  }
+};
+
+/* ============================================================
+   VIEW: BUDGET
+   ============================================================ */
+const Budget = {
+  items:[], gifts:[],
+  async render(){
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Budget.openAddGift()">Quà mừng</button><button class="btn btn-primary" onclick="Budget.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khoản</button>`;
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    try{
+      const [b,g]=await Promise.all([DB.list('wed_budget_items',{order:['category']}),DB.list('wed_gifts',{order:['received_date']})]);
+      this.items=b; this.gifts=g;
+      this.renderView();
+    }catch(e){ c.innerHTML=UI.empty(I.budget,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Budget.render()">Thử lại</button>'); }
+  },
+  renderView(){
+    const totalEst=this.items.reduce((s,i)=>s+(Number(i.estimated_amount)||0),0);
+    const totalAct=this.items.reduce((s,i)=>s+(Number(i.actual_amount)||0),0);
+    const totalPaid=this.items.reduce((s,i)=>s+(Number(i.paid_amount)||0),0);
+    const totalGifts=this.gifts.reduce((s,g)=>s+(Number(g.amount)||0),0);
+    let html='<div class="stat-grid">';
+    html+=`<div class="stat"><div class="accent-bar"></div><div class="stat-label">Dự kiến</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalEst)}</div></div>`;
+    html+=`<div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Thực tế</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalAct)}</div><div class="stat-sub">còn ${Util.fmtMoney(totalAct-totalPaid)}</div></div>`;
+    html+=`<div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Đã thanh toán</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalPaid)}</div></div>`;
+    html+=`<div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Quà mừng</div><div class="stat-value" style="font-size:24px">${Util.fmtMoney(totalGifts)}</div><div class="stat-sub">${this.gifts.length} món</div></div>`;
+    html+='</div>';
+    html+='<div class="section-h">Khoản chi</div>';
+    if(!this.items.length) html+=UI.empty(I.budget,'Chưa có khoản chi','Thêm khoản ngân sách để theo dõi.',`<button class="btn btn-primary" onclick="Budget.openAdd()">${I.plus.replace('<svg','<svg style="width:15px;height:15px"')} Thêm khoản</button>`);
+    else{
+      html+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Dự kiến</th><th>Thực tế</th><th>Đã trả</th><th>Trạng thái</th><th class="right"></th></tr></thead><tbody>`;
+      const stPill={planned:'pill-notsent',booked:'pill-sent',paid:'pill-confirmed',cancelled:'pill-declined'};
+      const stLabel={planned:'Dự kiến',booked:'Đã đặt',paid:'Đã trả',cancelled:'Đã hủy'};
+      this.items.forEach(i=>{
+        html+=`<tr ondblclick="Budget.openEdit('${i.id}')"><td><div style="font-weight:500">${Util.esc(i.category)}</div></td><td>${Util.esc(i.description||'—')}</td><td>${Util.fmtMoney(i.estimated_amount)}</td><td>${Util.fmtMoney(i.actual_amount)}</td><td>${Util.fmtMoney(i.paid_amount)}</td><td><span class="pill ${stPill[i.status]||'pill-notsent'}">${stLabel[i.status]||'—'}</span></td><td class="right"><button class="btn-close" onclick="Budget.openEdit('${i.id}')">${I.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button><button class="btn-close" onclick="Budget.confirmDelete('${i.id}')">${I.trash.replace('<svg','<svg style="width:15px;height:15px"')}</button></td></tr>`;
+      });
+      html+='</tbody></table></div></div>';
+    }
+    document.getElementById('content').innerHTML=html;
+  },
+  openAdd(){ this.openDrawer(null); },
+  openEdit(id){ this.openDrawer(this.items.find(i=>i.id===id)); },
+  openDrawer(i){
+    const isEdit=!!i;
+    const body=`<div class="row"><div class="field"><label class="label">Danh mục *</label><input class="input" id="bCat" value="${i?Util.esc(i.category):''}" placeholder="Địa điểm / Ảnh cưới..."/></div><div class="field"><label class="label">Nhà cung cấp</label><input class="input" id="bVendor" value="${i?Util.esc(i.vendor||''):''}"/></div></div>
+      <div class="field"><label class="label">Mô tả</label><input class="input" id="bDesc" value="${i?Util.esc(i.description||''):''}"/></div>
+      <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" type="number" id="bEst" value="${i?i.estimated_amount||0:0}"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" type="number" id="bAct" value="${i?i.actual_amount||0:0}"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" type="number" id="bPaid" value="${i?i.paid_amount||0:0}"/></div></div>
+      <div class="row"><div class="field"><label class="label">Hạn thanh toán</label><input class="input" type="date" id="bDue" value="${i?i.due_date||'':''}"/></div><div class="field"><label class="label">Trạng thái</label><select class="select" id="bStatus"><option value="planned" ${!i||i.status==='planned'?'selected':''}>Dự kiến</option><option value="booked" ${i&&i.status==='booked'?'selected':''}>Đã đặt</option><option value="paid" ${i&&i.status==='paid'?'selected':''}>Đã trả</option><option value="cancelled" ${i&&i.status==='cancelled'?'selected':''}>Đã hủy</option></select></div></div>
+      <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="bNotes">${i?Util.esc(i.notes||''):''}</textarea></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Budget.save('${i?i.id:''}')">${isEdit?'Lưu':'Thêm'}</button>`;
+    UI.openDrawer(isEdit?'Sửa khoản chi':'Thêm khoản chi', body, foot);
+  },
+  async save(id){
+    const row={ category:document.getElementById('bCat').value.trim(), description:document.getElementById('bDesc').value.trim()||null, vendor:document.getElementById('bVendor').value.trim()||null, estimated_amount:parseFloat(document.getElementById('bEst').value)||0, actual_amount:parseFloat(document.getElementById('bAct').value)||0, paid_amount:parseFloat(document.getElementById('bPaid').value)||0, due_date:document.getElementById('bDue').value||null, status:document.getElementById('bStatus').value, notes:document.getElementById('bNotes').value.trim()||null };
+    if(!row.category){ Toast.err('Nhập danh mục'); return; }
+    try{ if(id) await DB.update('wed_budget_items',id,row); else await DB.insert('wed_budget_items',row); Toast.ok('Đã lưu'); UI.closeDrawer(); await this.render(); }
+    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  },
+  confirmDelete(id){ UI.confirm('Xóa khoản chi?','',()=>this.doDelete(id),'Xóa',true); },
+  async doDelete(id){ try{ await DB.remove('wed_budget_items',id); Toast.ok('Đã xóa'); await this.render(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },
+  openAddGift(){
+    const guests=this.guests||[];
+    const body=`<div class="field"><label class="label">Người tặng</label><input class="input" id="gGiver" placeholder="Tên khách"/></div>
+      <div class="row"><div class="field"><label class="label">Số tiền (₫)</label><input class="input" type="number" id="gAmount" value="0"/></div><div class="field"><label class="label">Ngày nhận</label><input class="input" type="date" id="gDate" value="${new Date().toISOString().slice(0,10)}"/></div></div>
+      <div class="field"><label class="label">Mô tả quà</label><input class="input" id="gDesc" placeholder="Phong bì / quà vật chất..."/></div>
+      <div class="field"><label class="label">Đã cảm ơn?</label><select class="select" id="gThank"><option value="false">Chưa</option><option value="true">Rồi</option></select></div>`;
+    const foot=`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Budget.saveGift()">Lưu</button>`;
+    UI.openDrawer('Thêm quà mừng', body, foot);
+  },
+  async saveGift(){
+    const row={ giver_name:document.getElementById('gGiver').value.trim()||null, amount:parseFloat(document.getElementById('gAmount').value)||0, received_date:document.getElementById('gDate').value||null, gift_description:document.getElementById('gDesc').value.trim()||null, thank_you_sent:document.getElementById('gThank').value==='true' };
+    try{ await DB.insert('wed_gifts',row); Toast.ok('Đã lưu quà mừng'); UI.closeDrawer(); await this.render(); }
+    catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  }
+};
+
+/* ============================================================
+   VIEW: SETTINGS
+   ============================================================ */
+const Settings = {
+  async render(){
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải...</div>`;
+    try{
+      const settings=await DB.list('wed_wedding_settings').catch(()=>[]);
+      const allowed=await DB.list('wed_allowed_users').catch(()=>[]);
+      const s=settings[0]||{};
+      let html='<div class="section-h">Thông tin đám cưới</div>';
+      html+=`<div class="card" style="padding:24px;margin-bottom:24px">
+        <div class="row"><div class="field"><label class="label">Tên chú rể</label><input class="input" id="sGroom" value="${Util.esc(s.groom_name||'')}"/></div><div class="field"><label class="label">Tên cô dâu</label><input class="input" id="sBride" value="${Util.esc(s.bride_name||'')}"/></div></div>
+        <div class="row"><div class="field"><label class="label">Ngày cưới</label><input class="input" type="date" id="sDate" value="${s.wedding_date||''}"/></div><div class="field"><label class="label">Địa điểm</label><input class="input" id="sVenue" value="${Util.esc(s.venue||'')}"/></div></div>
+        <div class="row"><div class="field"><label class="label">Nhãn nhà trai</label><input class="input" id="sGroomLabel" value="${Util.esc(s.groom_side_label||'Nhà trai')}"/></div><div class="field"><label class="label">Nhãn nhà gái</label><input class="input" id="sBrideLabel" value="${Util.esc(s.bride_side_label||'Nhà gái')}"/></div></div>
+        <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="sNotes">${Util.esc(s.notes||'')}</textarea></div>
+        <button class="btn btn-primary" onclick="Settings.saveSettings('${s.id||''}')">Lưu cấu hình</button>
+      </div>`;
+      html+='<div class="section-h">Tài khoản được phép</div>';
+      html+=`<div class="card" style="padding:8px 16px;margin-bottom:24px">
+        <div class="text-sm muted mb-16">Chỉ hai tài khoản sau có thể truy cập. Quản lý qua Supabase Dashboard.</div>
+        ${allowed.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><div class="user-avatar">${Util.initials(a.email)}</div><div><div style="font-size:13px;font-weight:500">${Util.esc(a.email)}</div><div class="text-xs muted">${a.note||'—'}</div></div></div>`).join('')}
+      </div>`;
+      html+='<div class="section-h">Bảo mật</div>';
+      html+=`<div class="card" style="padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span class="pill pill-confirmed">RLS bật</span><span class="text-sm muted">Mọi bảng wed_* có Row Level Security</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span class="pill pill-confirmed">Allowlist</span><span class="text-sm muted">Kiểm tra cả frontend lẫn database</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span class="pill pill-confirmed">Anon key</span><span class="text-sm muted">Chỉ dùng publishable key, không service_role</span></div>
+      </div>`;
+      c.innerHTML=html;
+    }catch(e){ c.innerHTML=UI.empty(I.settings,'Không tải được',e.message,'<button class="btn btn-ghost" onclick="Settings.render()">Thử lại</button>'); }
+  },
+  async saveSettings(id){
+    const row={ groom_name:document.getElementById('sGroom').value.trim()||null, bride_name:document.getElementById('sBride').value.trim()||null, wedding_date:document.getElementById('sDate').value||null, venue:document.getElementById('sVenue').value.trim()||null, groom_side_label:document.getElementById('sGroomLabel').value.trim()||'Nhà trai', bride_side_label:document.getElementById('sBrideLabel').value.trim()||'Nhà gái', notes:document.getElementById('sNotes').value.trim()||null };
+    try{
+      if(id) await DB.update('wed_wedding_settings',id,row);
+      else await DB.insert('wed_wedding_settings',row);
+      Toast.ok('Đã lưu cấu hình');
+    }catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); }
+  }
+};
+
+/* ---------- BOOT ---------- */
+window.addEventListener('DOMContentLoaded', async ()=>{
+  document.getElementById('btnGoogleLogin').addEventListener('click', ()=>Auth.signInWithGoogle());
+  try{ await Auth.init(); }
+  catch(e){
+    const err=document.getElementById('loginError');
+    err.textContent='Không khởi tạo được ứng dụng: '+(e.message||'');
+    err.classList.add('show');
+  }
+});
+</script>
+</body>
+</html>
