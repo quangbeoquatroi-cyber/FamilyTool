@@ -363,6 +363,47 @@ a{color:inherit;text-decoration:none}
 .sp-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:12px;color:var(--ink-2)}
 .sp-legend span{display:inline-flex;align-items:center;gap:6px}.lg{display:inline-block;width:14px;height:14px;border-radius:4px}
 .lg.stage{background:#873347}.lg.aisle{background:#B24A5E;border:2px solid var(--champagne)}.lg.door{background:var(--forest)}.lg.g{background:#3A3A6B;border-radius:50%}.lg.b{background:var(--burgundy);border-radius:50%}.lg.full{background:var(--danger);border-radius:50%}
+
+/* ===== NHẬP / XUẤT FILE ===== */
+.modal.wide{width:min(980px,96vw);padding:0;overflow-x:hidden}
+.imp-head{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 28px 8px}
+.imp-t{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink)}.imp-s{font-size:13px;color:var(--muted);margin-top:2px}
+.imp-steps{display:flex;align-items:center;gap:8px;padding:10px 28px 16px;overflow-x:auto}
+.imp-steps span{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.imp-steps i{font-style:normal;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--ivory-2);font-weight:700;font-size:12px;transition:all .3s}
+.imp-steps span.on{color:var(--burgundy);font-weight:600}.imp-steps span.on i{background:var(--burgundy);color:#fff;box-shadow:0 0 0 4px var(--burgundy-soft)}
+.imp-steps span.done i{background:var(--forest);color:#fff}.imp-steps em{flex:1;min-width:16px;height:2px;background:var(--line);border-radius:2px}
+.imp-body{padding:4px 28px 26px;animation:impIn .35s ease}.imp-center{text-align:center;padding:34px 28px 40px}
+@keyframes impIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.imp-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+.imp-panel{border:1.5px solid var(--line-2);border-radius:14px;padding:18px;background:linear-gradient(180deg,#fff,var(--ivory));display:flex;flex-direction:column;gap:12px}
+.imp-ph{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}.imp-ph span{width:26px;height:26px;border-radius:50%;background:var(--burgundy);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.imp-pt{font-size:12.5px;color:var(--ink-2)}
+.imp-chips{display:flex;flex-wrap:wrap;gap:6px}.imp-chip{font-size:11px;padding:3px 9px;border:1px solid var(--line-2);border-radius:20px;background:#fff;color:var(--ink-2)}
+.imp-chip.req{border-color:var(--burgundy);color:var(--burgundy);font-weight:600}.imp-chip.lst{background:var(--champagne-soft);border-color:#E8D9A8}
+.imp-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+.imp-drop{flex:1;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;border:2px dashed var(--burgundy-2);border-radius:14px;background:var(--burgundy-soft);cursor:pointer;transition:all .2s;color:var(--burgundy);padding:20px}
+.imp-drop small{color:var(--muted);font-size:12px}.imp-drop:hover,.imp-drop.over{background:#F0DDE1;transform:scale(1.015);border-style:solid;box-shadow:0 0 0 5px var(--burgundy-soft)}
+.imp-up{animation:impFloat 2.2s ease-in-out infinite;margin-bottom:4px}@keyframes impFloat{50%{transform:translateY(-8px)}}
+.imp-drop.over .imp-up{animation-duration:.6s}
+.imp-spin{width:34px;height:34px;border:3px solid var(--burgundy-soft);border-top-color:var(--burgundy);border-radius:50%;animation:impSpin .8s linear infinite}@keyframes impSpin{to{transform:rotate(360deg)}}
+.imp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.imp-stats div{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column}
+.imp-stats b{font-family:var(--serif);font-size:30px;line-height:1.1}.imp-stats span{font-size:11.5px;color:var(--muted)}
+.imp-stats .ok{border-color:var(--forest)}.imp-stats .ok b{color:var(--forest)}.imp-stats .wr b{color:var(--warn)}.imp-stats .er{border-color:var(--danger)}.imp-stats .er b{color:var(--danger)}
+.imp-tbl{max-height:320px;overflow:auto;border:1.5px solid var(--line-2)}
+.imp-t2{border-collapse:collapse}.imp-t2 th,.imp-t2 td{border:1px solid var(--line-2);vertical-align:middle;word-break:break-word}.imp-t2 th{background:var(--ivory-2);position:sticky;top:0;z-index:1}.imp-t2 tr.bad td{background:var(--danger-soft)}
+.imp-foot{display:flex;justify-content:space-between;gap:10px;padding:16px 28px;border-top:1px solid var(--line);background:var(--ivory)}
+.imp-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:8px}
+.imp-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:20px;border:1.5px solid var(--line-2);border-radius:14px;background:#fff;transition:all .2s}
+.imp-card:hover{border-color:var(--burgundy);transform:translateY(-3px);box-shadow:var(--shadow)}.imp-card small{color:var(--muted);font-size:12.5px;line-height:1.5}
+.imp-ico{font-size:12px;font-weight:800;letter-spacing:1px;padding:8px 12px;border-radius:8px;color:#fff}.imp-ico.xl{background:var(--forest)}.imp-ico.csv{background:var(--champagne)}
+.imp-prog{height:10px;border-radius:10px;background:var(--ivory-2);overflow:hidden;margin:20px auto 12px;max-width:520px}
+.imp-prog i{display:block;height:100%;width:0;border-radius:10px;transition:width .3s;background:repeating-linear-gradient(45deg,var(--burgundy),var(--burgundy) 10px,var(--burgundy-2) 10px,var(--burgundy-2) 20px);background-size:28px 28px;animation:impStripe 1s linear infinite}
+@keyframes impStripe{to{background-position:28px 0}}
+.imp-check{width:84px;height:84px;margin-bottom:12px}.imp-check circle{fill:none;stroke:var(--forest);stroke-width:3;stroke-dasharray:152;stroke-dashoffset:152;animation:impDraw .6s ease forwards}
+.imp-check path{fill:none;stroke:var(--forest);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:impDraw .4s .5s ease forwards}@keyframes impDraw{to{stroke-dashoffset:0}}
+@media(max-width:760px){.imp-grid,.imp-cards{grid-template-columns:1fr}.imp-stats{grid-template-columns:1fr 1fr}.imp-foot{flex-direction:column-reverse}.imp-foot .btn{width:100%;justify-content:center}}
 </style>
 <style id="wa-overrides">
 /* ============================================================
@@ -961,7 +1002,7 @@ const UI = {
       </div>`);
     document.getElementById('modalYes').onclick=()=>{ onYes(); this.closeModal(); };
   },
-  closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); },
+  closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); document.getElementById('modal').classList.remove('wide'); },
   skeleton(rows=5){
     let h='<div style="padding:8px">';
     for(let i=0;i<rows;i++) h+=`<div class="skeleton" style="height:42px;margin-bottom:10px"></div>`;
@@ -1321,23 +1362,24 @@ const RS_MAP={not_sent:['Chưa gửi','pill-notsent'],sent:['Đã gửi','pill-s
 const CAT_MAP={family:'Gia đình',relatives:'Họ hàng',friends:'Bạn bè',colleagues:'Đồng nghiệp',classmates:'Bạn học',custom:'Khác'};
 const PAY_MAP={cash:'Tiền mặt',transfer:'Chuyển khoản'};
 const G_FIELDS=[
-  {key:'full_name',label:'Họ tên',alias:['ho ten','ten khach','full name']},
-  {key:'display_name',label:'Tên hiển thị',alias:['ten hien thi','display name']},
-  {key:'side',label:'Bên gia đình',alias:['ben gia dinh','ben','side']},
-  {key:'group',label:'Nhóm',alias:['nhom','group']},
-  {key:'relationship',label:'Mối quan hệ',alias:['moi quan he','relationship']},
-  {key:'phone',label:'Số điện thoại',alias:['so dien thoai','dien thoai','sdt','phone']},
-  {key:'email',label:'Email',alias:['email']},
-  {key:'is_representative',label:'Đại diện hộ',alias:['dai dien ho','nguoi dai dien','is representative']},
-  {key:'invited_count',label:'Số người mời',alias:['so nguoi moi','invited count']},
-  {key:'confirmed_count',label:'Số người xác nhận',alias:['so nguoi xac nhan','confirmed count']},
-  {key:'rsvp_status',label:'Trạng thái RSVP',alias:['trang thai rsvp','trang thai','rsvp','rsvp status']},
-  {key:'inviter_name',label:'Người mời',alias:['nguoi moi','inviter name']},
-  {key:'table',label:'Số bàn',alias:['so ban','ban','ban tiec','table']},
-  {key:'gift_amount',label:'Số tiền mừng (₫)',alias:['so tien mung','so tien','tien mung','gift amount']},
-  {key:'gift_method',label:'Hình thức',alias:['hinh thuc','hinh thuc thanh toan','tien mat chuyen khoan','gift method']},
-  {key:'dietary',label:'Nhu cầu ăn uống',alias:['nhu cau an uong','an uong','dietary']},
-  {key:'notes',label:'Ghi chú',alias:['ghi chu','notes']}
+  {key:'full_name',label:'Họ tên',req:1,kind:'text',hint:'Họ và tên đầy đủ của khách',alias:['ho ten','ten khach','full name']},
+  {key:'display_name',label:'Tên hiển thị',kind:'text',hint:'Bí danh / tên gọi',alias:['ten hien thi','display name']},
+  {key:'side',label:'Bên gia đình',req:1,kind:'list',hint:'Khách thuộc bên nào',alias:['ben gia dinh','ben','side']},
+  {key:'group',label:'Nhóm',kind:'list',hint:'Có thể nhập tên nhóm mới, hệ thống sẽ tự tạo',alias:['nhom','group']},
+  {key:'relationship',label:'Mối quan hệ',kind:'text',hint:'Anh em / bạn học...',alias:['moi quan he','relationship']},
+  {key:'phone',label:'Số điện thoại',kind:'text',hint:'Ví dụ 0901234567',alias:['so dien thoai','dien thoai','sdt','phone']},
+  {key:'email',label:'Email',kind:'text',hint:'',alias:['email']},
+  {key:'is_representative',label:'Người đại diện',kind:'list',hint:'Đại diện hộ hay không',alias:['dai dien ho','nguoi dai dien','is representative']},
+  {key:'invited_count',label:'Số người mời',kind:'number',hint:'Số nguyên ≥ 1 (mặc định 1)',alias:['so nguoi moi','invited count']},
+  {key:'confirmed_count',label:'Số người xác nhận',kind:'number',hint:'Số nguyên ≥ 0 (mặc định 0)',alias:['so nguoi xac nhan','confirmed count']},
+  {key:'rsvp_status',label:'Trạng thái RSVP',kind:'list',hint:'Mặc định: Chưa gửi',alias:['trang thai rsvp','trang thai','rsvp','rsvp status']},
+  {key:'inviter_name',label:'Người mời',kind:'text',hint:'Ai mời khách này',alias:['nguoi moi','inviter name']},
+  {key:'table',label:'Số bàn',kind:'list',hint:'Chọn bàn đã tạo ở Sơ đồ bàn tiệc',alias:['so ban','ban','ban tiec','table']},
+  {key:'gift_amount',label:'Số tiền mừng (₫)',kind:'number',hint:'Số tiền, ví dụ 500000',alias:['so tien mung','so tien','tien mung','gift amount']},
+  {key:'gift_method',label:'Hình thức',kind:'list',hint:'Tiền mặt hoặc chuyển khoản',alias:['hinh thuc','hinh thuc thanh toan','tien mat chuyen khoan','gift method']},
+  {key:'dietary',label:'Nhu cầu ăn uống / hỗ trợ đặc biệt',kind:'text',hint:'Ăn chay, dị ứng...',alias:['nhu cau an uong','an uong','dietary','nhu cau an uong ho tro dac biet']},
+  {key:'events',label:'Sự kiện được mời',kind:'text',hint:'Nhiều sự kiện cách nhau bằng dấu phẩy',alias:['su kien duoc moi','su kien','events']},
+  {key:'notes',label:'Ghi chú nội bộ',kind:'text',hint:'Ghi chú riêng',alias:['ghi chu noi bo','ghi chu','notes']}
 ];
 const norm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,' ').trim();
 const Guestbook = {
@@ -1346,7 +1388,7 @@ const Guestbook = {
   sideLabel(s){ return s==='groom'?(this.cfg.groom_side_label||'Nhà trai'):(this.cfg.bride_side_label||'Nhà gái'); },
   async render(){
     const ic=(i)=>i.replace('<svg','<svg style="width:15px;height:15px"');
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Guestbook.importCSV()">${ic(I.upload)} Nhập CSV</button><button class="btn btn-ghost" onclick="Guestbook.exportCSV()">${ic(I.download)} Xuất CSV</button><button class="btn btn-ghost" onclick="Guestbook.openGroup(null)">${ic(I.plus)} Thêm nhóm</button><button class="btn btn-primary" onclick="Guestbook.openAdd()">${ic(I.plus)} Thêm khách</button>`;
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Guestbook.importCSV()">${ic(I.upload)} Nhập file</button><button class="btn btn-ghost" onclick="Guestbook.exportCSV()">${ic(I.download)} Xuất file</button><button class="btn btn-ghost" onclick="Guestbook.openGroup(null)">${ic(I.plus)} Thêm nhóm</button><button class="btn btn-primary" onclick="Guestbook.openAdd()">${ic(I.plus)} Thêm khách</button>`;
     document.getElementById('content').innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải dữ liệu...</div>`;
     await this.load();
   },
@@ -1535,50 +1577,139 @@ const Guestbook = {
     const g=this.guests.find(x=>x.id===id);
     UI.confirm('Xóa khách mời?',`Bạn có chắc muốn xóa <b>${Util.esc(g.full_name)}</b>?${g.rsvp_status&&g.rsvp_status!=='not_sent'?'<br><br>Khách này đã có phản hồi RSVP — không thể hoàn tác.':''}`,async()=>{ try{await DB.remove('wed_guests',id);Toast.ok('Đã xóa khách');await this.load();}catch(e){Toast.err('Xóa thất bại: '+(e.message||''));} },'Xóa',true);
   },
-  /* ---------- CSV: hiển thị tên trường tiếng Việt ---------- */
+  /* ---------- FILE MẪU / XUẤT / NHẬP (Excel có dropdown + CSV) ---------- */
+  hdr(f){ return f.label+(f.req?' *':''); },
+  async xl(){
+    if(window.ExcelJS) return window.ExcelJS;
+    await new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'; s.onload=ok; s.onerror=()=>no(new Error('Không tải được thư viện Excel, kiểm tra kết nối mạng')); document.head.appendChild(s); });
+    return window.ExcelJS;
+  },
+  lists(){ return {side:[this.sideLabel('groom'),this.sideLabel('bride')],group:[...new Set(this.groups.map(g=>g.name))],rep:['Không','Đại diện hộ'],rsvp:Object.values(RS_MAP).map(v=>v[0]),table:this.tables.map(t=>t.name),method:Object.values(PAY_MAP)}; },
+  rowValues(g){
+    const gr=this.groups.find(x=>x.id===g.group_id), t=this.tableOf(g.id), amt=Number(g.gift_amount)||0;
+    const ev=(g.event_ids||[]).map(id=>(this.events.find(e=>e.id===id)||{}).name).filter(Boolean).join(', ');
+    return [g.full_name,g.display_name||'',this.sideLabel(g.side),gr?gr.name:'',g.relationship||'',g.phone||'',g.email||'',g.is_representative?'Đại diện hộ':'Không',Number(g.invited_count)||1,Number(g.confirmed_count)||0,(RS_MAP[g.rsvp_status||'not_sent']||RS_MAP.not_sent)[0],g.inviter_name||'',t?t.name:'',amt||'',amt?(PAY_MAP[g.gift_method]||PAY_MAP.cash):'',g.dietary||'',ev,g.notes||''];
+  },
+  async buildBook(rows,blank){
+    const E=await this.xl(), wb=new E.Workbook(); wb.creator='Wedding Atelier';
+    const ws=wb.addWorksheet('Khách mời',{views:[{state:'frozen',ySplit:1}]}), ls=wb.addWorksheet('Danh mục',{state:'hidden'}), gd=wb.addWorksheet('Hướng dẫn');
+    const L=this.lists(), rng={}; let ci=1;
+    Object.keys(L).forEach(k=>{ const col=ls.getColumn(ci); L[k].forEach((v,i)=>{ls.getCell(i+1,ci).value=v;}); if(L[k].length) rng[k]=`'Danh mục'!$${col.letter}$1:$${col.letter}$${L[k].length}`; ci++; });
+    const lk={side:'side',group:'group',is_representative:'rep',rsvp_status:'rsvp',table:'table',gift_method:'method'};
+    const bd={style:'thin',color:{argb:'FFBFB3A6'}}, border={top:bd,left:bd,bottom:bd,right:bd};
+    const heads=G_FIELDS.map(f=>this.hdr(f)), n=rows.length+(blank?300:60), W=G_FIELDS.map((f,i)=>Math.max(14,heads[i].length+4));
+    rows.forEach(r=>r.forEach((v,i)=>{ W[i]=Math.max(W[i],Math.min(44,String(v).length+4)); })); Object.keys(lk).forEach(k=>{ const i=G_FIELDS.findIndex(f=>f.key===k); (L[lk[k]]||[]).forEach(v=>{W[i]=Math.max(W[i],Math.min(44,v.length+6));}); });
+    W[G_FIELDS.findIndex(f=>f.key==='events')]=Math.max(W[G_FIELDS.findIndex(f=>f.key==='events')],26);
+    ws.columns=G_FIELDS.map((f,i)=>({width:W[i]}));
+    const hr=ws.getRow(1); hr.height=36;
+    G_FIELDS.forEach((f,i)=>{ const c=hr.getCell(i+1); c.value=heads[i]; c.font={bold:true,color:{argb:'FFFFFFFF'},size:11}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:f.req?'FF873347':'FF6B2737'}}; c.alignment={vertical:'middle',horizontal:'center',wrapText:true}; c.border=border; });
+    for(let r=2;r<=n+1;r++){
+      const row=ws.getRow(r), vals=rows[r-2]; let lines=1;
+      G_FIELDS.forEach((f,i)=>{
+        const c=row.getCell(i+1); if(vals&&vals[i]!==''&&vals[i]!=null) c.value=vals[i];
+        c.border=border; const mid=['list','number'].includes(f.kind);
+        c.alignment={vertical:'middle',horizontal:mid?'center':'left',wrapText:true};
+        if(f.key==='phone') c.numFmt='@'; if(f.key==='gift_amount') c.numFmt='#,##0';
+        if(vals&&vals[i]!=='') lines=Math.max(lines,Math.ceil(String(vals[i]).length/Math.max(8,W[i]-2)));
+        if(rng[lk[f.key]]) c.dataValidation={type:'list',allowBlank:true,formulae:[rng[lk[f.key]]],showErrorMessage:true,errorStyle:f.key==='group'?'warning':'stop',errorTitle:'Giá trị không hợp lệ',error:'Hãy chọn một giá trị trong danh sách'+(f.key==='group'?' (hoặc nhập tên nhóm mới)':'')};
+        else if(f.key==='invited_count') c.dataValidation={type:'whole',operator:'greaterThanOrEqual',formulae:[1],allowBlank:true,showErrorMessage:true,errorTitle:'Sai định dạng',error:'Nhập số nguyên từ 1 trở lên'};
+        else if(f.key==='confirmed_count') c.dataValidation={type:'whole',operator:'greaterThanOrEqual',formulae:[0],allowBlank:true,showErrorMessage:true,errorTitle:'Sai định dạng',error:'Nhập số nguyên từ 0 trở lên'};
+        else if(f.key==='gift_amount') c.dataValidation={type:'decimal',operator:'greaterThanOrEqual',formulae:[0],allowBlank:true,showErrorMessage:true,errorTitle:'Sai định dạng',error:'Nhập số tiền (₫) từ 0 trở lên'};
+      });
+      row.height=Math.max(24,lines*16+8);
+    }
+    ws.autoFilter={from:{row:1,column:1},to:{row:1,column:G_FIELDS.length}};
+    gd.columns=[{width:26},{width:12},{width:20},{width:70}];
+    gd.mergeCells('A1:D1'); const t=gd.getCell('A1'); t.value='HƯỚNG DẪN NHẬP KHÁCH MỜI'; t.font={bold:true,size:14,color:{argb:'FF6B2737'}}; t.alignment={horizontal:'center',vertical:'middle'}; gd.getRow(1).height=30;
+    ['1. Điền thông tin vào sheet "Khách mời" (mỗi dòng một khách). Cột có dấu * là bắt buộc.','2. Cột có danh sách thả xuống: bấm vào ô rồi chọn giá trị, không tự gõ giá trị khác.','3. Sự kiện được mời: nhiều sự kiện cách nhau bằng dấu phẩy, đúng tên sự kiện trong app.','4. Lưu file (.xlsx) rồi tải lên ở màn hình Nhập file.'].forEach((x,i)=>{ gd.mergeCells(`A${i+2}:D${i+2}`); gd.getCell(`A${i+2}`).value=x; gd.getCell(`A${i+2}`).alignment={wrapText:true,vertical:'middle'}; gd.getRow(i+2).height=22; });
+    ['Trường thông tin','Bắt buộc','Kiểu nhập','Giá trị / ghi chú'].forEach((h,i)=>{ const c=gd.getCell(7,i+1); c.value=h; c.font={bold:true,color:{argb:'FFFFFFFF'}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF6B2737'}}; c.border=border; c.alignment={horizontal:'center',vertical:'middle'}; });
+    G_FIELDS.forEach((f,i)=>{ const lst=rng[lk[f.key]]?L[lk[f.key]].join(' / '):''; const v=[f.label,f.req?'Có':'Không',{text:'Văn bản',number:'Số',list:'Danh sách thả xuống'}[f.kind],(lst||f.hint)+(lst&&f.hint?'. '+f.hint:'')];
+      v.forEach((x,j)=>{ const c=gd.getCell(8+i,j+1); c.value=x; c.border=border; c.alignment={wrapText:true,vertical:'middle',horizontal:j===1?'center':'left'}; }); gd.getRow(8+i).height=Math.max(22,Math.ceil(String(v[3]).length/68)*16+6); });
+    return wb;
+  },
+  save(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); },
+  async dlXlsx(rows,name,blank){ try{ Toast.show('Đang tạo file Excel...'); const wb=await this.buildBook(rows,blank); this.save(new Blob([await wb.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),name); Toast.ok('Đã tải '+name); }catch(e){ Toast.err(e.message||'Tạo file thất bại'); } },
+  dlCsv(rows,name){ const csv='\uFEFF'+[G_FIELDS.map(f=>this.hdr(f)),...rows].map(r=>r.map(v=>Util.csvEscape(v)).join(',')).join('\n'); this.save(new Blob([csv],{type:'text/csv;charset=utf-8'}),name); Toast.ok('Đã tải '+name); },
+  wide(html){ UI.modal(html); document.getElementById('modal').classList.add('wide'); },
   exportCSV(){
-    const gm={}; this.groups.forEach(g=>gm[g.id]=g.name);
-    const cell={full_name:g=>g.full_name,display_name:g=>g.display_name,side:g=>this.sideLabel(g.side),group:g=>gm[g.group_id]||'',relationship:g=>g.relationship,phone:g=>g.phone,email:g=>g.email,is_representative:g=>g.is_representative?'Có':'Không',invited_count:g=>g.invited_count,confirmed_count:g=>g.confirmed_count,rsvp_status:g=>(RS_MAP[g.rsvp_status||'not_sent']||[''])[0],inviter_name:g=>g.inviter_name,table:g=>{const t=this.tableOf(g.id);return t?t.name:'';},gift_amount:g=>g.gift_amount||'',gift_method:g=>g.gift_amount?(PAY_MAP[g.gift_method]||'Tiền mặt'):'',dietary:g=>g.dietary,notes:g=>g.notes};
-    let csv='\uFEFF'+G_FIELDS.map(f=>Util.csvEscape(f.label)).join(',')+'\n';
-    this.guests.forEach(g=>{ csv+=G_FIELDS.map(f=>Util.csvEscape(cell[f.key](g))).join(',')+'\n'; });
-    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='khach-moi.csv'; a.click(); Toast.ok('Đã xuất CSV');
+    this.wide(`<div class="imp-head"><div><div class="imp-t">Xuất dữ liệu khách mời</div><div class="imp-s">${this.guests.length} khách · các cột giống hệt file mẫu nhập</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="imp-body"><div class="imp-cards"><button class="imp-card" onclick="Guestbook.dlXlsx(Guestbook.guests.map(g=>Guestbook.rowValues(g)),'khach-moi.xlsx',false);UI.closeModal()"><span class="imp-ico xl">XLSX</span><b>Excel (khuyên dùng)</b><small>Kẻ viền đầy đủ, tự cân chỉnh độ rộng & chiều cao, có dropdown. Dùng lại để nhập được.</small></button>
+    <button class="imp-card" onclick="Guestbook.dlCsv(Guestbook.guests.map(g=>Guestbook.rowValues(g)),'khach-moi.csv');UI.closeModal()"><span class="imp-ico csv">CSV</span><b>CSV thuần</b><small>Văn bản phân tách bằng dấu phẩy, mở được trên mọi phần mềm (không có viền / dropdown).</small></button></div></div>`);
   },
-  parseRow(r,idx){
-    const get=k=>idx[k]>=0?(r[idx[k]]||'').trim():'';
-    let sd=norm(get('side')); const side=/gai|bride/.test(sd)?'bride':'groom';
-    const rs=norm(get('rsvp_status')); let rsvp='not_sent'; Object.keys(RS_MAP).forEach(k=>{ if(rs===norm(RS_MAP[k][0])||rs===norm(k)) rsvp=k; });
-    const gm=norm(get('gift_method')); const method=/chuyen|ck|transfer|bank/.test(gm)?'transfer':'cash';
-    return {full_name:get('full_name'),display_name:get('display_name')||null,side,groupName:get('group'),relationship:get('relationship')||null,phone:get('phone')||null,email:get('email')||null,is_representative:['co','1','true','yes','dai dien ho'].includes(norm(get('is_representative'))),invited_count:parseInt(get('invited_count'))||1,confirmed_count:parseInt(get('confirmed_count'))||0,rsvp_status:rsvp,inviter_name:get('inviter_name')||null,tableName:get('table'),gift_amount:parseInt(get('gift_amount').replace(/\D/g,''))||0,gift_method:method,dietary:get('dietary')||null,notes:get('notes')||null};
+  /* ---------- NHẬP ---------- */
+  importCSV(){ this.imp={}; this.impStep1(); },
+  stepper(n){ return `<div class="imp-steps">${['Tải file mẫu','Tải file lên','Kiểm tra','Hoàn tất'].map((t,i)=>`<span class="${i+1<n?'done':i+1===n?'on':''}"><i>${i+1<n?'✓':i+1}</i>${t}</span>`).join('<em></em>')}</div>`; },
+  impStep1(){
+    const chips=G_FIELDS.map(f=>`<span class="imp-chip ${f.req?'req':''} ${f.kind==='list'?'lst':''}">${f.label}${f.req?' *':''}${f.kind==='list'?' ▾':''}</span>`).join('');
+    this.wide(`<div class="imp-head"><div><div class="imp-t">Nhập danh sách khách mời</div><div class="imp-s">Tải mẫu → điền thông tin → tải lên → kiểm tra → nhập</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>${this.stepper(1)}
+    <div class="imp-body"><div class="imp-grid">
+      <div class="imp-panel"><div class="imp-ph"><span>1</span>Tải file mẫu</div><div class="imp-pt">File mẫu có đủ các trường như form “Thêm khách mời”. Ô có <b>▾</b> là danh sách thả xuống.</div><div class="imp-chips">${chips}</div>
+        <div class="imp-btns"><button class="btn btn-primary" onclick="Guestbook.dlXlsx([],'mau-nhap-khach-moi.xlsx',true)">${I.download.replace('<svg','<svg style="width:15px;height:15px"')} Mẫu Excel (có dropdown)</button><button class="btn btn-ghost" onclick="Guestbook.dlCsv([],'mau-nhap-khach-moi.csv')">Mẫu CSV</button></div></div>
+      <div class="imp-panel"><div class="imp-ph"><span>2</span>Tải file lên</div><label class="imp-drop" id="impDrop"><input type="file" id="impFile" accept=".xlsx,.csv,text/csv" hidden/><div class="imp-up">${I.upload.replace('<svg','<svg style="width:34px;height:34px"')}</div><b>Kéo thả file vào đây</b><small>hoặc bấm để chọn · .xlsx hoặc .csv</small></label></div>
+    </div></div>`);
+    const dz=document.getElementById('impDrop'), fi=document.getElementById('impFile');
+    fi.onchange=()=>fi.files[0]&&this.impRead(fi.files[0]);
+    ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over');}));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over');}));
+    dz.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) this.impRead(f); });
   },
-  importCSV(){
-    const input=document.createElement('input'); input.type='file'; input.accept='.csv,text/csv';
-    input.onchange=async e=>{
-      const file=e.target.files[0]; if(!file) return;
-      try{
-        const rows=Util.parseCSV(await file.text());
-        if(rows.length<2){Toast.err('File CSV trống hoặc không đúng định dạng');return;}
-        const heads=rows[0].map(norm), idx={};
-        G_FIELDS.forEach(f=>{ const names=[norm(f.label),norm(f.key),...f.alias.map(norm)]; idx[f.key]=heads.findIndex(h=>names.includes(h)); });
-        if(idx.full_name<0){Toast.err('Thiếu cột "Họ tên" trong file CSV');return;}
-        const list=rows.slice(1).map(r=>this.parseRow(r,idx)).filter(x=>x.full_name);
-        const prev=`<div class="text-sm muted mb-16">Tìm thấy <b>${list.length}</b> khách. Cột nhận diện: ${G_FIELDS.filter(f=>idx[f.key]>=0).map(f=>`<span class="gx-cat">${f.label}</span>`).join(' ')}</div>
-        <div class="tbl-wrap" style="max-height:320px;overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>Họ tên</th><th>Bên</th><th>Nhóm</th><th>Người mời</th><th>Bàn</th><th>Số tiền</th><th>Hình thức</th><th>Trùng?</th></tr></thead><tbody>${list.slice(0,50).map((x,i)=>{const dup=this.guests.some(g=>norm(g.full_name)===norm(x.full_name)&&g.side===x.side);return `<tr><td>${i+1}</td><td>${Util.esc(x.full_name)}</td><td>${Util.esc(this.sideLabel(x.side))}</td><td>${Util.esc(x.groupName||'—')}</td><td>${Util.esc(x.inviter_name||'—')}</td><td>${Util.esc(x.tableName||'—')}</td><td>${x.gift_amount?Util.fmtMoney(x.gift_amount):'—'}</td><td>${x.gift_amount?PAY_MAP[x.gift_method]:'—'}</td><td>${dup?'<span class="pill pill-pending">Trùng</span>':'—'}</td></tr>`;}).join('')}</tbody></table></div>${list.length>50?`<div class="text-xs muted mt-16">... và ${list.length-50} dòng nữa</div>`:''}`;
-        UI.confirm('Nhập '+list.length+' khách?',prev,()=>this.doImport(list),'Nhập tất cả');
-      }catch(err){Toast.err('Đọc file thất bại: '+(err.message||''));}
-    };
-    input.click();
+  async impRead(file){
+    const dz=document.getElementById('impDrop'); dz.classList.add('busy'); dz.innerHTML=`<div class="imp-spin"></div><b>Đang đọc ${Util.esc(file.name)}...</b>`;
+    try{
+      let rows;
+      if(/\.xlsx$/i.test(file.name)){
+        const E=await this.xl(), wb=new E.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+        const ws=wb.getWorksheet('Khách mời')||wb.worksheets[0]; rows=[];
+        ws.eachRow({includeEmpty:false},row=>{ const a=[]; for(let c=1;c<=ws.columnCount;c++){ const cell=row.getCell(c); let v=cell.text; if(v==null||v==='[object Object]') v=cell.value==null?'':String(cell.value); a.push(String(v).trim()); } if(a.some(x=>x!=='')) rows.push(a); });
+      } else rows=Util.parseCSV(await file.text());
+      if(rows.length<2) throw new Error('File trống hoặc không có dòng dữ liệu');
+      const heads=rows[0].map(norm), idx={};
+      G_FIELDS.forEach(f=>{ const names=[norm(f.label),norm(f.key),...f.alias.map(norm)]; idx[f.key]=heads.findIndex(h=>names.includes(h)); });
+      if(idx.full_name<0) throw new Error('Thiếu cột “Họ tên” trong file');
+      this.imp={file:file.name,idx,list:rows.slice(1).map((r,i)=>this.parseRow(r,idx,i+2)).filter(x=>x.full_name||x.hasData)};
+      this.impPreview();
+    }catch(e){ Toast.err(e.message||'Đọc file thất bại'); this.impStep1(); }
   },
-  async doImport(list){
+  parseRow(r,idx,line){
+    const get=k=>idx[k]>=0?(r[idx[k]]||'').trim():'', warn=[], err=[];
+    const full=get('full_name'); if(!full) err.push('Thiếu họ tên');
+    let side='groom'; const sv=norm(get('side'));
+    if(idx.side>=0){ if(!sv) err.push('Thiếu bên gia đình'); else if(sv===norm(this.sideLabel('groom'))||/trai|groom/.test(sv)) side='groom'; else if(sv===norm(this.sideLabel('bride'))||/gai|bride/.test(sv)) side='bride'; else err.push('Bên gia đình không hợp lệ'); }
+    const rv=norm(get('rsvp_status')); let rsvp='not_sent'; if(rv){ const k=Object.keys(RS_MAP).find(k=>rv===norm(RS_MAP[k][0])||rv===norm(k)); if(k) rsvp=k; else warn.push('RSVP lạ → Chưa gửi'); }
+    const amt=parseInt(get('gift_amount').replace(/\D/g,''))||0, gv=norm(get('gift_method')); let method='cash'; if(gv){ if(/chuyen|ck|transfer|bank/.test(gv)) method='transfer'; else if(!/tien mat|cash|tm/.test(gv)) warn.push('Hình thức lạ → Tiền mặt'); }
+    let phone=get('phone'); if(/^\d{9}$/.test(phone)) phone='0'+phone;
+    const tn=get('table'); let tid=null; if(tn){ const t=this.tables.find(t=>norm(t.name)===norm(tn)||norm(t.name)===norm('Bàn '+tn)); if(t) tid=t.id; else warn.push('Không thấy bàn “'+tn+'”'); }
+    const evIds=[]; get('events').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(n=>{ const e=this.events.find(e=>norm(e.name)===norm(n)); if(e) evIds.push(e.id); else warn.push('Không thấy sự kiện “'+n+'”'); });
+    const gname=get('group'); const dup=!!full&&this.guests.some(g=>norm(g.full_name)===norm(full)&&g.side===side);
+    return {line,hasData:r.some(x=>String(x).trim()!==''),full_name:full,display_name:get('display_name')||null,side,groupName:gname,newGroup:!!gname&&!this.groups.some(g=>g.side===side&&norm(g.name)===norm(gname)),relationship:get('relationship')||null,phone:phone||null,email:get('email')||null,is_representative:['co','1','true','yes','dai dien ho'].includes(norm(get('is_representative'))),invited_count:Math.max(1,parseInt(get('invited_count'))||1),confirmed_count:Math.max(0,parseInt(get('confirmed_count'))||0),rsvp_status:rsvp,inviter_name:get('inviter_name')||null,tableId:tid,tableName:tn,gift_amount:amt,gift_method:method,dietary:get('dietary')||null,event_ids:evIds,notes:get('notes')||null,warn,err,dup};
+  },
+  impPreview(){
+    const L=this.imp.list, bad=L.filter(x=>x.err.length), dup=L.filter(x=>!x.err.length&&x.dup), ok=L.length-bad.length, wr=L.filter(x=>!x.err.length&&x.warn.length).length;
+    const st=x=>x.err.length?`<span class="pill pill-declined" title="${Util.esc(x.err.join('; '))}">Lỗi</span> <small>${Util.esc(x.err.join('; '))}</small>`:x.dup?'<span class="pill pill-pending">Trùng</span>':x.warn.length?`<span class="pill pill-sent">Lưu ý</span> <small>${Util.esc(x.warn.join('; '))}</small>`:'<span class="pill pill-confirmed">OK</span>';
+    const rows=L.slice(0,200).map(x=>`<tr class="${x.err.length?'bad':''}"><td>${x.line}</td><td><b>${Util.esc(x.full_name||'—')}</b></td><td>${Util.esc(this.sideLabel(x.side))}</td><td>${Util.esc(x.groupName||'—')}${x.newGroup?' <small class="muted">(tạo mới)</small>':''}</td><td>${Util.esc(x.inviter_name||'—')}</td><td>${Util.esc(x.tableName||'—')}</td><td>${x.gift_amount?Util.fmtMoney(x.gift_amount)+' · '+PAY_MAP[x.gift_method]:'—'}</td><td>${(RS_MAP[x.rsvp_status]||[''])[0]}</td><td>${st(x)}</td></tr>`).join('');
+    this.wide(`<div class="imp-head"><div><div class="imp-t">Kiểm tra dữ liệu</div><div class="imp-s">📄 ${Util.esc(this.imp.file)}</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>${this.stepper(3)}
+    <div class="imp-body"><div class="imp-stats"><div><b data-n="${L.length}">0</b><span>Tổng dòng</span></div><div class="ok"><b data-n="${ok}">0</b><span>Hợp lệ</span></div><div class="wr"><b data-n="${dup.length}">0</b><span>Trùng</span></div><div class="er"><b data-n="${bad.length}">0</b><span>Lỗi (bỏ qua)</span></div></div>
+    <div class="tbl-wrap imp-tbl"><div class="tbl-scroll"><table class="tbl imp-t2"><thead><tr><th>Dòng</th><th>Họ tên</th><th>Bên</th><th>Nhóm</th><th>Người mời</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th>Trạng thái</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    ${L.length>200?`<div class="text-xs muted" style="margin-top:6px">Hiển thị 200/${L.length} dòng đầu</div>`:''}${wr?`<div class="text-xs muted" style="margin-top:6px">${wr} dòng có lưu ý nhỏ, vẫn được nhập.</div>`:''}
+    <label class="gx-chk" style="margin-top:12px"><input type="checkbox" id="impSkip" checked/> Bỏ qua khách trùng (cùng tên & cùng bên) đã có trong sổ</label></div>
+    <div class="imp-foot"><button class="btn btn-ghost" onclick="Guestbook.impStep1()">← Chọn file khác</button><button class="btn btn-primary" id="impGo" ${ok?'':'disabled'} onclick="Guestbook.doImport()">Nhập khách hợp lệ</button></div>`);
+    document.querySelectorAll('#modal .imp-stats b').forEach(b=>{ const to=+b.dataset.n, t0=performance.now(); const f=t=>{ const p=Math.min(1,(t-t0)/700); b.textContent=Math.round(to*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  },
+  async doImport(){
+    const skip=document.getElementById('impSkip').checked, list=this.imp.list.filter(x=>!x.err.length&&!(skip&&x.dup));
+    this.wide(`<div class="imp-head"><div><div class="imp-t">Đang nhập dữ liệu</div><div class="imp-s">Vui lòng không đóng cửa sổ</div></div></div>${this.stepper(4)}<div class="imp-body imp-center"><div class="imp-prog"><i id="impBar"></i></div><div id="impTxt" class="imp-s">Chuẩn bị...</div></div>`);
+    const setP=(p,t)=>{ document.getElementById('impBar').style.width=p+'%'; document.getElementById('impTxt').textContent=t; };
     try{
       const newG=[]; list.forEach(x=>{ if(x.groupName&&!this.groups.some(g=>g.side===x.side&&norm(g.name)===norm(x.groupName))&&!newG.some(g=>g.side===x.side&&norm(g.name)===norm(x.groupName))) newG.push({name:x.groupName,side:x.side}); });
-      if(newG.length){ const {error}=await sb.from('wed_guest_groups').insert(newG); if(error) throw error; this.groups=await DB.list('wed_guest_groups',{order:['name']}); }
-      const rows=list.map(x=>{ const gr=this.groups.find(g=>g.side===x.side&&norm(g.name)===norm(x.groupName)); const {groupName,tableName,...r}=x; r.group_id=gr?gr.id:null; return r; });
-      const {data,error}=await sb.from('wed_guests').insert(rows).select('id');
-      if(error) throw error;
-      const asg=[]; (data||[]).forEach((d,i)=>{ const t=this.tables.find(t=>norm(t.name)===norm(list[i].tableName)||(list[i].tableName&&norm(t.name)===norm('Bàn '+list[i].tableName))); if(t) asg.push({guest_id:d.id,table_id:t.id,seat_count:1}); });
-      if(asg.length) await sb.from('wed_seating_assignments').insert(asg);
-      Toast.ok(`Đã nhập ${(data||[]).length} khách${newG.length?`, tạo ${newG.length} nhóm mới`:''}`); await this.load();
-    }catch(e){ const m=e.message||''; Toast.err(/inviter_name|gift_amount|gift_method/.test(m)?'Thiếu cột mới trong database — hãy chạy file SQL cập nhật':'Nhập thất bại: '+m); }
+      if(newG.length){ setP(8,`Tạo ${newG.length} nhóm mới...`); const {error}=await sb.from('wed_guest_groups').insert(newG); if(error) throw error; this.groups=await DB.list('wed_guest_groups',{order:['name']}); }
+      const rows=list.map(x=>{ const gr=this.groups.find(g=>g.side===x.side&&norm(g.name)===norm(x.groupName)); return {full_name:x.full_name,display_name:x.display_name,side:x.side,group_id:gr?gr.id:null,relationship:x.relationship,phone:x.phone,email:x.email,is_representative:x.is_representative,invited_count:x.invited_count,confirmed_count:x.confirmed_count,rsvp_status:x.rsvp_status,inviter_name:x.inviter_name,gift_amount:x.gift_amount,gift_method:x.gift_method,dietary:x.dietary,event_ids:x.event_ids,notes:x.notes}; });
+      const ids=[]; for(let i=0;i<rows.length;i+=100){ setP(15+Math.round(i/rows.length*75),`Đang nhập ${Math.min(i+100,rows.length)}/${rows.length} khách...`); const {data,error}=await sb.from('wed_guests').insert(rows.slice(i,i+100)).select('id'); if(error) throw error; ids.push(...(data||[])); }
+      const asg=[]; ids.forEach((d,i)=>{ if(list[i].tableId) asg.push({guest_id:d.id,table_id:list[i].tableId,seat_count:1}); });
+      if(asg.length){ setP(94,'Xếp bàn...'); await sb.from('wed_seating_assignments').insert(asg); }
+      setP(100,'Hoàn tất'); await new Promise(r=>setTimeout(r,350));
+      this.wide(`<div class="imp-body imp-center imp-done"><svg viewBox="0 0 52 52" class="imp-check"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg><div class="imp-t">Nhập thành công!</div><div class="imp-s">Đã thêm <b>${ids.length}</b> khách${newG.length?`, tạo <b>${newG.length}</b> nhóm mới`:''}${asg.length?`, xếp <b>${asg.length}</b> khách vào bàn`:''}.</div><button class="btn btn-primary" style="margin-top:20px" onclick="UI.closeModal()">Xong</button></div>`);
+      await this.load();
+    }catch(e){ const m=e.message||''; Toast.err(/inviter_name|gift_amount|gift_method/.test(m)?'Thiếu cột mới trong database — hãy chạy file SQL cập nhật':'Nhập thất bại: '+m); this.impPreview(); }
   }
 };
 const RSVP = {
