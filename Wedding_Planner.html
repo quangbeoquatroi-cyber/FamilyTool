@@ -365,7 +365,9 @@ a{color:inherit;text-decoration:none}
 .lg.stage{background:#873347}.lg.aisle{background:#B24A5E;border:2px solid var(--champagne)}.lg.door{background:var(--forest)}.lg.g{background:#3A3A6B;border-radius:50%}.lg.b{background:var(--burgundy);border-radius:50%}.lg.full{background:var(--danger);border-radius:50%}
 
 /* ===== NHẬP / XUẤT FILE ===== */
-.modal.wide{width:min(980px,96vw);padding:0;overflow-x:hidden}
+.modal.wide{width:min(1400px,97vw);max-height:min(94vh,94dvh);padding:0;overflow:hidden;display:flex;flex-direction:column}
+.modal.wide>*{flex-shrink:0}
+.modal.wide .imp-body{flex:1 1 auto;min-height:0;overflow:auto}
 .imp-head{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 28px 8px}
 .imp-t{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink)}.imp-s{font-size:13px;color:var(--muted);margin-top:2px}
 .imp-steps{display:flex;align-items:center;gap:8px;padding:10px 28px 16px;overflow-x:auto}
@@ -391,8 +393,27 @@ a{color:inherit;text-decoration:none}
 .imp-stats div{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column}
 .imp-stats b{font-family:var(--serif);font-size:30px;line-height:1.1}.imp-stats span{font-size:11.5px;color:var(--muted)}
 .imp-stats .ok{border-color:var(--forest)}.imp-stats .ok b{color:var(--forest)}.imp-stats .wr b{color:var(--warn)}.imp-stats .er{border-color:var(--danger)}.imp-stats .er b{color:var(--danger)}
-.imp-tbl{max-height:320px;overflow:auto;border:1.5px solid var(--line-2)}
+.imp-tbl{max-height:min(580px,calc(94vh - 470px));min-height:240px;overflow:auto;border:1.5px solid var(--line-2);border-radius:10px;background:var(--paper)}
 .imp-t2{border-collapse:collapse}.imp-t2 th,.imp-t2 td{border:1px solid var(--line-2);vertical-align:middle;word-break:break-word}.imp-t2 th{background:var(--ivory-2);position:sticky;top:0;z-index:1}.imp-t2 tr.bad td{background:var(--danger-soft)}
+.imp-t2{min-width:2400px;width:100%}.imp-t2 th{white-space:nowrap;font-size:11px;padding:10px 8px;text-align:left;top:0}.imp-t2 td{padding:6px 8px;font-size:12.5px}
+.imp-t2 td.c,.imp-t2 th.c{text-align:center}
+.imp-t2 tr.over td{background:var(--danger-soft)}
+.imp-t2 tr.over td:first-child{box-shadow:inset 4px 0 0 var(--danger)}
+.imp-t2 tr.over .imp-in.cap{border-color:var(--danger);background:#fff}
+.imp-t2 th:nth-child(1),.imp-t2 td:nth-child(1){position:sticky;left:0;width:56px;min-width:56px;text-align:center;z-index:2;background:var(--paper)}
+.imp-t2 th:nth-child(2),.imp-t2 td:nth-child(2){position:sticky;left:56px;z-index:2;background:var(--paper);box-shadow:1px 0 0 var(--line-2)}
+.imp-t2 th:nth-child(1),.imp-t2 th:nth-child(2),.imp-t2 th:last-child{background:var(--ivory-2);z-index:4}
+.imp-t2 td:last-child,.imp-t2 th:last-child{position:sticky;right:0;min-width:210px;box-shadow:-1px 0 0 var(--line-2)}
+.imp-t2 td:last-child{background:var(--paper);z-index:2}
+.imp-t2 tr.bad td:nth-child(1),.imp-t2 tr.bad td:nth-child(2),.imp-t2 tr.bad td:last-child,.imp-t2 tr.over td:nth-child(2),.imp-t2 tr.over td:last-child{background:var(--danger-soft)}
+.imp-in{width:100%;min-width:0;padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;font:inherit;font-size:12.5px;background:#fff;color:var(--ink)}
+.imp-in:focus{outline:none;border-color:var(--burgundy);box-shadow:0 0 0 3px var(--burgundy-soft)}
+.imp-in.num{text-align:center}
+.imp-alert{margin-bottom:12px;padding:12px 16px;border:1.5px solid var(--danger);background:var(--danger-soft);border-radius:12px;color:#7a2a22;font-size:13px;line-height:1.55}
+.imp-alert ul{margin:6px 0 4px 18px;padding:0}.imp-alert li{margin:2px 0}
+.imp-hint{font-size:12px;color:var(--muted);margin:0 0 8px}
+.imp-fm{flex:1;text-align:right;align-self:center;font-size:12.5px;font-weight:600;color:var(--danger)}
+.imp-foot .btn[disabled]{opacity:.45;cursor:not-allowed}
 .imp-foot{display:flex;justify-content:space-between;gap:10px;padding:16px 28px;border-top:1px solid var(--line);background:var(--ivory)}
 .imp-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:8px}
 .imp-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:20px;border:1.5px solid var(--line-2);border-radius:14px;background:#fff;transition:all .2s}
@@ -405,10 +426,11 @@ a{color:inherit;text-decoration:none}
 .imp-check path{fill:none;stroke:var(--forest);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:impDraw .4s .5s ease forwards}@keyframes impDraw{to{stroke-dashoffset:0}}
 @media(max-width:760px){.imp-grid,.imp-cards{grid-template-columns:1fr}.imp-stats{grid-template-columns:1fr 1fr}.imp-foot{flex-direction:column-reverse}.imp-foot .btn{width:100%;justify-content:center}}
 
-.gx-tb{table-layout:fixed;width:100%}.gx-tb th{font-size:10px;letter-spacing:.5px;padding:11px 8px}.gx-tb td{padding:11px 8px;font-size:12.5px;word-break:break-word;vertical-align:middle}
-.gx-tb th:nth-child(1){width:21%}.gx-tb th:nth-child(2){width:8%}.gx-tb th:nth-child(3){width:10%}.gx-tb th:nth-child(4){width:11%}.gx-tb th:nth-child(5){width:11%}.gx-tb th:nth-child(6){width:7%}.gx-tb th:nth-child(7){width:13%}.gx-tb th:nth-child(8){width:11%}.gx-tb th:nth-child(9){width:8%}
+.gx-tb{table-layout:auto;width:100%;min-width:2000px}.gx-tb th{font-size:10px;letter-spacing:.5px;padding:11px 10px;white-space:nowrap}.gx-tb td{padding:11px 10px;font-size:12.5px;vertical-align:middle}
+.gx-tb td.nm{min-width:210px}.gx-tb td.wrap{min-width:170px;max-width:260px;word-break:break-word}.gx-tb td.c,.gx-tb th.c{text-align:center}
+.gx-tb th.stt,.gx-tb td.stt{width:48px;text-align:center;color:var(--muted)}
+.gx-tb th:last-child,.gx-tb td:last-child{position:sticky;right:0;background:var(--paper);box-shadow:-1px 0 0 var(--line)}
 .gx-tb .pill{white-space:nowrap;padding:2px 8px;font-size:11px}.gx-tb .btn-close{padding:4px}
-@media(max-width:900px){.gx-tb{min-width:880px}}
 </style>
 <style id="wa-overrides">
 /* ============================================================
@@ -1416,8 +1438,11 @@ const Guestbook = {
     const need=Util.headcount({rsvp_status:v('gRsvp'),confirmed_count:parseInt(v('gConfirmed'))||0,invited_count:parseInt(v('gInvited'))||1}), tid=v('gTable');
     if(!tid){ el.style.color='var(--muted)'; el.textContent='Khách này cần '+need+' chỗ ngồi'; return; }
     const t=this.tables.find(x=>x.id===tid), left=t.capacity-this.seatsUsed(tid,this.editId);
+    if(need>left&&this.keepsSeat(this.editId,tid,need)){ el.style.color='var(--warn)'; el.textContent=`${t.name} đang vượt sức chứa (${t.capacity} chỗ). Vẫn lưu được, nhưng nên chuyển bớt khách sang bàn khác`; return; }
     el.style.color=need>left?'var(--danger)':'var(--forest)'; el.textContent=need>left?`Không đủ chỗ: ${t.name} còn ${Math.max(0,left)} chỗ, khách đi ${need} người`:`Cần ${need} chỗ · ${t.name} còn ${left} chỗ`;
   },
+  /* khách đang ngồi sẵn ở bàn này và không tăng thêm người -> vẫn cho lưu dù bàn đang vượt sức chứa */
+  keepsSeat(id,tid,need){ if(!id||!tid) return false; const old=this.guests.find(x=>x.id===id); return !!old&&this.assigns.some(a=>a.guest_id===id&&a.table_id===tid)&&need<=Util.headcount(old); },
   tableOf(id){ const a=this.assigns.find(x=>x.guest_id===id); const t=a&&this.tables.find(x=>x.id===a.table_id); return t?t:null; },
   paint(){
     const tabs=[['list','Danh sách khách'],['groups','Nhóm & gia đình'],['rsvp','Thiệp & xác nhận']];
@@ -1452,21 +1477,34 @@ const Guestbook = {
     if(this.filterRsvp) l=l.filter(g=>(g.rsvp_status||'not_sent')===this.filterRsvp);
     const el=document.getElementById('guestList');
     if(!l.length){ el.innerHTML=UI.empty(I.guest,'Không có khách phù hợp','Thêm khách mới hoặc nhập từ CSV.',`<button class="btn btn-primary" onclick="Guestbook.openAdd()">Thêm khách</button>`); return; }
-    const gm={}; this.groups.forEach(x=>gm[x.id]=x.name);
+    const col=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});
+    l=[...l].sort((a,b)=>col.compare(a.full_name||'',b.full_name||'')||col.compare(String(a.id),String(b.id)));
+    const gm={}; this.groups.forEach(x=>gm[x.id]=x.name); const em={}; this.events.forEach(e=>em[e.id]=e.name);
     const ic=i=>i.replace('<svg','<svg style="width:15px;height:15px"');
-    const rows=l.map(g=>{ const r=RS_MAP[g.rsvp_status||'not_sent']||RS_MAP.not_sent, t=this.tableOf(g.id), amt=Number(g.gift_amount)||0;
+    const dash='<span class="muted">—</span>', tx=v=>v?Util.esc(v):dash;
+    const rows=l.map((g,i)=>{ const r=RS_MAP[g.rsvp_status||'not_sent']||RS_MAP.not_sent, t=this.tableOf(g.id), amt=Number(g.gift_amount)||0, hc=Util.headcount(g);
+      const evs=(g.event_ids||[]).map(id=>em[id]).filter(Boolean).join(', ');
       return `<tr ondblclick="Guestbook.openEdit('${g.id}')">
-      <td><div class="gx-name"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div><div style="font-weight:600;color:var(--ink)">${Util.esc(g.full_name)}</div><div class="text-xs muted">${[g.display_name||g.relationship,Util.headcount(g)>1?Util.headcount(g)+' người':''].filter(Boolean).map(x=>Util.esc(x)).join(' · ')}</div></div></div></td>
+      <td class="stt">${i+1}</td>
+      <td class="nm"><div class="gx-name"><span class="gx-av gx-av-${g.side}">${Util.initials(g.full_name)}</span><div><div style="font-weight:600;color:var(--ink)">${Util.esc(g.full_name)}</div><div class="text-xs muted">${[g.display_name,hc>1?hc+' người':''].filter(Boolean).map(x=>Util.esc(x)).join(' · ')}</div></div></div></td>
       <td><span class="pill ${g.side==='groom'?'pill-side-groom':'pill-side-bride'}">${Util.esc(this.sideLabel(g.side))}</span></td>
-      <td>${g.group_id?Util.esc(gm[g.group_id]||'—'):'<span class="muted">—</span>'}</td>
-      <td>${g.phone?Util.esc(g.phone):'<span class="muted">—</span>'}</td>
-      <td>${g.inviter_name?Util.esc(g.inviter_name):'<span class="muted">—</span>'}</td>
-      <td>${t?`<span class="gx-tbl">${Util.esc(t.name)}</span>`:'<span class="muted">—</span>'}</td>
-      <td>${amt?`<b style="color:var(--ink)">${Util.fmtMoney(amt)}</b><br><span class="pill ${g.gift_method==='transfer'?'pill-sent':'pill-confirmed'}">${PAY_MAP[g.gift_method]||'Tiền mặt'}</span>`:'<span class="muted">—</span>'}</td>
-      <td><span class="pill ${r[1]}">${r[0]}</span>${g.confirmed_count?` <span class="text-xs muted">(${g.confirmed_count})</span>`:''}</td>
+      <td>${g.group_id?Util.esc(gm[g.group_id]||'—'):dash}</td>
+      <td>${tx(g.relationship)}</td>
+      <td>${tx(g.phone)}</td>
+      <td>${tx(g.email)}</td>
+      <td>${tx(g.inviter_name)}</td>
+      <td class="c">${Number(g.invited_count)||1}</td>
+      <td class="c">${g.confirmed_count?Number(g.confirmed_count):dash}</td>
+      <td>${t?`<span class="gx-tbl">${Util.esc(t.name)}</span>`:dash}</td>
+      <td>${amt?`<b style="color:var(--ink)">${Util.fmtMoney(amt)}</b><br><span class="pill ${g.gift_method==='transfer'?'pill-sent':'pill-confirmed'}">${PAY_MAP[g.gift_method]||'Tiền mặt'}</span>`:dash}</td>
+      <td><span class="pill ${r[1]}">${r[0]}</span></td>
+      <td>${g.is_representative?'<span class="pill pill-sent">Đại diện hộ</span>':dash}</td>
+      <td class="wrap">${tx(g.dietary)}</td>
+      <td class="wrap">${tx(evs)}</td>
+      <td class="wrap">${tx(g.notes)}</td>
       <td class="right" style="white-space:nowrap"><button class="btn-close" onclick="Guestbook.openEdit('${g.id}')" title="Sửa">${ic(I.edit)}</button><button class="btn-close" onclick="Guestbook.confirmDelete('${g.id}')" title="Xóa">${ic(I.trash)}</button></td></tr>`; }).join('');
     const x=this.stats(l);
-    el.innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl gx-tb"><thead><tr><th>Khách mời</th><th>Bên</th><th>Nhóm</th><th>Điện thoại</th><th>Người mời</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    el.innerHTML=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl gx-tb"><thead><tr><th class="stt">STT</th><th>Khách mời</th><th>Bên</th><th>Nhóm</th><th>Mối quan hệ</th><th>Điện thoại</th><th>Email</th><th>Người mời</th><th class="c">Số mời</th><th class="c">Xác nhận</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th>Đại diện</th><th>Ăn uống / hỗ trợ</th><th>Sự kiện</th><th>Ghi chú</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
     <div class="text-xs muted" style="margin-top:10px">${l.length}/${this.guests.length} khách · ${x.invited} người được mời · ${x.confirmed} xác nhận · Tiền mừng ${Util.fmtMoney(x.gift)}</div>`;
   },
   /* ---------- TAB 2: NHÓM & GIA ĐÌNH ---------- */
@@ -1574,7 +1612,11 @@ const Guestbook = {
     if(!row.full_name){Toast.err('Vui lòng nhập họ tên');return;}
     const grp=this.groups.find(x=>x.id===row.group_id); if(grp&&grp.side!==row.side) Toast.warn('Nhóm đã chọn thuộc bên '+this.sideLabel(grp.side));
     const tid=$('gTable')||null;
-    if(tid){ const t=this.tables.find(x=>x.id===tid), need=Util.headcount(row), left=t.capacity-this.seatsUsed(tid,id||null); if(need>left){ Toast.err(`${t.name} chỉ còn ${Math.max(0,left)} chỗ, khách này đi ${need} người`); return; } }
+    if(tid){ const t=this.tables.find(x=>x.id===tid), need=Util.headcount(row), left=t.capacity-this.seatsUsed(tid,id||null);
+      if(need>left){
+        if(this.keepsSeat(id,tid,need)) Toast.warn(`${t.name} đang vượt sức chứa ${t.capacity} chỗ — nên chuyển bớt khách sang bàn khác`);
+        else { Toast.err(`${t.name} chỉ còn ${Math.max(0,left)} chỗ, khách này đi ${need} người`); this.seatHint(); const sel=document.getElementById('gTable'); if(sel) sel.focus(); return; }
+      } }
     btn.disabled=true; btn.textContent='Đang lưu...';
     try{
       const saved=id?await DB.update('wed_guests',id,row):await DB.insert('wed_guests',row);
@@ -1697,21 +1739,106 @@ const Guestbook = {
     const tn=get('table'); let tid=null; if(tn){ const t=this.tables.find(t=>norm(t.name)===norm(tn)||norm(t.name)===norm('Bàn '+tn)); if(t) tid=t.id; else warn.push('Không thấy bàn “'+tn+'”'); }
     const evIds=[]; get('events').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(n=>{ const e=this.events.find(e=>norm(e.name)===norm(n)); if(e) evIds.push(e.id); else warn.push('Không thấy sự kiện “'+n+'”'); });
     const gname=get('group'); const dup=!!full&&this.guests.some(g=>norm(g.full_name)===norm(full)&&g.side===side);
-    return {line,hasData:r.some(x=>String(x).trim()!==''),full_name:full,display_name:get('display_name')||null,side,groupName:gname,newGroup:!!gname&&!this.groups.some(g=>g.side===side&&norm(g.name)===norm(gname)),relationship:get('relationship')||null,phone:phone||null,email:get('email')||null,is_representative:['co','1','true','yes','dai dien ho'].includes(norm(get('is_representative'))),invited_count:Math.max(1,parseInt(get('invited_count'))||1),confirmed_count:Math.max(0,parseInt(get('confirmed_count'))||0),rsvp_status:rsvp,inviter_name:get('inviter_name')||null,tableId:tid,tableName:tn,gift_amount:amt,gift_method:method,dietary:get('dietary')||null,event_ids:evIds,notes:get('notes')||null,warn,err,dup};
+    return {line,hasData:r.some(x=>String(x).trim()!==''),full_name:full,display_name:get('display_name')||null,side,groupName:gname,newGroup:!!gname&&!this.groups.some(g=>g.side===side&&norm(g.name)===norm(gname)),relationship:get('relationship')||null,phone:phone||null,email:get('email')||null,is_representative:['co','1','true','yes','dai dien ho'].includes(norm(get('is_representative'))),invited_count:Math.max(1,parseInt(get('invited_count'))||1),confirmed_count:Math.max(0,parseInt(get('confirmed_count'))||0),rsvp_status:rsvp,inviter_name:get('inviter_name')||null,tableId:tid,tableName:tn,gift_amount:amt,gift_method:method,dietary:get('dietary')||null,event_ids:evIds,notes:get('notes')||null,warn,err,dup,sideBad:err.some(e=>/bên gia đình/i.test(e))};
+  },
+  /* ----- kiểm tra dữ liệu nhập: sửa trực tiếp + kiểm tra sức chứa bàn theo thời gian thực ----- */
+  impDup(x){ return !!x.full_name&&this.guests.some(g=>norm(g.full_name)===norm(x.full_name)&&g.side===x.side); },
+  tKey(x){ return x.tableId?x.tableId:(x.tableName?'n:'+norm(x.tableName):''); },
+  impSkipOn(){ const c=document.getElementById('impSkip'); return c?c.checked:true; },
+  /* gom số chỗ theo bàn; trả về danh sách bàn, bàn vượt có over=true và gắn x.over cho từng dòng */
+  impCap(){
+    const skip=this.impSkipOn(), map={}, DEF=10, col=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});
+    this.imp.list.forEach(x=>{ x.over=null; });
+    this.imp.list.forEach(x=>{ if(x.err.length||(skip&&x.dup)) return; const k=this.tKey(x); if(!k) return;
+      const t=x.tableId&&this.tables.find(t=>t.id===x.tableId);
+      const m=map[k]||(map[k]={name:t?t.name:x.tableName,cap:t?(t.capacity||DEF):DEF,existing:t?this.seatsUsed(t.id,null):0,add:0,rows:[]});
+      m.add+=Util.headcount(x); m.rows.push(x); });
+    const list=Object.values(map).sort((a,b)=>col.compare(a.name,b.name));
+    list.forEach(m=>{ m.total=m.existing+m.add; m.over=m.total>m.cap; if(m.over) m.rows.forEach(x=>{ x.over=m; }); });
+    return list;
+  },
+  impCounts(){ const L=this.imp.list, bad=L.filter(x=>x.err.length).length, dup=L.filter(x=>!x.err.length&&x.dup).length; return {total:L.length,ok:L.length-bad,dup,bad,wr:L.filter(x=>!x.err.length&&x.warn.length).length}; },
+  impSt(x){
+    if(x.err.length) return `<span class="pill pill-declined">Lỗi</span> <small>${Util.esc(x.err.join('; '))}</small>`;
+    if(x.over) return `<span class="pill pill-declined">Vượt bàn</span> <small>${Util.esc(x.over.name)}: ${x.over.total}/${x.over.cap} người</small>`;
+    if(x.dup) return '<span class="pill pill-pending">Trùng</span>';
+    if(x.warn.length) return `<span class="pill pill-sent">Lưu ý</span> <small>${Util.esc(x.warn.join('; '))}</small>`;
+    return '<span class="pill pill-confirmed">OK</span>';
+  },
+  impRecalc(initial){
+    const L=this.imp.list, caps=this.impCap(), over=caps.filter(m=>m.over), c=this.impCounts();
+    L.forEach((x,i)=>{ const tr=document.getElementById('imr'+i); if(!tr) return; tr.className=x.err.length?'bad':(x.over?'over':'');
+      document.getElementById('imst'+i).innerHTML=this.impSt(x); document.getElementById('ims'+i).innerHTML='<b>'+Util.headcount(x)+'</b>'; });
+    if(!initial){ const v=[c.total,c.ok,c.dup,c.bad]; document.querySelectorAll('#modal .imp-stats b').forEach((b,i)=>{ b.textContent=v[i]; }); }
+    const al=document.getElementById('impAlert');
+    if(al){
+      if(over.length){
+        al.innerHTML=`<b>⚠ Không thể nhập: ${over.length} bàn vượt quá sức chứa.</b> Mỗi bàn có giới hạn số người (mặc định 10), mỗi khách có thể đi 1–3 người. Hãy sửa trực tiếp cột <b>Bàn</b>, <b>Số mời</b> hoặc <b>Xác nhận</b> ở các dòng được tô đỏ bên dưới.<ul>${over.map(m=>`<li><b>${Util.esc(m.name)}</b>: ${m.total}/${m.cap} người (vượt ${m.total-m.cap})${m.existing?` · đã xếp sẵn ${m.existing}`:''} · dòng ${m.rows.slice(0,12).map(x=>x.line).join(', ')}${m.rows.length>12?'…':''}</li>`).join('')}</ul>`;
+        al.style.display='block';
+      } else { al.style.display='none'; al.innerHTML=''; }
+    }
+    const go=document.getElementById('impGo'); if(go) go.disabled=!c.ok||over.length>0;
+    const fm=document.getElementById('impFm'); if(fm) fm.textContent=over.length?`⚠ Còn ${over.length} bàn vượt sức chứa — chưa thể nhập`:'';
+    return over;
+  },
+  impEdit(i,k,el){
+    const x=this.imp.list[i]; if(!x) return; const v=el.value;
+    const grp=()=>{ x.newGroup=!!x.groupName&&!this.groups.some(g=>g.side===x.side&&norm(g.name)===norm(x.groupName)); };
+    if(k==='full_name'){ x.full_name=v.trim(); x.err=x.err.filter(e=>e!=='Thiếu họ tên'); if(!x.full_name) x.err.push('Thiếu họ tên'); x.dup=this.impDup(x); }
+    else if(k==='side'){ x.side=v; x.sideBad=false; x.err=x.err.filter(e=>!/bên gia đình/i.test(e)); x.dup=this.impDup(x); grp(); }
+    else if(k==='groupName'){ x.groupName=v.trim(); grp(); }
+    else if(k==='invited_count') x.invited_count=Math.max(1,parseInt(v)||1);
+    else if(k==='confirmed_count') x.confirmed_count=Math.max(0,parseInt(v)||0);
+    else if(k==='gift_amount'){ const d=v.replace(/\D/g,''); x.gift_amount=parseInt(d)||0; el.value=d?Number(d).toLocaleString('vi-VN'):''; }
+    else if(k==='table'){ x.warn=x.warn.filter(w=>!/^Không thấy bàn/.test(w)); if(v.startsWith('n:')){ x.tableId=null; } else if(v){ const t=this.tables.find(t=>t.id===v); x.tableId=v; x.tableName=t?t.name:''; } else { x.tableId=null; x.tableName=''; } }
+    else if(k==='is_representative') x.is_representative=(v==='true');
+    else if(k==='rsvp_status'){ x.rsvp_status=v; x.warn=x.warn.filter(w=>!/^RSVP lạ/.test(w)); }
+    else if(k==='gift_method'){ x.gift_method=v; x.warn=x.warn.filter(w=>!/^Hình thức lạ/.test(w)); }
+    else x[k]=v.trim()||null;
+    this.impRecalc();
+  },
+  impRow(x,i,col){
+    const E=Util.esc, inp=(k,w,extra)=>`<input class="imp-in ${extra||''}" style="min-width:${w}px" value="${E(x[k]==null?'':x[k])}" onchange="Guestbook.impEdit(${i},'${k}',this)"/>`;
+    const num=(k,min,w)=>`<input class="imp-in num cap" type="number" min="${min}" style="min-width:${w}px" value="${x[k]}" oninput="Guestbook.impEdit(${i},'${k}',this)"/>`;
+    const sel=(k,opts,cur,w,cls)=>`<select class="imp-in ${cls||''}" style="min-width:${w}px" onchange="Guestbook.impEdit(${i},'${k}',this)">${opts.map(o=>`<option value="${E(o[0])}" ${String(o[0])===String(cur)?'selected':''}>${E(o[1])}</option>`).join('')}</select>`;
+    const sideOpts=[...(x.sideBad?[['','— chọn bên —']]:[]),['groom',this.sideLabel('groom')],['bride',this.sideLabel('bride')]];
+    const tOpts=[['','— Chưa xếp bàn —'],...col.tables.map(t=>[t.id,`${t.name} (${t.capacity||10} chỗ)`])];
+    if(x.tableName&&!x.tableId) tOpts.push(['n:'+norm(x.tableName),`${x.tableName} (chưa có · 10 chỗ)`]);
+    const evs=(x.event_ids||[]).map(id=>(this.events.find(e=>e.id===id)||{}).name).filter(Boolean).join(', ');
+    return `<tr id="imr${i}" class="${x.err.length?'bad':(x.over?'over':'')}"><td>${x.line}</td><td>${inp('full_name',170)}</td>
+      <td>${sel('side',sideOpts,x.sideBad?'':x.side,120)}</td><td>${inp('groupName',130).replace('<input','<input list="impGrp"')}</td>
+      <td>${inp('relationship',120)}</td><td>${inp('phone',120)}</td><td>${inp('email',170)}</td><td>${inp('inviter_name',110)}</td>
+      <td class="c" style="width:84px">${num('invited_count',1,64)}</td><td class="c" style="width:84px">${num('confirmed_count',0,64)}</td>
+      <td class="c" id="ims${i}"><b>${Util.headcount(x)}</b></td>
+      <td>${sel('table',tOpts,x.tableId?x.tableId:(x.tableName?'n:'+norm(x.tableName):''),150,'cap')}</td>
+      <td><input class="imp-in" style="min-width:110px" inputmode="numeric" value="${x.gift_amount?Number(x.gift_amount).toLocaleString('vi-VN'):''}" oninput="Guestbook.impEdit(${i},'gift_amount',this)"/></td>
+      <td>${sel('gift_method',Object.keys(PAY_MAP).map(k=>[k,PAY_MAP[k]]),x.gift_method,120)}</td>
+      <td>${sel('rsvp_status',Object.keys(RS_MAP).map(k=>[k,RS_MAP[k][0]]),x.rsvp_status,110)}</td>
+      <td>${sel('is_representative',[['false','Không'],['true','Đại diện hộ']],x.is_representative?'true':'false',110)}</td>
+      <td>${inp('dietary',150)}</td><td>${evs?E(evs):'<span class="muted">—</span>'}</td><td>${inp('notes',170)}</td>
+      <td id="imst${i}">${this.impSt(x)}</td></tr>`;
   },
   impPreview(){
-    const L=this.imp.list, bad=L.filter(x=>x.err.length), dup=L.filter(x=>!x.err.length&&x.dup), ok=L.length-bad.length, wr=L.filter(x=>!x.err.length&&x.warn.length).length;
-    const st=x=>x.err.length?`<span class="pill pill-declined" title="${Util.esc(x.err.join('; '))}">Lỗi</span> <small>${Util.esc(x.err.join('; '))}</small>`:x.dup?'<span class="pill pill-pending">Trùng</span>':x.warn.length?`<span class="pill pill-sent">Lưu ý</span> <small>${Util.esc(x.warn.join('; '))}</small>`:'<span class="pill pill-confirmed">OK</span>';
-    const rows=L.slice(0,200).map(x=>`<tr class="${x.err.length?'bad':''}"><td>${x.line}</td><td><b>${Util.esc(x.full_name||'—')}</b></td><td>${Util.esc(this.sideLabel(x.side))}</td><td>${Util.esc(x.groupName||'—')}${x.newGroup?' <small class="muted">(tạo mới)</small>':''}</td><td>${Util.esc(x.inviter_name||'—')}</td><td>${Util.esc(x.tableName||'—')}</td><td>${x.gift_amount?Util.fmtMoney(x.gift_amount)+' · '+PAY_MAP[x.gift_method]:'—'}</td><td>${(RS_MAP[x.rsvp_status]||[''])[0]}</td><td>${st(x)}</td></tr>`).join('');
+    const L=this.imp.list, c=this.impCounts(), nat=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});
+    const col={tables:[...this.tables].sort((a,b)=>nat.compare(a.name,b.name))};
+    const th=['Dòng','Họ tên','Bên','Nhóm','Mối quan hệ','Điện thoại','Email','Người mời','Số mời','Xác nhận','Số chỗ','Bàn','Tiền mừng (₫)','Hình thức','RSVP','Đại diện','Ăn uống / hỗ trợ','Sự kiện','Ghi chú','Trạng thái'];
+    const ctr=['Số mời','Xác nhận','Số chỗ'];
+    const rows=L.map((x,i)=>this.impRow(x,i,col)).join('');
     this.wide(`<div class="imp-head"><div><div class="imp-t">Kiểm tra dữ liệu</div><div class="imp-s">📄 ${Util.esc(this.imp.file)}</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>${this.stepper(3)}
-    <div class="imp-body"><div class="imp-stats"><div><b data-n="${L.length}">0</b><span>Tổng dòng</span></div><div class="ok"><b data-n="${ok}">0</b><span>Hợp lệ</span></div><div class="wr"><b data-n="${dup.length}">0</b><span>Trùng</span></div><div class="er"><b data-n="${bad.length}">0</b><span>Lỗi (bỏ qua)</span></div></div>
-    <div class="tbl-wrap imp-tbl"><div class="tbl-scroll"><table class="tbl imp-t2"><thead><tr><th>Dòng</th><th>Họ tên</th><th>Bên</th><th>Nhóm</th><th>Người mời</th><th>Bàn</th><th>Tiền mừng</th><th>RSVP</th><th>Trạng thái</th></tr></thead><tbody>${rows}</tbody></table></div></div>
-    ${L.length>200?`<div class="text-xs muted" style="margin-top:6px">Hiển thị 200/${L.length} dòng đầu</div>`:''}${wr?`<div class="text-xs muted" style="margin-top:6px">${wr} dòng có lưu ý nhỏ, vẫn được nhập.</div>`:''}
-    <label class="gx-chk" style="margin-top:12px"><input type="checkbox" id="impSkip" checked/> Bỏ qua khách trùng (cùng tên & cùng bên) đã có trong sổ</label></div>
-    <div class="imp-foot"><button class="btn btn-ghost" onclick="Guestbook.impStep1()">← Chọn file khác</button><button class="btn btn-primary" id="impGo" ${ok?'':'disabled'} onclick="Guestbook.doImport()">Nhập khách hợp lệ</button></div>`);
+    <div class="imp-body"><div class="imp-stats"><div><b data-n="${c.total}">0</b><span>Tổng dòng</span></div><div class="ok"><b data-n="${c.ok}">0</b><span>Hợp lệ</span></div><div class="wr"><b data-n="${c.dup}">0</b><span>Trùng</span></div><div class="er"><b data-n="${c.bad}">0</b><span>Lỗi (bỏ qua)</span></div></div>
+    <div class="imp-alert" id="impAlert" style="display:none"></div>
+    <div class="imp-hint">Bạn có thể sửa trực tiếp mọi ô trong bảng. Hệ thống tự kiểm tra lại số người mỗi bàn ngay khi bạn thay đổi.</div>
+    <datalist id="impGrp">${[...new Set(this.groups.map(g=>g.name))].map(n=>`<option value="${Util.esc(n)}">`).join('')}</datalist>
+    <div class="imp-tbl"><table class="imp-t2"><thead><tr>${th.map(h=>`<th class="${ctr.includes(h)?'c':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+    ${c.wr?`<div class="text-xs muted" style="margin-top:6px">${c.wr} dòng có lưu ý nhỏ, vẫn được nhập.</div>`:''}
+    <label class="gx-chk" style="margin-top:12px"><input type="checkbox" id="impSkip" checked onchange="Guestbook.impRecalc()"/> Bỏ qua khách trùng (cùng tên & cùng bên) đã có trong sổ</label></div>
+    <div class="imp-foot"><button class="btn btn-ghost" onclick="Guestbook.impStep1()">← Chọn file khác</button><div class="imp-fm" id="impFm"></div><button class="btn btn-primary" id="impGo" disabled onclick="Guestbook.doImport()">Nhập khách hợp lệ</button></div>`);
     document.querySelectorAll('#modal .imp-stats b').forEach(b=>{ const to=+b.dataset.n, t0=performance.now(); const f=t=>{ const p=Math.min(1,(t-t0)/700); b.textContent=Math.round(to*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+    const over=this.impRecalc(true);
+    if(over.length) Toast.err(`Có ${over.length} bàn vượt quá sức chứa — hãy chỉnh lại trực tiếp trong bảng rồi mới nhập được`);
   },
   async doImport(){
+    const over=this.impRecalc(true); if(over.length){ Toast.err('Còn bàn vượt quá sức chứa — hãy chỉnh lại trước khi nhập'); return; }
     const skip=document.getElementById('impSkip').checked, list=this.imp.list.filter(x=>!x.err.length&&!(skip&&x.dup));
     this.wide(`<div class="imp-head"><div><div class="imp-t">Đang nhập dữ liệu</div><div class="imp-s">Vui lòng không đóng cửa sổ</div></div></div>${this.stepper(4)}<div class="imp-body imp-center"><div class="imp-prog"><i id="impBar"></i></div><div id="impTxt" class="imp-s">Chuẩn bị...</div></div>`);
     const setP=(p,t)=>{ document.getElementById('impBar').style.width=p+'%'; document.getElementById('impTxt').textContent=t; };
