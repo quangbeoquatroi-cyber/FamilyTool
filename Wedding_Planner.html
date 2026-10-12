@@ -1,6 +1,502 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+        <script>if (window.self !== window.top) window.parent.postMessage({ type: 'SANDBOX_DOCUMENT_START' }, '*');</script>
+    <script>
+    (function() {
+        var buffer = window.__base44_preview_native_failures;
+        if (!buffer || buffer.version !== 1 || !Array.isArray(buffer.entries)) {
+            buffer = { version: 1, entries: [], listenersInstalled: false };
+            window.__base44_preview_native_failures = buffer;
+        }
+        if (buffer.listenersInstalled) return;
+        function value(object, key) {
+            return object && typeof object[key] === 'string' ? object[key] : '';
+        }
+        function append(message) {
+            if (!message) return;
+            var normalizedMessage = String(message).slice(0, 5000);
+            for (var index = buffer.entries.length - 1; index >= 0; index--) {
+                var existing = buffer.entries[index];
+                if (existing && existing.level === 'error' && existing.message === normalizedMessage) {
+                    buffer.entries.splice(index, 1);
+                }
+            }
+            buffer.entries.push({
+                level: 'error',
+                message: normalizedMessage,
+                timestamp: Date.now()
+            });
+            if (buffer.entries.length > 100) {
+                buffer.entries.splice(0, buffer.entries.length - 100);
+            }
+        }
+        buffer.append = append;
+        function handleError(event) {
+            var target = event && event.target;
+            var tagName = value(target, 'tagName').toLowerCase() || 'window';
+            var isModule = tagName === 'script' && value(target, 'type').toLowerCase() === 'module';
+            var resourceType = isModule ? 'module' : tagName;
+            var url = value(target, 'src') || value(target, 'href') || value(event, 'filename');
+            var detail = value(event, 'message') || value(event && event.error, 'message');
+            var prefix = tagName === 'window' ? 'Native browser error' : 'Failed to load ' + resourceType;
+            append(prefix + (url ? ' ' + url : '') + (detail ? ': ' + detail : ''));
+        }
+        function rejectionReason(reason) {
+            if (typeof reason === 'string') return reason;
+            var message = value(reason, 'message');
+            if (message) return message;
+            try { return JSON.stringify(reason) || String(reason); }
+            catch (e) { return String(reason); }
+        }
+        function handleRejection(event) {
+            append('Unhandled promise rejection: ' + rejectionReason(event && event.reason));
+        }
+        function handleCspViolation(event) {
+            var blockedUri = value(event, 'blockedURI') || 'resource';
+            var directive = value(event, 'violatedDirective');
+            append('Content Security Policy blocked ' + blockedUri + (directive ? ' (' + directive + ')' : ''));
+        }
+        function overlayText(root, selector) {
+            var element = root && root.querySelector(selector);
+            return value(element, 'textContent').trim();
+        }
+        function captureViteOverlay(overlay) {
+            var root = overlay && overlay.shadowRoot;
+            var message = overlayText(root, '.message-body');
+            if (!message) return;
+            var plugin = overlayText(root, '.plugin');
+            var details = ['Vite build error: ' + (plugin ? plugin + ' ' : '') + message];
+            var file = overlayText(root, '.file');
+            var frame = overlayText(root, '.frame');
+            var stack = overlayText(root, '.stack');
+            if (file) details.push('File: ' + file);
+            if (frame) details.push(frame);
+            if (stack) details.push(stack);
+            append(details.join(String.fromCharCode(10)));
+        }
+        function captureViteOverlays(node) {
+            if (!node || node.nodeType !== 1) return;
+            if (node.matches && node.matches('vite-error-overlay')) captureViteOverlay(node);
+            if (!node.querySelectorAll) return;
+            var overlays = node.querySelectorAll('vite-error-overlay');
+            for (var index = 0; index < overlays.length; index++) captureViteOverlay(overlays[index]);
+        }
+        window.addEventListener('error', handleError, true);
+        window.addEventListener('unhandledrejection', handleRejection);
+        window.addEventListener('securitypolicyviolation', handleCspViolation);
+        if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+            captureViteOverlays(document.documentElement);
+            new MutationObserver(function(records) {
+                for (var recordIndex = 0; recordIndex < records.length; recordIndex++) {
+                    var nodes = records[recordIndex].addedNodes;
+                    for (var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+                        captureViteOverlays(nodes[nodeIndex]);
+                    }
+                }
+            }).observe(document.documentElement, { childList: true, subtree: true });
+        }
+        buffer.listenersInstalled = true;
+    })();
+    </script>
+    <script data-preview-data-env-pin="true">
+    (function() {
+        var KEY = 'base44_data_env';
+        var APP_API_PATH = "/api/apps/6acceaf06da15a8e78380978/";
+        var STORAGE_KEY = KEY + ':' + APP_API_PATH;
+        var API_ORIGINS = ["https://app.base44.com", "https://base44.app"].map(function(u) { return new URL(u).origin; });
+        var REQUEST_INIT_KEYS = [
+            'method', 'headers', 'credentials', 'mode', 'cache', 'redirect',
+            'referrer', 'referrerPolicy', 'integrity', 'keepalive', 'signal', 'priority',
+        ];
+        var env = new URLSearchParams(window.location.search).get(KEY);
+        try {
+            if (env === 'dev' || env === 'prod') sessionStorage.setItem(STORAGE_KEY, env);
+            else env = sessionStorage.getItem(STORAGE_KEY);
+        } catch (e) {}
+        if (env !== 'dev' && env !== 'prod') return;
+        function pin(url) {
+            try {
+                var u = new URL(url, window.location.href);
+                var sameOrigin = u.origin === window.location.origin;
+                if (!sameOrigin && API_ORIGINS.indexOf(u.origin) === -1) return url;
+                // The app's own server routes and TanStack server functions build
+                // their SDK client from this request, so they need the selection too.
+                var appServerPath = sameOrigin && (
+                    u.pathname.startsWith('/api/') || u.pathname.startsWith('/_serverFn/')
+                );
+                if (!appServerPath && !u.pathname.startsWith(APP_API_PATH)) return url;
+                // Privileged function/agent routes trust this app's Preview host,
+                // not a dev parameter sent to the generic SDK API origin.
+                if (u.origin !== window.location.origin && (
+                    u.pathname.startsWith(APP_API_PATH + 'functions/') ||
+                    u.pathname.startsWith(APP_API_PATH + 'agents/')
+                )) {
+                    u = new URL(u.pathname + u.search + u.hash, window.location.origin);
+                }
+                u.searchParams.set(KEY, env);
+                return u.toString();
+            } catch (e) { return url; }
+        }
+        var origFetch = window.fetch;
+        window.fetch = function(input, init) {
+            if (typeof input === 'string' || input instanceof URL) {
+                return origFetch.call(this, pin(String(input)), init);
+            }
+            if (!input || !input.url) return origFetch.call(this, input, init);
+            var pinned = pin(input.url);
+            if (pinned === input.url) return origFetch.call(this, input, init);
+            try {
+                input = new Request(input, init);
+                if (!input.keepalive || !input.body) {
+                    return origFetch.call(this, new Request(pinned, input));
+                }
+                // RequestInit exposes an existing body as a stream, which Fetch
+                // forbids with keepalive. Buffer only that case, after init overrides.
+                var self = this;
+                return input.blob().then(function(body) {
+                    var rebuilt = { body: body };
+                    REQUEST_INIT_KEYS.forEach(function(key) {
+                        if (input[key] !== undefined) rebuilt[key] = input[key];
+                    });
+                    return origFetch.call(self, new Request(pinned, rebuilt));
+                });
+            } catch (error) { return Promise.reject(error); }
+        };
+        var origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url) {
+            arguments[1] = pin(String(url));
+            return origOpen.apply(this, arguments);
+        };
+    })();
+    </script><script defer data-preview-inject="true" data-app-id="6acceaf06da15a8e78380978" data-preview-type="sandbox" data-rum-app-id="db50c921-10c3-4f12-bccb-950fa174b708" data-rum-client-token="pubfe8a4f2972b412b4556fd67e77f82cb4" data-dd-site="datadoghq.com" src="https://app.base44.com/builder-bridge.js?t=1791815118"></script>
+    <script>
+    (function() {
+        var IGNORE = { SCRIPT: 1, STYLE: 1, LINK: 1, META: 1, NOSCRIPT: 1, TEMPLATE: 1 };
+        const fire = () => window.parent.postMessage({ type: 'IFRAME_CONTENT_READY' }, '*');
+        function check() {
+            var body = document.body;
+            if (!body) return false;
+            for (var idx = 0; idx < body.children.length; idx++) {
+                if (!IGNORE[body.children[idx].tagName]) return true;
+            }
+            return false;
+        }
+        function start() {
+            if (check()) { fire(); return; }
+            var observer = new MutationObserver(function() {
+                if (check()) { fire(); observer.disconnect(); }
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+        if (document.body) { start(); }
+        else { document.addEventListener('DOMContentLoaded', start, { once: true }); }
+    })();
+    </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        var APP_ID = "6acceaf06da15a8e78380978";
+        var PREVIEW_TYPE = "sandbox";
+        var on404 = false;
+        var booted = false;
+        function detect() { return !!document.querySelector('[data-source-location^="PageNotFound:"]'); }
+        function payload() { return { app_id: APP_ID, preview_type: PREVIEW_TYPE, url_path: window.location.pathname }; }
+        function tick() {
+            var now = detect();
+            if (now && !on404) {
+                on404 = true;
+                window.parent.postMessage({ type: 'PREVIEW_PAGE_NOT_FOUND', payload: payload() }, '*');
+            } else if (!now && (on404 || !booted)) {
+                // On first tick of a fresh document, emit a cleared signal even when
+                // not currently on a 404 — the parent may have latched is404=true from
+                // a previous document at the same URL (e.g. after an iframe reload).
+                on404 = false;
+                window.parent.postMessage({ type: 'PREVIEW_PAGE_NOT_FOUND_CLEARED', payload: payload() }, '*');
+            }
+            booted = true;
+        }
+        function start() {
+            tick();
+            new MutationObserver(tick).observe(document.body, { childList: true, subtree: true });
+        }
+        if (document.body) { start(); }
+        else { document.addEventListener('DOMContentLoaded', start, { once: true }); }
+    })();
+    </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        function fire() { window.parent.postMessage({ type: 'REACT_ROOT_HAS_CHILDREN' }, '*'); }
+        function findRoot() {
+            return document.getElementById('root')
+                || document.getElementById('app')
+                || document.querySelector('[data-react-root]');
+        }
+        // One-shot: wait for DOMContentLoaded (static HTML parsed by then, so the
+        // Base44 convention <div id="root"> is either present or not coming),
+        // observe the root's childList until the first element child appears,
+        // then fire and disconnect. No tree-wide subtree observer.
+        function start() {
+            var root = findRoot();
+            if (!root) return;
+            if (root.childElementCount > 0) { fire(); return; }
+            var obs = new MutationObserver(function() {
+                if (root.childElementCount > 0) { fire(); obs.disconnect(); }
+            });
+            obs.observe(root, { childList: true });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', start, { once: true });
+        } else { start(); }
+    })();
+    </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        function postUnsupported(reason) {
+            window.parent.postMessage({
+                type: 'IFRAME_FIRST_CONTENTFUL_PAINT_UNSUPPORTED',
+                payload: { reason: reason, userAgent: navigator.userAgent }
+            }, '*');
+        }
+        if (typeof PerformanceObserver === 'undefined') {
+            postUnsupported('no_performance_observer');
+            return;
+        }
+        try {
+            var obs = new PerformanceObserver(function(list) {
+                var entries = list.getEntries();
+                for (var i = 0; i < entries.length; i++) {
+                    if (entries[i].name === 'first-contentful-paint') {
+                        obs.disconnect();
+                        window.parent.postMessage({ type: 'IFRAME_FIRST_CONTENTFUL_PAINT' }, '*');
+                        return;
+                    }
+                }
+            });
+            obs.observe({ type: 'paint', buffered: true });
+        } catch (e) {
+            postUnsupported('observe_threw:' + (e && e.name ? e.name : 'Error'));
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        var APP_ID = "6acceaf06da15a8e78380978";
+        var PREVIEW_TYPE = "sandbox";
+        var DEPS_PATH = '/node_modules/.vite/deps/';
+        var fired = false;
+        function isViteDep(url) {
+            return typeof url === 'string' && url.indexOf(DEPS_PATH) !== -1;
+        }
+        function looksFailed(entry) {
+            // HTTP failure status (Chrome 109+).
+            if (entry.responseStatus && entry.responseStatus >= 400) return true;
+            // Aborted / blocked / network-error: request ran, nothing decoded.
+            // decodedBodySize === 0 distinguishes from cache hits (Safari has no
+            // deliveryType, so we can't rely on it to exclude cached responses).
+            return entry.transferSize === 0
+                && entry.decodedBodySize === 0
+                && entry.duration > 0
+                && entry.responseEnd > 0;
+        }
+        function report(entry) {
+            if (fired) return;
+            fired = true;
+            var nativeBuffer = window.__base44_preview_native_failures;
+            if (nativeBuffer && typeof nativeBuffer.append === 'function') {
+                nativeBuffer.append('Failed to load module ' + entry.name);
+            }
+            window.parent.postMessage({
+                type: 'SANDBOX_VITE_DEPS_404',
+                payload: {
+                    app_id: APP_ID,
+                    preview_type: PREVIEW_TYPE,
+                    url: entry.name,
+                    initiator_type: entry.initiatorType,
+                    response_status: entry.responseStatus
+                }
+            }, '*');
+        }
+        new PerformanceObserver(function(list) {
+            var entries = list.getEntries();
+            for (var i = 0; i < entries.length; i++) {
+                if (isViteDep(entries[i].name) && looksFailed(entries[i])) {
+                    report(entries[i]);
+                    return;
+                }
+            }
+        }).observe({ type: 'resource', buffered: true });
+    })();
+    </script>
+    <script>
+    (function() {
+        if (typeof PerformanceObserver === 'undefined') return;
+        var reported = {};
+        // Only the app's own module trees may put an error over the preview. A page
+        // can load an optional classic script (analytics, a widget) that fails while
+        // the app renders perfectly well; that must not read as broken app code.
+        // Recording is deliberately wider than reporting — the console buffer keeps
+        // every failed module for diagnostics.
+        function isAppModule(path) {
+            return path.indexOf('/src/') === 0 || path.indexOf('/base44/') === 0;
+        }
+        function modulePath(url) {
+            try {
+                var path = new URL(url, window.location.href).pathname;
+                // The bridge probes this standard SDK path opportunistically;
+                // legacy/custom apps are allowed not to provide it.
+                if (path === '/src/api/base44Client.js') return '';
+                if (path.indexOf('/node_modules/.vite/deps/') !== -1) return '';
+                return /[.](?:[cm]?[jt]sx?)$/i.test(path) ? path : '';
+            } catch (e) {
+                return '';
+            }
+        }
+        new PerformanceObserver(function(list) {
+            var entries = list.getEntries();
+            for (var index = 0; index < entries.length; index++) {
+                var entry = entries[index];
+                if (entry.initiatorType !== 'script') continue;
+                var status = entry.responseStatus;
+                if (!status) continue;
+                var path = modulePath(entry.name);
+                if (!path) continue;
+                if (status < 400) {
+                    // Recovered (an HMR fix re-requests it). Forget it, or breaking the
+                    // same path again later this document would be silently suppressed.
+                    delete reported[path];
+                    continue;
+                }
+                var message = status === 404
+                    ? 'Module not found: ' + path
+                    : 'Module failed to load (' + status + '): ' + path;
+                var buffer = window.__base44_preview_native_failures;
+                if (buffer && typeof buffer.append === 'function') buffer.append(message);
+                if (!isAppModule(path) || reported[path] || window.self === window.top) continue;
+                reported[path] = true;
+                window.parent.postMessage({
+                    type: 'SANDBOX_MODULE_LOAD_FAILED',
+                    payload: { path: path, status: status, message: message }
+                }, '*');
+            }
+        }).observe({ type: 'resource', buffered: true });
+    })();
+    </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        if (typeof performance === 'undefined' || typeof performance.getEntriesByType !== 'function') return;
+        var DEPS_PATH = '/node_modules/.vite/deps/';
+        var QUIESCENCE_MS = 1500;
+        var POLL_MS = 500;
+        var fired = false;
+        var intervalId = setInterval(function() {
+            if (fired) return;
+            var entries = performance.getEntriesByType('resource');
+            var lastDepEnd = 0;
+            for (var i = 0; i < entries.length; i++) {
+                if (entries[i].name.indexOf(DEPS_PATH) === -1) continue;
+                if (entries[i].responseEnd > lastDepEnd) lastDepEnd = entries[i].responseEnd;
+            }
+            if (lastDepEnd === 0) return;
+            if (performance.now() - lastDepEnd >= QUIESCENCE_MS) {
+                fired = true;
+                clearInterval(intervalId);
+                window.parent.postMessage({ type: 'IFRAME_VITE_DEPS_SETTLED' }, '*');
+            }
+        }, POLL_MS);
+    })();
+    </script>
+        <script type="module">
+        try {
+            const { base44 } = await import("/src/api/base44Client.js");
+            if (base44) {
+                Object.defineProperty(window, "base44_sdk", {
+                    value: base44,
+                    writable: false,
+                    configurable: true
+                });
+            }
+        } catch (e) {
+            // Some legacy/custom apps may not have the standard client module.
+            // Leave window.base44_sdk undefined; PreviewLens can fall back to UI/network checks.
+            window.parent.postMessage({ type: "PREVIEW_LENS_SDK_ATTACH_FAILED", error: String(e) }, "*");
+        }
+        </script>
+        <script type="module">
+        try {
+            const { createHotContext } = await import("/@vite/client");
+            const hot = createHotContext("/__builder-bridge-hmr");
+            const previewFEVersion = Number(new URLSearchParams(window.location.search).get("previewFE_version")) || 0;
+            hot.on("vite:ws:connect", () => window.parent.postMessage({ type: "SANDBOX_WS_CONNECT" }, "*"));
+            hot.on("vite:ws:disconnect", () => window.parent.postMessage({ type: "SANDBOX_WS_DISCONNECT" }, "*"));
+        
+            hot.on("vite:error", (payload) => {
+                const err = payload && payload.err && typeof payload.err === "object" ? payload.err : {};
+                const message = typeof err.message === "string" ? err.message : "Unknown build error";
+                const plugin = typeof err.plugin === "string" ? `[plugin:${err.plugin}] ` : "";
+                const details = [`Vite build error: ${plugin}${message}`];
+                const loc = err.loc && typeof err.loc === "object" ? err.loc : null;
+                let file = loc && typeof loc.file === "string"
+                    ? loc.file
+                    : (typeof err.id === "string" ? err.id : "");
+                if (file) {
+                    file = file.split("?")[0];
+                    if (loc && Number.isFinite(loc.line) && Number.isFinite(loc.column)) {
+                        file += `:${loc.line}:${loc.column}`;
+                    }
+                    details.push(`File: ${file}`);
+                }
+                if (typeof err.frame === "string" && err.frame.trim()) details.push(err.frame.trim());
+                if (typeof err.stack === "string" && err.stack.trim()) details.push(err.stack.trim());
+
+                const nativeBuffer = window.__base44_preview_native_failures;
+                if (!nativeBuffer || typeof nativeBuffer.append !== "function") return;
+                nativeBuffer.append(details.join(String.fromCharCode(10)));
+            });
+    
+            // The pending promise holds Vite's pageReload (it awaits listeners) so the parent swaps a fresh iframe; an editor that doesn't announce previewFE_version falls back to today's in-place reload.
+            hot.on("vite:beforeFullReload", () => {
+                window.parent.postMessage({ type: "sandbox:beforeFullReload" }, "*");
+                if (previewFEVersion > 0) return new Promise(() => {});
+            });
+        } catch (e) {
+            // Bundled dev mode serves no /@vite/client. The plugin's socket relay, shipped
+            // inside the bundle, reports these events and flags itself once it runs; Vite's
+            // pre-bundle fallback page reloads on its own. Give the bundle time before
+            // declaring the socket unreachable.
+            const reportAttachFailure = (attemptsLeft) => {
+                if (window.__base44_bundled_dev__ || globalThis.__vite_is_fallback_page__) return;
+                if (attemptsLeft <= 0) {
+                    window.parent.postMessage({ type: "SANDBOX_WS_ATTACH_FAILED", error: String(e) }, "*");
+                    return;
+                }
+                setTimeout(() => reportAttachFailure(attemptsLeft - 1), 500);
+            };
+            reportAttachFailure(30);
+        }
+        </script>
+    <script>
+    (function() {
+        if (window.self === window.top) return;
+        var lastUrl = window.location.href;
+        function notify() {
+            var url = window.location.href;
+            if (url === lastUrl) return;
+            lastUrl = url;
+            window.parent.postMessage({ type: 'APP_CHANGED_URL', url: url }, '*');
+        }
+        var origPush = history.pushState.bind(history);
+        history.pushState = function() { origPush.apply(history, arguments); notify(); };
+        var origReplace = history.replaceState.bind(history);
+        history.replaceState = function() { origReplace.apply(history, arguments); notify(); };
+        window.addEventListener('popstate', notify);
+        window.parent.postMessage({ type: 'APP_CHANGED_URL', url: window.location.href }, '*');
+    })();
+    </script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>The Wedding Atelier — Private Wedding Planner</title>
@@ -1024,6 +1520,153 @@ textarea{ line-height:1.5; }
 #transition{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:var(--ivory);color:var(--ink);cursor:default;transition:opacity .45s var(--ease);padding:clamp(16px,4vw,64px);overflow:auto}#transition.show{display:flex}.wl-shell{width:min(1140px,100%);min-height:min(680px,85dvh);display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-2);border-radius:24px;overflow:hidden;background:var(--paper);box-shadow:var(--shadow-lg);animation:wlReveal .8s var(--ease) both}.wl-art{position:relative;display:flex;flex-direction:column;justify-content:space-between;background:var(--burgundy);color:var(--ivory);padding:36px;overflow:hidden}.wl-brand{font-family:var(--serif);font-size:28px;position:relative;z-index:2}.wl-brand small{display:block;font-family:var(--sans);font-size:9px;letter-spacing:3px;margin-top:7px;color:var(--champagne)}.wl-arch{position:relative;align-self:center;width:280px;height:330px;border-radius:150px 150px 0 0;background:var(--burgundy-2);border:1px solid var(--champagne);margin:20px 0}.wl-card{position:absolute;width:180px;height:240px;left:50px;top:65px;border:1px solid var(--line-2);border-radius:4px;background:var(--ivory);box-shadow:var(--shadow-lg)}.wl-card.back{transform:rotate(-12deg);animation:wlCardBack 1.2s var(--ease) both}.wl-card.front{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;color:var(--burgundy);transform:rotate(9deg);animation:wlCardFront 1.2s var(--ease) both}.wl-card span{font-size:9px;letter-spacing:4px}.wl-card b{font-family:var(--serif);font-size:80px;font-weight:400;font-style:italic;line-height:1}.wl-card i{font-family:var(--serif);font-size:17px;color:var(--muted)}.wl-ring{position:absolute;width:65px;height:65px;border:3px solid var(--champagne);border-radius:50%;bottom:-14px;box-shadow:var(--shadow);animation:wlFloat 4s ease-in-out infinite}.wl-ring.one{left:20px}.wl-ring.two{left:62px;bottom:-25px;animation-delay:-2s}.wl-caption{font-family:var(--serif);font-size:30px;line-height:1.1;position:relative;z-index:2}.wl-copy{padding:clamp(28px,5vw,64px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0}.wl-eyebrow{font-size:10px;letter-spacing:2.5px;color:var(--burgundy);font-weight:600;margin-bottom:38px}.wl-hello{font-size:15px;color:var(--muted);animation:wlReveal .7s .2s both}.wl-name{font-family:var(--serif);font-size:clamp(48px,6vw,82px);line-height:1.08;letter-spacing:-2px;color:var(--burgundy);margin:8px 0 20px;overflow-wrap:anywhere}.wl-name span{display:inline-block;animation:wlReveal .6s both;animation-delay:calc(.25s + var(--i)*45ms)}.wl-line{width:64px;height:2px;background:var(--champagne);margin-bottom:22px;animation:wlLine 1s .4s both;transform-origin:left}.wl-sub{font-family:var(--serif);font-size:24px;color:var(--ink-2);animation:wlReveal .7s .45s both}.wl-count{display:none;margin-top:16px;padding:10px 14px;border-radius:8px;background:var(--champagne-soft);color:var(--ink-2);font-size:13px}.wl-count.on{display:block;animation:wlReveal .6s both}.wl-count b{color:var(--burgundy);font-size:19px;font-variant-numeric:tabular-nums}.wl-enter{margin-top:28px;gap:18px}.wl-acct{margin-top:24px;font-size:11px;overflow-wrap:anywhere;color:var(--muted)}.wl-progress{position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--champagne);transform-origin:left;animation:wlLine 4.2s linear both}
 @keyframes wlReveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes wlLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes wlCardBack{from{opacity:0;transform:translateY(40px) rotate(-25deg)}to{opacity:1;transform:rotate(-12deg)}}@keyframes wlCardFront{from{opacity:0;transform:translateY(60px) rotate(20deg)}to{opacity:1;transform:rotate(9deg)}}@keyframes wlFloat{50%{transform:translateY(-8px)}}
 @media(max-width:700px){.wl-shell{grid-template-columns:1fr;max-height:94dvh;overflow:auto;min-height:0}.wl-art{padding:20px;min-height:180px}.wl-brand{font-size:22px}.wl-arch{position:absolute;right:18px;top:30px;width:120px;height:155px;margin:0}.wl-card{width:78px;height:100px;left:21px;top:32px}.wl-card.front{gap:6px}.wl-card span{font-size:5px;letter-spacing:1px}.wl-card b{font-size:34px}.wl-card i{font-size:8px}.wl-ring{width:29px;height:29px;border-width:2px;bottom:0}.wl-ring.one{left:10px}.wl-ring.two{left:29px;bottom:-7px}.wl-caption{font-size:23px;margin-top:34px;max-width:65%}.wl-copy{padding:26px}.wl-eyebrow{margin-bottom:16px}.wl-name{font-size:50px;margin-bottom:16px}.wl-sub{font-size:20px}.wl-enter{margin-top:20px}.wl-acct{margin-top:16px}.gx-cell{font-size:16px}}@media(prefers-reduced-motion:reduce){.wl-shell,.wl-card,.wl-ring,.wl-hello,.wl-name span,.wl-line,.wl-sub,.wl-count.on,.wl-progress{animation:none!important;opacity:1;transform:none}.wl-card.back{transform:rotate(-12deg)}.wl-card.front{transform:rotate(9deg)}}
+</style>
+<style id="wa-atelier-v11">
+/* ==========================================================================
+   THE WEDDING ATELIER · ATELIER PASS (v11)
+   1 Tokens · 2 Surfaces · 3 Tables · 4 Status · 5 Toolbar · 6 Phases
+   7 Event & guest roster · 8 Details · 9 Motion · 10 Responsive
+   Chỉ bổ sung lớp trình bày — không đổi cấu trúc dữ liệu hay nghiệp vụ.
+   ========================================================================== */
+:root{
+  --surface:#FFFFFF; --surface-2:#FDFAF5; --surface-3:#F8F2E8; --surface-4:#F3EBDF;
+  --head-a:#F8F2E7; --head-b:#F2E9DC; --head-ink:#6A5D51;
+  --accent-rule:rgba(190,154,83,.45);
+  --groom:#3A3A6B; --groom-soft:#EAEAF4; --groom-line:#C7C7DE; --bride-line:#E3C9CE;
+  --shadow-card:0 1px 2px rgba(43,37,34,.04),0 10px 28px rgba(43,37,34,.06);
+}
+/* ---------- 2 · SURFACES ---------- */
+.card,.stat,.event-card,.table-card,.gx-side{box-shadow:var(--shadow-card)}
+.stat{transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat .accent-bar{width:4px;border-radius:0 3px 3px 0}
+.stat-value{letter-spacing:-.6px}
+/* ---------- 3 · TABLES ---------- */
+.tbl-wrap{position:relative;background:var(--surface);border:1px solid var(--line-2);box-shadow:var(--shadow-card)}
+.tbl-scroll{max-height:min(70vh,900px);overflow:auto;overscroll-behavior:contain}
+.tbl{font-size:13.5px;border-collapse:separate;border-spacing:0}
+.tbl thead th{position:sticky;top:0;z-index:3;background:linear-gradient(180deg,var(--head-a),var(--head-b));color:var(--head-ink);font-size:10.5px;font-weight:700;letter-spacing:1.35px;text-transform:uppercase;padding:14px 16px;border-bottom:1px solid var(--line-2);box-shadow:inset 0 3px 0 var(--accent-rule);white-space:nowrap}
+.tbl thead th:first-child{z-index:5}
+.tbl tbody td{padding:14px 16px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:middle;background:transparent}
+.tbl tbody tr:nth-child(even) td{background:var(--surface-2)}
+.tbl tbody tr:hover td,.tbl tbody tr:focus-within td{background:var(--ivory-2)}
+.tbl tbody tr:hover td:first-child,.tbl tbody tr:focus-within td:first-child{box-shadow:inset 4px 0 0 var(--burgundy)}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl td b,.tbl td strong{color:var(--ink);font-weight:600}
+.tbl td.right,.tbl th.right{font-variant-numeric:tabular-nums}
+.tbl td .btn-close{width:34px;height:34px;border-radius:9px;border:1px solid transparent}
+.tbl td .btn-close:hover{background:var(--surface);border-color:var(--line-2);color:var(--ink)}
+.tbl td .btn-close[title="Xóa"]:hover{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+.gx-tb thead th{position:sticky;top:0;z-index:3;background:linear-gradient(180deg,var(--head-a),var(--head-b));color:var(--head-ink);box-shadow:inset 0 3px 0 var(--accent-rule)}
+.gx-tb td:last-child{background:var(--surface)}
+.gx-tb tbody tr:nth-child(even) td{background:var(--surface-2)}
+.gx-tb tbody tr:nth-child(even) td:last-child{background:var(--surface)}
+.gx-tb tbody tr:hover td{background:var(--ivory-2)}
+.gx-tb tbody tr:hover td:last-child{background:var(--ivory-2)}
+.gx-tb th:last-child{z-index:6;background:linear-gradient(180deg,var(--head-a),var(--head-b))}
+.gx-tb th:last-child,.gx-tb td:last-child{box-shadow:-9px 0 12px -11px rgba(43,37,34,.5)}
+.tbl-hint{display:none}
+/* ---------- 4 · STATUS ---------- */
+.pill{padding:4px 11px;font-weight:600;letter-spacing:.15px;border:1px solid transparent}
+.pill-confirmed{background:#EBF1EC;color:#2F4A37;border-color:rgba(61,90,69,.22)}
+.pill-pending{background:#FBF3E1;color:#8A6520;border-color:rgba(184,134,47,.26)}
+.pill-declined{background:#F8E8E5;color:#9E392F;border-color:rgba(181,69,58,.24)}
+.pill-sent{background:#F7F0DD;color:#7E6320;border-color:rgba(190,154,83,.36)}
+.pill-notsent{background:#F3F0EB;color:#6F665D;border-color:var(--line-2)}
+.pill-need{background:#F3EAF3;color:#6E4270;border-color:rgba(123,74,123,.22)}
+.pill-side-groom{background:var(--groom-soft);color:var(--groom);border-color:var(--groom-line)}
+.pill-side-bride{background:var(--burgundy-soft);color:var(--burgundy);border-color:var(--bride-line)}
+.pill-confirmed::before,.pill-pending::before,.pill-declined::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.9;flex:0 0 auto}
+/* ---------- 5 · TOOLBAR ---------- */
+#content .toolbar{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:12px 14px;gap:10px;margin-bottom:18px}
+#content .toolbar .search-box{min-width:220px;max-width:420px}
+#content .toolbar .search-box input,#content .toolbar .filter-select,#content .toolbar .btn{min-height:40px}
+#content .toolbar .filter-select{font-weight:500;color:var(--ink-2);background:var(--surface)}
+#content .toolbar .filter-select:hover{border-color:var(--line-2);background:var(--surface-2)}
+.gx-tabs{box-shadow:inset 0 0 0 1px var(--line);border-radius:13px}
+/* ---------- 6 · PHASES ---------- */
+.pl-phase{margin-bottom:36px}
+.pl-phase:nth-of-type(4n+1){--ph-tint:#FDF8F8;--ph-accent:var(--burgundy);--ph-accent-soft:var(--burgundy-soft)}
+.pl-phase:nth-of-type(4n+2){--ph-tint:#F7FAF7;--ph-accent:var(--forest);--ph-accent-soft:var(--forest-soft)}
+.pl-phase:nth-of-type(4n+3){--ph-tint:#FDFAF2;--ph-accent:var(--champagne);--ph-accent-soft:var(--champagne-soft)}
+.pl-phase:nth-of-type(4n){--ph-tint:#F8F8FC;--ph-accent:var(--groom);--ph-accent-soft:var(--groom-soft)}
+.pl-phase.done{--ph-tint:#F7FAF7;--ph-accent:var(--forest);--ph-accent-soft:var(--forest-soft)}
+.pl-pcard{position:relative;overflow:hidden;border:1px solid var(--line-2);border-radius:18px;box-shadow:var(--shadow-card)}
+.pl-pcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ph-accent,var(--line-2));z-index:2}
+.pl-phase.cur .pl-pcard{border-color:var(--bride-line);box-shadow:0 0 0 3px rgba(107,39,55,.06),var(--shadow-card)}
+.pl-node{flex:0 0 auto;width:44px;height:44px;font-size:20px;border-width:1.5px;box-shadow:0 0 0 6px var(--ivory)}
+.pl-phase:not(.cur):not(.done) .pl-node{border-color:var(--ph-accent,var(--line-2));color:var(--ph-accent,var(--muted))}
+.pl-rail::before{width:2px;background:linear-gradient(var(--line-2),rgba(219,207,191,.22))}
+.pl-ph{padding:20px 24px 18px;transition:background .2s var(--ease)}
+.pl-ph:hover{background:var(--surface-2)}
+.pl-kick{font-size:10.5px;letter-spacing:1.7px;font-weight:700;text-transform:uppercase;color:var(--ph-accent,var(--muted))}
+.pl-ph-title{font-size:27px}
+.pl-ph-stats{gap:0}
+.pl-ph-stats>div{padding:0 20px;border-left:1px solid var(--line);min-width:98px}
+.pl-ph-stats>div:first-child{padding-left:0;border-left:0}
+.pl-ph-stats b{font-size:21px}
+.pl-phg{display:block;font-size:10px;color:var(--muted-2);margin-top:2px;letter-spacing:.2px}
+.pl-bar{height:5px;background:var(--surface-4)}
+.pl-evs{background:var(--ph-tint,var(--ivory));padding:20px 22px 8px}
+.pl-ev{border-radius:14px;box-shadow:var(--shadow-sm)}
+/* ---------- 7 · EVENT + GUEST ROSTER ---------- */
+.pl-ev-h{padding:16px 18px}
+.pl-ev-name{font-size:20px}
+.pl-ev.open>.pl-ev-h{background:var(--surface-2);border-bottom:1px solid var(--line)}
+.pl-ev-body{animation:waExpand .26s var(--ease)}
+.pl-ev-body .pl-col+.pl-col.pl-col-guest{grid-column:1/-1;border-left:0;border-top-color:#8A7E70;background:var(--surface)}
+.pl-sec-ico.g{background:var(--ivory-2);color:var(--ink-2)}
+.pl-gsides{display:flex;gap:6px;flex-wrap:wrap}
+.pl-gside{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pl-gside.groom{background:var(--groom-soft);color:var(--groom)}
+.pl-gside.bride{background:var(--burgundy-soft);color:var(--burgundy)}
+.pl-glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}
+.pl-grow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);cursor:pointer;transition:border-color .15s var(--ease),background .15s var(--ease),transform .15s var(--ease)}
+.pl-grow:hover{border-color:var(--line-2);background:var(--surface-2);transform:translateY(-1px)}
+.pl-grow:focus-visible{outline:none;box-shadow:var(--ring)}
+.pl-gname{flex:1 1 auto;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-gnum{font-size:11.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pl-gconf{font-style:normal;color:var(--forest);font-weight:600}
+/* ---------- 8 · DETAILS ---------- */
+.pl-col-bud .pl-b,.pl-col-task .pl-t{border-radius:12px}
+.pl-t .btn-close{width:30px;height:30px}
+.pl-b-r b{font-variant-numeric:tabular-nums}
+.seat-chip{border:1px solid transparent}
+.seat-chip:hover{border-color:var(--bride-line)}
+.table-card.full{border-color:rgba(181,69,58,.5);background:#FFFCFB}
+.gx-kcard{border-radius:10px}
+/* ---------- 9 · MOTION ---------- */
+@keyframes waExpand{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.btn{transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease),transform .12s var(--ease)}
+.btn:active{transform:translateY(1px)}
+.nav-item,.mn-item,.gx-tab,.sp-seg button{transition:background .16s var(--ease),color .16s var(--ease)}
+/* ---------- 10 · RESPONSIVE ---------- */
+@media(max-width:1200px){.pl-ph-stats>div{padding:0 16px;min-width:86px}}
+@media(max-width:900px){.pl-ph-stats{gap:14px 0}.pl-ph-stats>div{min-width:0;flex:1 1 auto}}
+@media(max-width:860px){
+  .tbl-scroll{max-height:none}
+  .tbl tbody td,.tbl thead th{padding:12px}
+  .tbl-hint{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;font-size:11.5px;font-weight:600;color:var(--head-ink);background:var(--surface-3);border-top:1px solid var(--line)}
+  #content .toolbar{padding:10px}
+  .pl-ph{padding:16px}
+  .pl-ph-title{font-size:22px}
+  .pl-ph-stats{width:100%}
+  .pl-glist{grid-template-columns:1fr}
+  .pl-evs{padding:14px 12px 6px}
+}
+@media(max-width:640px){.pl-node{width:30px;height:30px;font-size:15px;box-shadow:0 0 0 3px var(--ivory)}}
+@media(max-width:560px){
+  .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .stat{padding:16px}
+  .stat-value{font-size:26px}
+  #content .toolbar .search-box{max-width:none;flex:1 1 100%}
+  .pl-ph-stats>div{min-width:50%;padding:0 12px}
+  .pl-grow{flex-wrap:wrap}
+  .pl-gside{order:1}
+  .pl-gname{order:2;flex:1 1 100%;white-space:normal}
+  .pl-gnum{order:3}
+  .pl-grow .pill{order:4;margin-left:auto}
+}
 </style>
 </head>
 <body>
@@ -2704,10 +3347,25 @@ const Plan = {
           <header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico b">${ico(I.budget)}</span><div><b>Ngân sách</b><small>${B.length} khoản chi</small></div></div><button class="pl-add-btn" onclick="Plan.openBudget(null,'${e.id}')">+ Khoản chi</button></header>
           ${B.length?`<div class="pl-tiles"><div class="est"><small>Dự kiến</small><b>${this.money(A.est)}</b></div><div class="act"><small>Thực tế</small><b>${this.money(A.act)}</b></div><div class="paid"><small>Đã trả</small><b>${this.money(A.paid)}</b></div></div>${B.map(i=>this.bRow(i)).join('')}`:'<div class="pl-none">Chưa có khoản chi</div>'}
         </section>
+        ${virt?'':this.guestsHtml(eg,conf)}
       </div>
     </article>`;
   },
-  paintRoute(){
+    guestsHtml(eg,conf){
+    const ppl=eg.reduce((s,x)=>s+Util.headcount(x),0);
+    const gN=eg.filter(x=>x.side==='groom').length, bN=eg.filter(x=>x.side==='bride').length;
+    const sides=[gN?`<span class="pl-gside groom">${Util.esc(Guestbook.sideLabel('groom'))} · ${gN}</span>`:'',bN?`<span class="pl-gside bride">${Util.esc(Guestbook.sideLabel('bride'))} · ${bN}</span>`:''].join('');
+    const head=`<header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico g">${I.guest}</span><div><b>Khách mời của sự kiện</b><small>${eg.length} khách · ${ppl} người dự kiến${conf?` · <i class="pl-gconf">${conf} xác nhận</i>`:''}</small></div></div><div class="pl-gsides">${sides}</div></header>`;
+    if(!eg.length) return `<section class="pl-col pl-col-guest">${head}<div class="pl-none">Sự kiện này chưa có khách mời nào được gắn. Vào “Khách mời &amp; thiệp” để gắn khách vào sự kiện.</div></section>`;
+    const rows=eg.slice().sort((a,b)=>{ const s=(a.side==='groom'?0:1)-(b.side==='groom'?0:1); return s||String(a.full_name||'').localeCompare(String(b.full_name||''),'vi'); }).map(x=>{ const r=RS_MAP[x.rsvp_status||'not_sent']||RS_MAP.not_sent;
+      return `<button type="button" class="pl-grow" onclick="Guestbook.openRsvp('${x.id}')"><span class="pl-gside ${x.side==='groom'?'groom':'bride'}">${Util.esc(Guestbook.sideLabel(x.side))}</span><span class="pl-gname">${Util.esc(x.full_name)}</span><span class="pl-gnum">${Util.headcount(x)} người</span><span class="pill ${r[1]}">${r[0]}</span></button>`; }).join('');
+    return `<section class="pl-col pl-col-guest">${head}<div class="pl-glist">${rows}</div></section>`;
+  },
+  phGuestStat(g){
+    if(!g) return '';
+    return '<div><b>'+g.n+'</b>khách mời<span class="pl-phg">'+g.ppl+' người dự kiến</span></div>';
+  },
+paintRoute(){
     const el=document.getElementById('plBody'), {g,none}=this.groups(), hasOrph=this.evTasks('').length||this.evItems('').length;
     if(!g.length&&!none.evs.length&&!this.tasks.length&&!this.items.length){
       el.innerHTML=UI.empty(I.events,'Chưa có lộ trình','Chia việc chuẩn bị đám cưới thành các giai đoạn, mỗi giai đoạn gồm các sự kiện kèm công việc và ngân sách.',`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary" onclick="Plan.seedPlan()">Khởi tạo lộ trình mẫu</button><button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button></div>`); return; }
@@ -2717,10 +3375,11 @@ const Plan = {
     h+='<div class="pl-tl">';
     const block=(x,state)=>{ const A=this.gAgg(x), key=x.key, collapsed=this.closedPh.has(key), nm=x.p?x.p.name:'Chưa phân giai đoạn', rg=this.range(x);
       const evs=x.evs.map(e=>this.evCard(e)).join('')+((!x.p&&hasOrph)?this.evCard({id:'',name:''}):'');
+      const phG=(()=>{ if(!x.evs.length) return null; const ids=new Set(x.evs.map(e=>e.id)); const set=new Map(); this.guests.forEach(g=>{ if((g.event_ids||[]).some(id=>ids.has(id))) set.set(g.id,g); }); if(!set.size) return null; const arr=Array.from(set.values()); return {n:arr.length,ppl:arr.reduce((s,g)=>s+Util.headcount(g),0),conf:arr.filter(g=>g.rsvp_status==='confirmed').reduce((s,g)=>s+(Number(g.confirmed_count)||0),0)}; })();
       const badge={done:'<span class="pl-badge ok">Đã hoàn tất</span>',cur:'<span class="pl-badge now">Đang thực hiện</span>',next:'<span class="pl-badge">Sắp tới</span>',none:''}[state];
       return `<section class="pl-phase ${state} ${collapsed?'collapsed':''}" id="php-${key}"><div class="pl-rail"><div class="pl-node">${state==='done'?I.check:(x.p?x.idx+1:'–')}</div></div>
         <div class="pl-pcard"><div class="pl-ph" onclick="Plan.togglePh('${key}')"><div class="pl-ph-main"><div class="pl-kick">${x.p?'GIAI ĐOẠN '+(x.idx+1):'KHÁC'} ${badge}</div><div class="pl-ph-title">${Util.esc(nm)}</div><div class="pl-ph-sub">${[rg,x.p&&x.p.description?Util.esc(x.p.description):''].filter(Boolean).join(' · ')||'&nbsp;'}</div></div>
-          <div class="pl-ph-stats"><div><b>${x.evs.length}</b>sự kiện</div><div><b>${A.td}/${A.tt}</b>công việc</div><div><b>${this.money(A.act||A.est)}</b>${A.act?'thực tế':'dự kiến'}</div><div class="pl-pct"><b>${A.pct}%</b>tiến độ</div></div>
+          <div class="pl-ph-stats"><div><b>${x.evs.length}</b>sự kiện</div>${this.phGuestStat(phG)}<div><b>${A.td}/${A.tt}</b>công việc</div><div><b>${this.money(A.act||A.est)}</b>${A.act?'thực tế':'dự kiến'}</div><div class="pl-pct"><b>${A.pct}%</b>tiến độ</div></div>
           <div class="pl-tools" onclick="event.stopPropagation()">${x.p?`<button class="btn-close" title="Thêm sự kiện" onclick="Plan.openEvent(null,'${x.p.id}')">${this.ic(I.plus)}</button><button class="btn-close" title="Sửa giai đoạn" onclick="Plan.openPhase('${x.p.id}')">${this.ic(I.edit)}</button><button class="btn-close" title="Xóa giai đoạn" onclick="Plan.delPhase('${x.p.id}')">${this.ic(I.trash)}</button>`:''}</div>${this.chev}</div>
           <div class="pl-bar"><i style="width:${A.pct}%"></i></div>
           <div class="pl-evs">${evs||'<div class="pl-none" style="padding:18px 22px">Chưa có sự kiện. Bấm dấu + ở góc phải để thêm.</div>'}</div></div></section>`; };
@@ -2981,5 +3640,24 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setup); else setup();
 })();
 </script>
-</body>
+<script id="wa-atelier-ux">
+/* Chỉ trình bày: gợi ý "cuộn ngang" cho bảng rộng. Không đụng nghiệp vụ. */
+(function(){
+  function mark(){
+    document.querySelectorAll('.tbl-scroll').forEach(function(box){
+      var wrap=box.closest('.tbl-wrap'); if(!wrap) return;
+      var over=box.scrollWidth-box.clientWidth>8;
+      wrap.classList.toggle('has-x',over);
+      var hint=wrap.querySelector('.tbl-hint');
+      if(over&&!hint){ hint=document.createElement('div'); hint.className='tbl-hint'; hint.innerHTML='<span aria-hidden="true">↔</span> Cuộn ngang để xem thêm cột'; wrap.appendChild(hint); }
+      else if(!over&&hint){ hint.parentNode.removeChild(hint); }
+    });
+  }
+  var raf=0;
+  function schedule(){ if(raf) return; raf=requestAnimationFrame(function(){ raf=0; mark(); }); }
+  window.addEventListener('resize',schedule);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedule); else schedule();
+  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+})();
+</script></body>
 </html>
