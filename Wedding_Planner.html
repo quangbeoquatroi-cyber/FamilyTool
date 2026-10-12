@@ -1,502 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-        <script>if (window.self !== window.top) window.parent.postMessage({ type: 'SANDBOX_DOCUMENT_START' }, '*');</script>
-    <script>
-    (function() {
-        var buffer = window.__base44_preview_native_failures;
-        if (!buffer || buffer.version !== 1 || !Array.isArray(buffer.entries)) {
-            buffer = { version: 1, entries: [], listenersInstalled: false };
-            window.__base44_preview_native_failures = buffer;
-        }
-        if (buffer.listenersInstalled) return;
-        function value(object, key) {
-            return object && typeof object[key] === 'string' ? object[key] : '';
-        }
-        function append(message) {
-            if (!message) return;
-            var normalizedMessage = String(message).slice(0, 5000);
-            for (var index = buffer.entries.length - 1; index >= 0; index--) {
-                var existing = buffer.entries[index];
-                if (existing && existing.level === 'error' && existing.message === normalizedMessage) {
-                    buffer.entries.splice(index, 1);
-                }
-            }
-            buffer.entries.push({
-                level: 'error',
-                message: normalizedMessage,
-                timestamp: Date.now()
-            });
-            if (buffer.entries.length > 100) {
-                buffer.entries.splice(0, buffer.entries.length - 100);
-            }
-        }
-        buffer.append = append;
-        function handleError(event) {
-            var target = event && event.target;
-            var tagName = value(target, 'tagName').toLowerCase() || 'window';
-            var isModule = tagName === 'script' && value(target, 'type').toLowerCase() === 'module';
-            var resourceType = isModule ? 'module' : tagName;
-            var url = value(target, 'src') || value(target, 'href') || value(event, 'filename');
-            var detail = value(event, 'message') || value(event && event.error, 'message');
-            var prefix = tagName === 'window' ? 'Native browser error' : 'Failed to load ' + resourceType;
-            append(prefix + (url ? ' ' + url : '') + (detail ? ': ' + detail : ''));
-        }
-        function rejectionReason(reason) {
-            if (typeof reason === 'string') return reason;
-            var message = value(reason, 'message');
-            if (message) return message;
-            try { return JSON.stringify(reason) || String(reason); }
-            catch (e) { return String(reason); }
-        }
-        function handleRejection(event) {
-            append('Unhandled promise rejection: ' + rejectionReason(event && event.reason));
-        }
-        function handleCspViolation(event) {
-            var blockedUri = value(event, 'blockedURI') || 'resource';
-            var directive = value(event, 'violatedDirective');
-            append('Content Security Policy blocked ' + blockedUri + (directive ? ' (' + directive + ')' : ''));
-        }
-        function overlayText(root, selector) {
-            var element = root && root.querySelector(selector);
-            return value(element, 'textContent').trim();
-        }
-        function captureViteOverlay(overlay) {
-            var root = overlay && overlay.shadowRoot;
-            var message = overlayText(root, '.message-body');
-            if (!message) return;
-            var plugin = overlayText(root, '.plugin');
-            var details = ['Vite build error: ' + (plugin ? plugin + ' ' : '') + message];
-            var file = overlayText(root, '.file');
-            var frame = overlayText(root, '.frame');
-            var stack = overlayText(root, '.stack');
-            if (file) details.push('File: ' + file);
-            if (frame) details.push(frame);
-            if (stack) details.push(stack);
-            append(details.join(String.fromCharCode(10)));
-        }
-        function captureViteOverlays(node) {
-            if (!node || node.nodeType !== 1) return;
-            if (node.matches && node.matches('vite-error-overlay')) captureViteOverlay(node);
-            if (!node.querySelectorAll) return;
-            var overlays = node.querySelectorAll('vite-error-overlay');
-            for (var index = 0; index < overlays.length; index++) captureViteOverlay(overlays[index]);
-        }
-        window.addEventListener('error', handleError, true);
-        window.addEventListener('unhandledrejection', handleRejection);
-        window.addEventListener('securitypolicyviolation', handleCspViolation);
-        if (typeof MutationObserver !== 'undefined' && document.documentElement) {
-            captureViteOverlays(document.documentElement);
-            new MutationObserver(function(records) {
-                for (var recordIndex = 0; recordIndex < records.length; recordIndex++) {
-                    var nodes = records[recordIndex].addedNodes;
-                    for (var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
-                        captureViteOverlays(nodes[nodeIndex]);
-                    }
-                }
-            }).observe(document.documentElement, { childList: true, subtree: true });
-        }
-        buffer.listenersInstalled = true;
-    })();
-    </script>
-    <script data-preview-data-env-pin="true">
-    (function() {
-        var KEY = 'base44_data_env';
-        var APP_API_PATH = "/api/apps/6acceaf06da15a8e78380978/";
-        var STORAGE_KEY = KEY + ':' + APP_API_PATH;
-        var API_ORIGINS = ["https://app.base44.com", "https://base44.app"].map(function(u) { return new URL(u).origin; });
-        var REQUEST_INIT_KEYS = [
-            'method', 'headers', 'credentials', 'mode', 'cache', 'redirect',
-            'referrer', 'referrerPolicy', 'integrity', 'keepalive', 'signal', 'priority',
-        ];
-        var env = new URLSearchParams(window.location.search).get(KEY);
-        try {
-            if (env === 'dev' || env === 'prod') sessionStorage.setItem(STORAGE_KEY, env);
-            else env = sessionStorage.getItem(STORAGE_KEY);
-        } catch (e) {}
-        if (env !== 'dev' && env !== 'prod') return;
-        function pin(url) {
-            try {
-                var u = new URL(url, window.location.href);
-                var sameOrigin = u.origin === window.location.origin;
-                if (!sameOrigin && API_ORIGINS.indexOf(u.origin) === -1) return url;
-                // The app's own server routes and TanStack server functions build
-                // their SDK client from this request, so they need the selection too.
-                var appServerPath = sameOrigin && (
-                    u.pathname.startsWith('/api/') || u.pathname.startsWith('/_serverFn/')
-                );
-                if (!appServerPath && !u.pathname.startsWith(APP_API_PATH)) return url;
-                // Privileged function/agent routes trust this app's Preview host,
-                // not a dev parameter sent to the generic SDK API origin.
-                if (u.origin !== window.location.origin && (
-                    u.pathname.startsWith(APP_API_PATH + 'functions/') ||
-                    u.pathname.startsWith(APP_API_PATH + 'agents/')
-                )) {
-                    u = new URL(u.pathname + u.search + u.hash, window.location.origin);
-                }
-                u.searchParams.set(KEY, env);
-                return u.toString();
-            } catch (e) { return url; }
-        }
-        var origFetch = window.fetch;
-        window.fetch = function(input, init) {
-            if (typeof input === 'string' || input instanceof URL) {
-                return origFetch.call(this, pin(String(input)), init);
-            }
-            if (!input || !input.url) return origFetch.call(this, input, init);
-            var pinned = pin(input.url);
-            if (pinned === input.url) return origFetch.call(this, input, init);
-            try {
-                input = new Request(input, init);
-                if (!input.keepalive || !input.body) {
-                    return origFetch.call(this, new Request(pinned, input));
-                }
-                // RequestInit exposes an existing body as a stream, which Fetch
-                // forbids with keepalive. Buffer only that case, after init overrides.
-                var self = this;
-                return input.blob().then(function(body) {
-                    var rebuilt = { body: body };
-                    REQUEST_INIT_KEYS.forEach(function(key) {
-                        if (input[key] !== undefined) rebuilt[key] = input[key];
-                    });
-                    return origFetch.call(self, new Request(pinned, rebuilt));
-                });
-            } catch (error) { return Promise.reject(error); }
-        };
-        var origOpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url) {
-            arguments[1] = pin(String(url));
-            return origOpen.apply(this, arguments);
-        };
-    })();
-    </script><script defer data-preview-inject="true" data-app-id="6acceaf06da15a8e78380978" data-preview-type="sandbox" data-rum-app-id="db50c921-10c3-4f12-bccb-950fa174b708" data-rum-client-token="pubfe8a4f2972b412b4556fd67e77f82cb4" data-dd-site="datadoghq.com" src="https://app.base44.com/builder-bridge.js?t=1791815118"></script>
-    <script>
-    (function() {
-        var IGNORE = { SCRIPT: 1, STYLE: 1, LINK: 1, META: 1, NOSCRIPT: 1, TEMPLATE: 1 };
-        const fire = () => window.parent.postMessage({ type: 'IFRAME_CONTENT_READY' }, '*');
-        function check() {
-            var body = document.body;
-            if (!body) return false;
-            for (var idx = 0; idx < body.children.length; idx++) {
-                if (!IGNORE[body.children[idx].tagName]) return true;
-            }
-            return false;
-        }
-        function start() {
-            if (check()) { fire(); return; }
-            var observer = new MutationObserver(function() {
-                if (check()) { fire(); observer.disconnect(); }
-            });
-            observer.observe(document.documentElement, { childList: true, subtree: true });
-        }
-        if (document.body) { start(); }
-        else { document.addEventListener('DOMContentLoaded', start, { once: true }); }
-    })();
-    </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        var APP_ID = "6acceaf06da15a8e78380978";
-        var PREVIEW_TYPE = "sandbox";
-        var on404 = false;
-        var booted = false;
-        function detect() { return !!document.querySelector('[data-source-location^="PageNotFound:"]'); }
-        function payload() { return { app_id: APP_ID, preview_type: PREVIEW_TYPE, url_path: window.location.pathname }; }
-        function tick() {
-            var now = detect();
-            if (now && !on404) {
-                on404 = true;
-                window.parent.postMessage({ type: 'PREVIEW_PAGE_NOT_FOUND', payload: payload() }, '*');
-            } else if (!now && (on404 || !booted)) {
-                // On first tick of a fresh document, emit a cleared signal even when
-                // not currently on a 404 — the parent may have latched is404=true from
-                // a previous document at the same URL (e.g. after an iframe reload).
-                on404 = false;
-                window.parent.postMessage({ type: 'PREVIEW_PAGE_NOT_FOUND_CLEARED', payload: payload() }, '*');
-            }
-            booted = true;
-        }
-        function start() {
-            tick();
-            new MutationObserver(tick).observe(document.body, { childList: true, subtree: true });
-        }
-        if (document.body) { start(); }
-        else { document.addEventListener('DOMContentLoaded', start, { once: true }); }
-    })();
-    </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        function fire() { window.parent.postMessage({ type: 'REACT_ROOT_HAS_CHILDREN' }, '*'); }
-        function findRoot() {
-            return document.getElementById('root')
-                || document.getElementById('app')
-                || document.querySelector('[data-react-root]');
-        }
-        // One-shot: wait for DOMContentLoaded (static HTML parsed by then, so the
-        // Base44 convention <div id="root"> is either present or not coming),
-        // observe the root's childList until the first element child appears,
-        // then fire and disconnect. No tree-wide subtree observer.
-        function start() {
-            var root = findRoot();
-            if (!root) return;
-            if (root.childElementCount > 0) { fire(); return; }
-            var obs = new MutationObserver(function() {
-                if (root.childElementCount > 0) { fire(); obs.disconnect(); }
-            });
-            obs.observe(root, { childList: true });
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', start, { once: true });
-        } else { start(); }
-    })();
-    </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        function postUnsupported(reason) {
-            window.parent.postMessage({
-                type: 'IFRAME_FIRST_CONTENTFUL_PAINT_UNSUPPORTED',
-                payload: { reason: reason, userAgent: navigator.userAgent }
-            }, '*');
-        }
-        if (typeof PerformanceObserver === 'undefined') {
-            postUnsupported('no_performance_observer');
-            return;
-        }
-        try {
-            var obs = new PerformanceObserver(function(list) {
-                var entries = list.getEntries();
-                for (var i = 0; i < entries.length; i++) {
-                    if (entries[i].name === 'first-contentful-paint') {
-                        obs.disconnect();
-                        window.parent.postMessage({ type: 'IFRAME_FIRST_CONTENTFUL_PAINT' }, '*');
-                        return;
-                    }
-                }
-            });
-            obs.observe({ type: 'paint', buffered: true });
-        } catch (e) {
-            postUnsupported('observe_threw:' + (e && e.name ? e.name : 'Error'));
-        }
-    })();
-    </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        var APP_ID = "6acceaf06da15a8e78380978";
-        var PREVIEW_TYPE = "sandbox";
-        var DEPS_PATH = '/node_modules/.vite/deps/';
-        var fired = false;
-        function isViteDep(url) {
-            return typeof url === 'string' && url.indexOf(DEPS_PATH) !== -1;
-        }
-        function looksFailed(entry) {
-            // HTTP failure status (Chrome 109+).
-            if (entry.responseStatus && entry.responseStatus >= 400) return true;
-            // Aborted / blocked / network-error: request ran, nothing decoded.
-            // decodedBodySize === 0 distinguishes from cache hits (Safari has no
-            // deliveryType, so we can't rely on it to exclude cached responses).
-            return entry.transferSize === 0
-                && entry.decodedBodySize === 0
-                && entry.duration > 0
-                && entry.responseEnd > 0;
-        }
-        function report(entry) {
-            if (fired) return;
-            fired = true;
-            var nativeBuffer = window.__base44_preview_native_failures;
-            if (nativeBuffer && typeof nativeBuffer.append === 'function') {
-                nativeBuffer.append('Failed to load module ' + entry.name);
-            }
-            window.parent.postMessage({
-                type: 'SANDBOX_VITE_DEPS_404',
-                payload: {
-                    app_id: APP_ID,
-                    preview_type: PREVIEW_TYPE,
-                    url: entry.name,
-                    initiator_type: entry.initiatorType,
-                    response_status: entry.responseStatus
-                }
-            }, '*');
-        }
-        new PerformanceObserver(function(list) {
-            var entries = list.getEntries();
-            for (var i = 0; i < entries.length; i++) {
-                if (isViteDep(entries[i].name) && looksFailed(entries[i])) {
-                    report(entries[i]);
-                    return;
-                }
-            }
-        }).observe({ type: 'resource', buffered: true });
-    })();
-    </script>
-    <script>
-    (function() {
-        if (typeof PerformanceObserver === 'undefined') return;
-        var reported = {};
-        // Only the app's own module trees may put an error over the preview. A page
-        // can load an optional classic script (analytics, a widget) that fails while
-        // the app renders perfectly well; that must not read as broken app code.
-        // Recording is deliberately wider than reporting — the console buffer keeps
-        // every failed module for diagnostics.
-        function isAppModule(path) {
-            return path.indexOf('/src/') === 0 || path.indexOf('/base44/') === 0;
-        }
-        function modulePath(url) {
-            try {
-                var path = new URL(url, window.location.href).pathname;
-                // The bridge probes this standard SDK path opportunistically;
-                // legacy/custom apps are allowed not to provide it.
-                if (path === '/src/api/base44Client.js') return '';
-                if (path.indexOf('/node_modules/.vite/deps/') !== -1) return '';
-                return /[.](?:[cm]?[jt]sx?)$/i.test(path) ? path : '';
-            } catch (e) {
-                return '';
-            }
-        }
-        new PerformanceObserver(function(list) {
-            var entries = list.getEntries();
-            for (var index = 0; index < entries.length; index++) {
-                var entry = entries[index];
-                if (entry.initiatorType !== 'script') continue;
-                var status = entry.responseStatus;
-                if (!status) continue;
-                var path = modulePath(entry.name);
-                if (!path) continue;
-                if (status < 400) {
-                    // Recovered (an HMR fix re-requests it). Forget it, or breaking the
-                    // same path again later this document would be silently suppressed.
-                    delete reported[path];
-                    continue;
-                }
-                var message = status === 404
-                    ? 'Module not found: ' + path
-                    : 'Module failed to load (' + status + '): ' + path;
-                var buffer = window.__base44_preview_native_failures;
-                if (buffer && typeof buffer.append === 'function') buffer.append(message);
-                if (!isAppModule(path) || reported[path] || window.self === window.top) continue;
-                reported[path] = true;
-                window.parent.postMessage({
-                    type: 'SANDBOX_MODULE_LOAD_FAILED',
-                    payload: { path: path, status: status, message: message }
-                }, '*');
-            }
-        }).observe({ type: 'resource', buffered: true });
-    })();
-    </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        if (typeof performance === 'undefined' || typeof performance.getEntriesByType !== 'function') return;
-        var DEPS_PATH = '/node_modules/.vite/deps/';
-        var QUIESCENCE_MS = 1500;
-        var POLL_MS = 500;
-        var fired = false;
-        var intervalId = setInterval(function() {
-            if (fired) return;
-            var entries = performance.getEntriesByType('resource');
-            var lastDepEnd = 0;
-            for (var i = 0; i < entries.length; i++) {
-                if (entries[i].name.indexOf(DEPS_PATH) === -1) continue;
-                if (entries[i].responseEnd > lastDepEnd) lastDepEnd = entries[i].responseEnd;
-            }
-            if (lastDepEnd === 0) return;
-            if (performance.now() - lastDepEnd >= QUIESCENCE_MS) {
-                fired = true;
-                clearInterval(intervalId);
-                window.parent.postMessage({ type: 'IFRAME_VITE_DEPS_SETTLED' }, '*');
-            }
-        }, POLL_MS);
-    })();
-    </script>
-        <script type="module">
-        try {
-            const { base44 } = await import("/src/api/base44Client.js");
-            if (base44) {
-                Object.defineProperty(window, "base44_sdk", {
-                    value: base44,
-                    writable: false,
-                    configurable: true
-                });
-            }
-        } catch (e) {
-            // Some legacy/custom apps may not have the standard client module.
-            // Leave window.base44_sdk undefined; PreviewLens can fall back to UI/network checks.
-            window.parent.postMessage({ type: "PREVIEW_LENS_SDK_ATTACH_FAILED", error: String(e) }, "*");
-        }
-        </script>
-        <script type="module">
-        try {
-            const { createHotContext } = await import("/@vite/client");
-            const hot = createHotContext("/__builder-bridge-hmr");
-            const previewFEVersion = Number(new URLSearchParams(window.location.search).get("previewFE_version")) || 0;
-            hot.on("vite:ws:connect", () => window.parent.postMessage({ type: "SANDBOX_WS_CONNECT" }, "*"));
-            hot.on("vite:ws:disconnect", () => window.parent.postMessage({ type: "SANDBOX_WS_DISCONNECT" }, "*"));
-        
-            hot.on("vite:error", (payload) => {
-                const err = payload && payload.err && typeof payload.err === "object" ? payload.err : {};
-                const message = typeof err.message === "string" ? err.message : "Unknown build error";
-                const plugin = typeof err.plugin === "string" ? `[plugin:${err.plugin}] ` : "";
-                const details = [`Vite build error: ${plugin}${message}`];
-                const loc = err.loc && typeof err.loc === "object" ? err.loc : null;
-                let file = loc && typeof loc.file === "string"
-                    ? loc.file
-                    : (typeof err.id === "string" ? err.id : "");
-                if (file) {
-                    file = file.split("?")[0];
-                    if (loc && Number.isFinite(loc.line) && Number.isFinite(loc.column)) {
-                        file += `:${loc.line}:${loc.column}`;
-                    }
-                    details.push(`File: ${file}`);
-                }
-                if (typeof err.frame === "string" && err.frame.trim()) details.push(err.frame.trim());
-                if (typeof err.stack === "string" && err.stack.trim()) details.push(err.stack.trim());
-
-                const nativeBuffer = window.__base44_preview_native_failures;
-                if (!nativeBuffer || typeof nativeBuffer.append !== "function") return;
-                nativeBuffer.append(details.join(String.fromCharCode(10)));
-            });
-    
-            // The pending promise holds Vite's pageReload (it awaits listeners) so the parent swaps a fresh iframe; an editor that doesn't announce previewFE_version falls back to today's in-place reload.
-            hot.on("vite:beforeFullReload", () => {
-                window.parent.postMessage({ type: "sandbox:beforeFullReload" }, "*");
-                if (previewFEVersion > 0) return new Promise(() => {});
-            });
-        } catch (e) {
-            // Bundled dev mode serves no /@vite/client. The plugin's socket relay, shipped
-            // inside the bundle, reports these events and flags itself once it runs; Vite's
-            // pre-bundle fallback page reloads on its own. Give the bundle time before
-            // declaring the socket unreachable.
-            const reportAttachFailure = (attemptsLeft) => {
-                if (window.__base44_bundled_dev__ || globalThis.__vite_is_fallback_page__) return;
-                if (attemptsLeft <= 0) {
-                    window.parent.postMessage({ type: "SANDBOX_WS_ATTACH_FAILED", error: String(e) }, "*");
-                    return;
-                }
-                setTimeout(() => reportAttachFailure(attemptsLeft - 1), 500);
-            };
-            reportAttachFailure(30);
-        }
-        </script>
-    <script>
-    (function() {
-        if (window.self === window.top) return;
-        var lastUrl = window.location.href;
-        function notify() {
-            var url = window.location.href;
-            if (url === lastUrl) return;
-            lastUrl = url;
-            window.parent.postMessage({ type: 'APP_CHANGED_URL', url: url }, '*');
-        }
-        var origPush = history.pushState.bind(history);
-        history.pushState = function() { origPush.apply(history, arguments); notify(); };
-        var origReplace = history.replaceState.bind(history);
-        history.replaceState = function() { origReplace.apply(history, arguments); notify(); };
-        window.addEventListener('popstate', notify);
-        window.parent.postMessage({ type: 'APP_CHANGED_URL', url: window.location.href }, '*');
-    })();
-    </script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>The Wedding Atelier — Private Wedding Planner</title>
@@ -1668,6 +1172,193 @@ textarea{ line-height:1.5; }
   .pl-grow .pill{order:4;margin-left:auto}
 }
 </style>
+<style id="wa-guest-v2">
+/* ==========================================================================
+   THE WEDDING ATELIER · GUEST MODULE v2 — quản lý khách mời theo giai đoạn
+   Chỉ bổ sung lớp trình bày. Không đổi dữ liệu, nghiệp vụ hay Supabase.
+   1 Hub giai đoạn · 2 Thẻ giai đoạn · 3 Danh sách khách · 4 Trạng thái
+   5 Responsive
+   ========================================================================== */
+@keyframes gpFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.gp-hub,.gp-view{animation:gpFade .24s var(--ease) both}
+
+/* ---------- 1 · HUB GIAI ĐOẠN ---------- */
+.gp-hub-h{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 18px}
+.gp-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.gp-hub-t{font-family:var(--serif);font-size:var(--fs-h2);font-weight:600;color:var(--ink);margin:0 0 7px;line-height:1.2;letter-spacing:-.2px}
+.gp-hub-s{font-size:13px;line-height:1.6;color:var(--muted);max-width:64ch;margin:0}
+.gp-note{margin:0 0 16px;padding:12px 16px;border:1px solid var(--line-2);border-left:3px solid var(--champagne);border-radius:10px;background:var(--surface-2);font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.gp-phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(304px,1fr));gap:18px;align-items:stretch}
+
+/* ---------- 2 · THẺ GIAI ĐOẠN ---------- */
+.gp-phase{position:relative;display:flex;flex-direction:column;gap:9px;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:16px;padding:20px 22px 18px;overflow:hidden;
+  box-shadow:var(--shadow-card);transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.gp-phase::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--pa,var(--burgundy));opacity:.9}
+.gp-phase:hover{transform:translateY(-3px);border-color:var(--bride-line);box-shadow:0 2px 4px rgba(43,37,34,.05),0 16px 34px rgba(43,37,34,.10)}
+.gp-phase.is-on{border-color:var(--burgundy);box-shadow:0 0 0 1px var(--burgundy),var(--shadow-card)}
+.gp-phase:focus-visible{outline:2px solid var(--burgundy);outline-offset:3px}
+.gp-phases>.gp-phase:nth-of-type(4n+1){--pa:var(--burgundy)}
+.gp-phases>.gp-phase:nth-of-type(4n+2){--pa:var(--forest)}
+.gp-phases>.gp-phase:nth-of-type(4n+3){--pa:#9A7A28}
+.gp-phases>.gp-phase:nth-of-type(4n+4){--pa:#3A3A6B}
+.gp-phases>.gp-phase.is-loose{--pa:#9A8F82}
+.gp-phase-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gp-phase-no{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface-2);
+  font-family:var(--serif);font-size:13px;font-weight:600;color:var(--pa,var(--burgundy))}
+.gp-badge{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+.gp-badge.b-now{background:#EBF1EC;color:#2F4A37;border-color:#CBDCCF}
+.gp-badge.b-next{background:var(--champagne-soft);color:#7E6320;border-color:#E4D3A8}
+.gp-badge.b-past{background:var(--surface-3);color:var(--muted);border-color:var(--line-2)}
+.gp-phase-name{font-family:var(--serif);font-size:23px;font-weight:600;color:var(--ink);line-height:1.15;letter-spacing:-.2px;overflow-wrap:anywhere}
+.gp-phase-meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.45}
+.gp-phase-desc{font-size:12.5px;line-height:1.5;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gp-phase-nums{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:3px 0 1px;padding:13px 0}
+.gp-phase-nums>span{padding:0 14px;border-left:1px solid var(--line);min-width:0}
+.gp-phase-nums>span:first-child{padding-left:0;border-left:0}
+.gp-phase-nums b{display:block;font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.gp-phase-nums small{display:block;margin-top:3px;font-size:10.5px;color:var(--muted);line-height:1.35}
+.gp-seg{display:flex;height:4px;border-radius:99px;overflow:hidden;background:var(--surface-4)}
+.gp-seg i{display:block;height:100%;transition:width .3s var(--ease)}
+.gp-seg .c{background:var(--forest)}
+.gp-seg .d{background:#C9B7B7}
+.gp-phase-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:2px}
+.gp-rsvpsum{font-size:11.5px;color:var(--muted);line-height:1.45}
+.gp-phase-go{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--burgundy);white-space:nowrap}
+.gp-phase-go svg{width:15px;height:15px;transition:transform .2s var(--ease)}
+.gp-phase:hover .gp-phase-go svg{transform:translateX(4px)}
+
+/* ---------- 3 · DANH SÁCH KHÁCH CỦA GIAI ĐOẠN ---------- */
+.gp-crumb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.gp-back{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border:1px solid var(--line-2);border-radius:9px;
+  background:var(--surface);font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:all .16s var(--ease)}
+.gp-back svg{width:15px;height:15px}
+.gp-back:hover{border-color:var(--burgundy);color:var(--burgundy);background:var(--surface-2)}
+.gp-crumb-sel{display:inline-flex;align-items:center;gap:9px;font-size:12px;color:var(--muted)}
+.gp-crumb-sel .filter-select{max-width:250px}
+.gp-viewhead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.gp-title{font-family:var(--serif);font-size:var(--fs-h1);font-weight:600;color:var(--ink);line-height:1.1;margin:0;letter-spacing:-.4px}
+.gp-headline{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.5}
+.gp-headline b{color:var(--burgundy);font-weight:600}
+.gp-head-act{display:flex;gap:8px;flex-wrap:wrap}
+.gp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:1px;background:var(--line);border:1px solid var(--line-2);
+  border-radius:14px;overflow:hidden;margin-bottom:18px}
+.gp-stat{background:var(--surface);padding:16px 18px;min-width:0}
+.gp-stat small{display:block;font-size:10.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+.gp-stat b{display:block;margin-top:7px;font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.12;color:var(--ink);font-variant-numeric:tabular-nums}
+.gp-stat span{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.4}
+.gp-stat.is-ok b{color:#2F4A37}
+.gp-stat.is-wait b{color:#8A6A1F}
+.gp-stat.is-no b{color:var(--danger)}
+.gp-evchips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.gp-evchips-l{font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);margin-right:3px}
+.gp-evchip{font:inherit;font-size:12px;padding:6px 13px;border:1px solid var(--line-2);border-radius:99px;background:var(--surface);color:var(--ink-2);cursor:pointer;transition:all .16s var(--ease)}
+.gp-evchip:hover{border-color:var(--burgundy);color:var(--burgundy)}
+.gp-evchip.on{background:var(--burgundy);border-color:var(--burgundy);color:#fff;font-weight:600}
+.gp-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;background:var(--surface);border:1px solid var(--line-2);border-radius:13px;margin-bottom:12px}
+.gp-filters .search-box{flex:1 1 250px;min-width:190px}
+.gp-clear{font:inherit;font-size:12px;color:var(--muted);background:none;border:0;cursor:pointer;padding:6px 4px;white-space:nowrap;transition:color .16s var(--ease)}
+.gp-clear:hover{color:var(--burgundy);text-decoration:underline}
+.gp-count{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gp-bulk{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:12px;margin-bottom:14px}
+.gp-all{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.gp-all input{width:17px;height:17px;accent-color:var(--burgundy);cursor:pointer}
+.gp-selcount{font-size:12.5px;font-weight:600;color:var(--burgundy);font-variant-numeric:tabular-nums}
+.gp-del{margin-left:auto}
+.gp-list{background:var(--surface);border:1px solid var(--line-2);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-card)}
+.gp-lhead,.gp-row{display:grid;grid-template-columns:30px minmax(200px,1.5fr) 106px minmax(108px,1fr) 84px 120px 86px;align-items:center;gap:12px;padding:0 16px}
+.gp-lhead{height:44px;background:linear-gradient(180deg,var(--head-a),var(--head-b));color:var(--head-ink);border-bottom:1px solid var(--line-2);
+  box-shadow:inset 0 3px 0 var(--accent-rule);font-size:10.5px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase}
+.gp-lhead .r{text-align:right}
+.gp-rows{list-style:none;margin:0;padding:0}
+.gp-row{padding-top:13px;padding-bottom:13px;border-bottom:1px solid var(--line);transition:background .16s var(--ease),box-shadow .16s var(--ease)}
+.gp-rows>li:last-child{border-bottom:0}
+.gp-row:hover{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--burgundy)}
+.gp-row.is-sel{background:var(--champagne-soft)}
+.gp-check{display:flex;align-items:center;justify-content:center}
+.gp-check input{width:17px;height:17px;accent-color:var(--burgundy);cursor:pointer}
+.gp-id{display:flex;align-items:center;gap:11px;min-width:0}
+.gp-av{flex:0 0 auto;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-family:var(--serif);font-size:14px;font-weight:600;letter-spacing:.3px}
+.gp-av.groom{background:var(--groom-soft);color:var(--groom);border:1px solid var(--groom-line)}
+.gp-av.bride{background:#F7E9EC;color:var(--burgundy);border:1px solid var(--bride-line)}
+.gp-idt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.gp-name{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.gp-rep{display:inline-block;margin-left:2px;padding:2px 6px;border-radius:5px;background:var(--champagne-soft);color:#7E6320;
+  font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;vertical-align:1px}
+.gp-sub{font-size:12px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.gp-meta{display:contents}
+.gp-chip{display:inline-block;max-width:100%;padding:4px 10px;border:1px solid var(--line-2);border-radius:7px;background:var(--surface-2);
+  font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gp-chip i{font-style:normal;color:var(--muted-2)}
+.gp-chip.side-groom{background:var(--groom-soft);border-color:var(--groom-line);color:var(--groom);font-weight:600}
+.gp-chip.side-bride{background:#F7E9EC;border-color:var(--bride-line);color:var(--burgundy);font-weight:600}
+.gp-num{display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums}
+.gp-num b{font-size:15px;font-weight:700;color:var(--ink)}
+.gp-num small{font-size:11px;color:var(--muted)}
+.gp-act{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.gp-ib{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line-2);border-radius:9px;background:var(--surface);
+  color:var(--ink-2);cursor:pointer;transition:all .16s var(--ease)}
+.gp-ib svg{width:16px;height:16px}
+.gp-ib:hover{border-color:var(--burgundy);color:var(--burgundy);background:var(--surface-2)}
+.gp-ib.danger:hover{border-color:var(--danger);color:var(--danger);background:#FCF2F2}
+.gp-foot{padding:11px 16px;border-top:1px solid var(--line);background:var(--surface-2);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gp-lhead+.gp-rows .gp-row:first-child{border-top:0}
+
+.imp-note{margin:10px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+/* ---------- 4 · TRẠNG THÁI ---------- */
+.gp-empty{padding:46px 26px;text-align:center;background:var(--surface);border:1px dashed var(--line-2);border-radius:14px}
+.gp-empty svg{width:34px;height:34px;color:var(--champagne);opacity:.85}
+.gp-empty-t{margin:14px 0 7px;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--ink)}
+.gp-empty-m{margin:0 auto 18px;max-width:56ch;font-size:13px;line-height:1.65;color:var(--muted)}
+
+/* ---------- 5 · RESPONSIVE ---------- */
+@media(max-width:1080px){
+  .gp-lhead,.gp-row{grid-template-columns:28px minmax(180px,1.4fr) 100px minmax(96px,1fr) 80px 112px 80px;gap:10px;padding:0 12px}
+}
+@media(max-width:900px){
+  .gp-lhead{display:none}
+  .gp-row{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"cb name act" ". meta meta";row-gap:11px;align-items:start;padding:15px 14px}
+  .gp-check{grid-area:cb;padding-top:3px}
+  .gp-id{grid-area:name}
+  .gp-meta{grid-area:meta;display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .gp-act{grid-area:act;gap:7px}
+  .gp-ib{width:36px;height:36px}
+  .gp-ib svg{width:17px;height:17px}
+  .gp-av{width:36px;height:36px;font-size:13.5px}
+  .gp-name{font-size:15px}
+  .gp-bulk{padding:11px 12px}
+  .gp-del{margin-left:0}
+  .gp-foot{line-height:1.6}
+}
+@media(max-width:720px){
+  .gp-phases{grid-template-columns:1fr}
+  .gp-hub-h{flex-direction:column;align-items:stretch;gap:14px}
+  .gp-hub-h .btn{width:100%}
+  .gp-viewhead{flex-direction:column;align-items:stretch;gap:14px}
+  .gp-head-act{width:100%}
+  .gp-head-act .btn{flex:1 1 auto;justify-content:center}
+  .gp-stats{grid-template-columns:1fr 1fr}
+  .gp-filters .search-box{flex:1 1 100%}
+  .gp-filters .filter-select{flex:1 1 calc(50% - 5px);min-width:0}
+  .gp-count{width:100%;margin-left:0}
+  .gp-crumb-sel{flex:1 1 100%}
+  .gp-crumb-sel .filter-select{flex:1;max-width:none}
+  .gp-back{flex:1 1 auto;justify-content:center}
+  .gp-phase{padding:18px}
+  .gp-phase-nums b{font-size:21px}
+  .gp-phase-nums>span{padding:0 11px}
+}
+@media(max-width:430px){
+  .gp-stats{grid-template-columns:1fr 1fr}
+  .gp-stat{padding:14px}
+  .gp-stat b{font-size:22px}
+  .gp-phase-nums b{font-size:20px}
+  .gp-phase-nums small{font-size:10px}
+  .gp-rows .gp-meta{gap:6px}
+  .gp-chip{font-size:11px;padding:3px 9px}
+  .gp-name{font-size:14.5px}
+}
+</style>
 </head>
 <body>
 
@@ -2215,7 +1906,9 @@ const I = {
   edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
-  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>'
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h13M12 5l7 7-7 7"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>'
 };
 
 /* ---------- ROUTER ---------- */
@@ -2383,10 +2076,11 @@ const G_FIELDS=[
 ];
 const norm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]+/g,' ').trim();
 const Guestbook = {
-  guests:[], groups:[], tables:[], assigns:[], events:[], cfg:{},
+  guests:[], groups:[], tables:[], assigns:[], events:[], phases:[], cfg:{}, phaseId:null, filterEvent:'',
   tab:'list', search:'', filterSide:'', filterGroup:'', filterRsvp:'', open:new Set(),
   sideLabel(s){ return s==='groom'?(this.cfg.groom_side_label||'Nhà trai'):(this.cfg.bride_side_label||'Nhà gái'); },
   async render(){
+    this.phaseId=null; this.selected.clear(); this.filterEvent=''; this.search=''; this.filterSide=''; this.filterGroup=''; this.filterRsvp='';
     const ic=(i)=>i.replace('<svg','<svg style="width:15px;height:15px"');
     document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Guestbook.importCSV()">${ic(I.upload)} Nhập file</button><button class="btn btn-ghost" onclick="Guestbook.exportCSV()">${ic(I.download)} Xuất file</button><button class="btn btn-ghost" onclick="Guestbook.openGroup(null)">${ic(I.plus)} Thêm nhóm</button><button class="btn btn-primary" onclick="Guestbook.openAdd()">${ic(I.plus)} Thêm khách</button>`;
     document.getElementById('content').innerHTML=`<div class="loading-center"><div class="spin"></div>Đang tải dữ liệu...</div>`;
@@ -2394,8 +2088,8 @@ const Guestbook = {
   },
   async load(){
     try{
-      const [g,gr,t,a,ev,st]=await Promise.all([DB.list('wed_guests',{order:['full_name']}),DB.list('wed_guest_groups',{order:['name']}),DB.list('wed_tables',{order:['display_order']}).catch(()=>[]),DB.list('wed_seating_assignments').catch(()=>[]),DB.list('wed_events',{order:['event_date']}).catch(()=>[]),DB.list('wed_wedding_settings').catch(()=>[])]);
-      this.guests=g; this.groups=gr; this.tables=t; this.assigns=a; this.events=ev; this.cfg=st[0]||{};
+      const [g,gr,t,a,ev,st,ph]=await Promise.all([DB.list('wed_guests',{order:['full_name']}),DB.list('wed_guest_groups',{order:['name']}),DB.list('wed_tables',{order:['display_order']}).catch(()=>[]),DB.list('wed_seating_assignments').catch(()=>[]),DB.list('wed_events',{order:['event_date']}).catch(()=>[]),DB.list('wed_wedding_settings').catch(()=>[]),DB.list('wed_phases',{order:['phase_order']}).catch(()=>[])]);
+      this.guests=g; this.groups=gr; this.tables=t; this.assigns=a; this.events=ev; this.cfg=st[0]||{}; this.phases=ph;
       this.paint();
     }catch(e){ document.getElementById('content').innerHTML=UI.empty(I.guest,'Không tải được dữ liệu',Util.esc(e.message||''),'<button class="btn btn-ghost" onclick="Guestbook.load()">Thử lại</button>'); }
   },
@@ -2421,101 +2115,249 @@ const Guestbook = {
     const sideCard=(s)=>{ const l=this.guests.filter(g=>g.side===s), x=this.stats(l), pct=x.guests?Math.round(x.replied/x.guests*100):0;
       return `<div class="gx-side gx-${s}"><div class="gx-side-top"><div><div class="gx-side-name">${Util.esc(this.sideLabel(s))}</div><div class="gx-side-sub">${x.guests} khách · ${x.invited} người được mời</div></div><div class="gx-side-big">${x.confirmed}<small>sẽ tham dự</small></div></div>
       <div class="gx-bar"><i style="width:${pct}%"></i></div><div class="gx-side-foot"><span>${pct}% đã phản hồi</span><span>Tiền mừng: <b>${Util.fmtMoney(x.gift)}</b></span></div></div>`; };
-    const bar=`<div class="gx-sides">${sideCard('groom')}${sideCard('bride')}</div><div class="gx-tabs">${tabs.map(t=>`<button class="gx-tab ${this.tab===t[0]?'on':''}" onclick="Guestbook.setTab('${t[0]}')">${t[1]}</button>`).join('')}</div>`;
+    const bar=`${this.tab==='list'?'':`<div class="gx-sides">${sideCard('groom')}${sideCard('bride')}</div>`}<div class="gx-tabs">${tabs.map(t=>`<button class="gx-tab ${this.tab===t[0]?'on':''}" onclick="Guestbook.setTab('${t[0]}')">${t[1]}</button>`).join('')}</div>`;
     document.getElementById('content').innerHTML=bar+`<div id="gxBody"></div>`;
     this.paintBody();
   },
-  setTab(t){ this.tab=t; this.paint(); },
+  setTab(t){ this.tab=t; if(t!=='list') this.selected.clear(); this.paint(); },
   paintBody(){ if(this.tab==='groups') this.paintGroups(); else if(this.tab==='rsvp') this.paintRsvp(); else this.paintList(); },
-  /* ---------- TAB 1: DANH SÁCH ---------- */
+  /* ============================================================
+     TAB 1 · KHÁCH MỜI THEO GIAI ĐOẠN (v2)
+     Luồng: chọn giai đoạn → xem tổng quan giai đoạn → danh sách
+     khách của giai đoạn đó → thêm/quản lý khách trong ngữ cảnh ấy.
+     Quan hệ dữ liệu sẵn có (không tạo bảng/cột mới):
+       wed_guests.event_ids → wed_events.phase_id → wed_phases
+     Một khách thuộc giai đoạn khi được mời ít nhất một sự kiện của
+     giai đoạn đó. Khách không gắn sự kiện nào nằm ở nhóm “Chưa phân
+     giai đoạn” — không tự gán, không nhân bản, không xóa quan hệ.
+     ============================================================ */
+  LOOSE:'__loose__',
+  /* ---------- quan hệ giai đoạn ↔ sự kiện ↔ khách ---------- */
+  /* sự kiện mặc định khi thêm khách: giai đoạn đang chọn (hoặc sự kiện sẵn có của khách) */
+  pickEvents(g){ if(g) return g.event_ids||[]; return (this.tab==='list'&&this.phaseId&&this.phaseId!==this.LOOSE)?this.phaseEvents(this.phaseId).map(e=>e.id):[]; },
+  phaseName(id){ const p=this.phases.find(x=>x.id===id); return p?p.name:''; },
+  phaseEvents(id){ return this.events.filter(e=>e.phase_id===id); },
+  phaseGuestList(id){ const ids=new Set(this.phaseEvents(id).map(e=>e.id)); return this.guests.filter(g=>(g.event_ids||[]).some(x=>ids.has(x))); },
+  looseGuests(){ const ids=new Set(this.events.filter(e=>e.phase_id).map(e=>e.id)); return this.guests.filter(g=>!(g.event_ids||[]).some(x=>ids.has(x))); },
+  scopeName(){ return this.phaseId===this.LOOSE?'Chưa phân giai đoạn':this.phaseName(this.phaseId); },
+  scopeEvents(){ return this.phaseId===this.LOOSE?[]:this.phaseEvents(this.phaseId); },
+  scopeList(){ return this.phaseId===this.LOOSE?this.looseGuests():this.phaseGuestList(this.phaseId); },
+  phaseRange(p){ return [p.start_date,p.end_date].filter(Boolean).map(d=>Util.fmtDate(d)).join(' – '); },
+  phaseStatus(p){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const s=p.start_date?new Date(p.start_date+'T00:00:00'):null, e=p.end_date?new Date(p.end_date+'T00:00:00'):null;
+    if(e&&e<today) return {k:'past',label:'Đã qua'};
+    if(s&&s>today) return {k:'next',label:'Sắp tới'};
+    if(s||e) return {k:'now',label:'Đang diễn ra'};
+    return {k:'',label:''};
+  },
+  /* thống kê trên khách DUY NHẤT của giai đoạn — không cộng trùng theo sự kiện */
+  phaseStats(list){
+    const g=list||[], conf=g.filter(x=>x.rsvp_status==='confirmed'), dec=g.filter(x=>x.rsvp_status==='declined');
+    const pend=g.filter(x=>!x.rsvp_status||['not_sent','sent','pending','need_contact'].includes(x.rsvp_status));
+    return { profiles:g.length, headcount:g.reduce((s,x)=>s+Util.headcount(x),0),
+      confirmed:conf.length, confHeads:conf.reduce((s,x)=>s+Util.headcount(x),0),
+      pending:pend.length, declined:dec.length, replied:conf.length+dec.length,
+      gift:g.reduce((s,x)=>s+(Number(x.gift_amount)||0),0) };
+  },
+  /* điều hướng giai đoạn */
+  openPhase(id){ this.phaseId=id||null; this.selected.clear(); this.filterEvent=''; this.search=''; this.filterSide=''; this.filterGroup=''; this.filterRsvp=''; this.paintBody(); },
+  backToPhases(){ this.phaseId=null; this.selected.clear(); this.filterEvent=''; this.paintBody(); },
+  setEvent(v){ this.filterEvent=v||''; this.paintBody(); },
+  clearFilters(){ this.search=''; this.filterSide=''; this.filterGroup=''; this.filterRsvp=''; this.filterEvent=''; this.paintBody(); },
+  /* ---------- MÀN HÌNH A · CHỌN GIAI ĐOẠN ---------- */
   paintList(){
-    const gOpts=this.groups.map(x=>`<option value="${x.id}" ${this.filterGroup===x.id?'selected':''}>${Util.esc(x.name)} (${this.sideLabel(x.side)})</option>`).join('');
-    const sel=(v,c)=>v===c?'selected':'';
-    document.getElementById('gxBody').innerHTML=`<div class="toolbar"><div class="search-box">${I.search.replace('<svg','<svg class="ico"')}<input id="gSearch" placeholder="Tìm theo tên, SĐT, người mời..." value="${Util.esc(this.search)}"/></div>
-      <select class="filter-select" id="ffSide"><option value="">Tất cả bên</option><option value="groom" ${sel(this.filterSide,'groom')}>${Util.esc(this.sideLabel('groom'))}</option><option value="bride" ${sel(this.filterSide,'bride')}>${Util.esc(this.sideLabel('bride'))}</option></select>
-      <select class="filter-select" id="ffGroup"><option value="">Tất cả nhóm</option>${gOpts}</select>
-      <select class="filter-select" id="ffRsvp"><option value="">Tất cả RSVP</option>${Object.keys(RS_MAP).map(k=>`<option value="${k}" ${sel(this.filterRsvp,k)}>${RS_MAP[k][0]}</option>`).join('')}</select></div><div id="guestList"></div>`;
-    document.getElementById('gSearch').addEventListener('input',Util.debounce(e=>{this.search=e.target.value.toLowerCase();this.renderRows();},250));
-    document.getElementById('ffSide').onchange=e=>{this.filterSide=e.target.value;this.renderRows();};
-    document.getElementById('ffGroup').onchange=e=>{this.filterGroup=e.target.value;this.renderRows();};
-    document.getElementById('ffRsvp').onchange=e=>{this.filterRsvp=e.target.value;this.renderRows();};
+    if(this.phaseId&&this.phaseId!==this.LOOSE&&!this.phases.some(p=>p.id===this.phaseId)) this.phaseId=null;
+    if(this.phaseId) this.paintPhaseView(); else this.paintHub();
+  },
+  hubHead(){
+    return `<div class="gp-hub-h"><div><div class="gp-eyebrow">Khách mời theo giai đoạn</div>
+      <div class="gp-hub-t">Chọn giai đoạn để quản lý khách mời</div>
+      <p class="gp-hub-s">Mỗi giai đoạn có danh sách khách riêng, tổng hợp từ những sự kiện thuộc giai đoạn đó nên hồ sơ không bị trùng.</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="Router.go('events')">${I.events.replace('<svg','<svg style="width:15px;height:15px"')} Quản lý giai đoạn</button></div>`;
+  },
+  paintHub(){
+    const host=document.getElementById('gxBody'); if(!host) return;
+    const loose=this.looseGuests();
+    if(!this.phases.length&&!loose.length){
+      host.innerHTML=`<section class="gp-hub">${this.hubHead()}
+        <div class="gp-empty">${I.guest}
+        <div class="gp-empty-t">Chưa có giai đoạn nào</div>
+        <div class="gp-empty-m">Giai đoạn chia đám cưới thành từng chặng: chuẩn bị, ăn hỏi, tiệc cưới… Hãy tạo giai đoạn trong mục <b>Sự kiện &amp; lịch trình</b>, gắn sự kiện vào giai đoạn, rồi thêm khách cho từng giai đoạn để theo dõi lời mời và xác nhận.</div>
+        <button class="btn btn-primary" onclick="Router.go('events')">Mở Sự kiện &amp; lịch trình</button></div></section>`;
+      this.refreshSelection(); return;
+    }
+    host.innerHTML=`<section class="gp-hub">${this.hubHead()}
+      ${!this.phases.length?'<div class="gp-note">Chưa có giai đoạn nào. Vào mục <b>Sự kiện &amp; lịch trình</b> để tạo giai đoạn rồi gắn sự kiện vào giai đoạn — danh sách khách sẽ tách theo từng giai đoạn.</div>':''}
+      <div class="gp-phases">${this.phases.map((p,i)=>this.phaseCard(p,i)).join('')}${loose.length?this.looseCard(loose):''}</div></section>`;
+    this.refreshSelection();
+  },
+  phaseCard(p,i){
+    const E=Util.esc, list=this.phaseGuestList(p.id), x=this.phaseStats(list), st=this.phaseStatus(p), evs=this.phaseEvents(p.id), rng=this.phaseRange(p);
+    const on=this.phaseId===p.id, rep=x.profiles?Math.round(x.replied/x.profiles*100):0, dec=x.profiles?Math.round(x.declined/x.profiles*100):0;
+    return `<button type="button" class="gp-phase${on?' is-on':''}" aria-pressed="${on?'true':'false'}" onclick="Guestbook.openPhase('${E(p.id)}')">
+      <span class="gp-phase-top"><span class="gp-phase-no">${String(i+1).padStart(2,'0')}</span>${st.label?`<span class="gp-badge b-${st.k}">${st.label}</span>`:''}</span>
+      <span class="gp-phase-name">${E(p.name)}</span>
+      <span class="gp-phase-meta">${rng?E(rng):'Chưa có mốc thời gian'}${evs.length?' · '+evs.length+' sự kiện':''}</span>
+      ${p.description?`<span class="gp-phase-desc">${E(p.description)}</span>`:''}
+      <span class="gp-phase-nums">
+        <span><b>${x.profiles}</b><small>hồ sơ khách</small></span>
+        <span><b>${x.headcount}</b><small>người dự kiến</small></span>
+        <span><b>${x.confirmed}</b><small>đã xác nhận</small></span>
+      </span>
+      <span class="gp-seg" role="img" aria-label="${x.replied}/${x.profiles} khách đã phản hồi"><i class="c" style="width:${rep}%"></i><i class="d" style="width:${dec}%"></i></span>
+      <span class="gp-phase-foot"><span class="gp-rsvpsum">${x.profiles?rep+'% đã phản hồi · ':''}${x.confirmed} xác nhận · ${x.pending} chưa phản hồi</span>
+        <span class="gp-phase-go">Mở danh sách khách ${I.arrow}</span></span></button>`;
+  },
+  looseCard(list){
+    const x=this.phaseStats(list);
+    return `<button type="button" class="gp-phase is-loose" onclick="Guestbook.openPhase('${this.LOOSE}')">
+      <span class="gp-phase-top"><span class="gp-phase-no">—</span><span class="gp-badge b-past">Chưa xếp</span></span>
+      <span class="gp-phase-name">Chưa phân giai đoạn</span>
+      <span class="gp-phase-meta">Khách chưa gắn sự kiện nào, hoặc sự kiện chưa thuộc giai đoạn nào</span>
+      <span class="gp-phase-nums">
+        <span><b>${x.profiles}</b><small>hồ sơ khách</small></span>
+        <span><b>${x.headcount}</b><small>người dự kiến</small></span>
+        <span><b>${x.confirmed}</b><small>đã xác nhận</small></span>
+      </span>
+      <span class="gp-phase-foot"><span class="gp-rsvpsum">Cần gắn sự kiện để các giai đoạn tính đúng số liệu</span>
+        <span class="gp-phase-go">Mở danh sách khách ${I.arrow}</span></span></button>`;
+  },
+  /* ---------- MÀN HÌNH B · DANH SÁCH KHÁCH CỦA GIAI ĐOẠN ---------- */
+  statTile(label,value,sub,cls){
+    return `<div class="gp-stat${cls?' '+cls:''}"><small>${Util.esc(label)}</small><b>${Util.esc(String(value))}</b><span>${sub||'&nbsp;'}</span></div>`;
+  },
+  paintPhaseView(){
+    const E=Util.esc, host=document.getElementById('gxBody'); if(!host) return;
+    const p=this.phases.find(x=>x.id===this.phaseId), loose=this.phaseId===this.LOOSE;
+    const list=this.scopeList(), x=this.phaseStats(list), evs=this.scopeEvents(), rng=loose?'':this.phaseRange(p||{});
+    const opts=this.phases.map(q=>`<option value="${E(q.id)}" ${this.phaseId===q.id?'selected':''}>${E(q.name)}</option>`).join('')+`<option value="${this.LOOSE}" ${loose?'selected':''}>Chưa phân giai đoạn</option>`;
+    const gOpts=this.groups.map(g=>`<option value="${E(g.id)}" ${this.filterGroup===g.id?'selected':''}>${E(g.name)} (${E(this.sideLabel(g.side))})</option>`).join('');
+    host.innerHTML=`<div class="gp-view">
+      <div class="gp-crumb">
+        <button type="button" class="gp-back" onclick="Guestbook.backToPhases()">${I.back} Chọn giai đoạn khác</button>
+        <label class="gp-crumb-sel"><span>Giai đoạn</span><select class="filter-select" aria-label="Chuyển sang giai đoạn khác" onchange="Guestbook.openPhase(this.value)">${opts}</select></label>
+      </div>
+      <header class="gp-viewhead">
+        <div>
+          <div class="gp-eyebrow">Danh sách khách mời</div>
+          <h2 class="gp-title">Khách mời</h2>
+          <div class="gp-headline">Giai đoạn: <b>${E(this.scopeName())}</b>${rng?' · '+E(rng):''}${evs.length?' · '+evs.length+' sự kiện':''}</div>
+        </div>
+        <div class="gp-head-act">
+          <button class="btn btn-ghost btn-sm" onclick="Guestbook.importCSV()">${I.upload} Nhập file</button>
+          <button class="btn btn-ghost btn-sm" onclick="Guestbook.exportPhase()">${I.download} Xuất giai đoạn</button>
+          <button class="btn btn-primary btn-sm" onclick="Guestbook.openAdd()">${I.plus} Thêm khách</button>
+        </div>
+      </header>
+      <div class="gp-stats">
+        ${this.statTile('Hồ sơ khách',x.profiles,list.length?'trong giai đoạn này':'chưa có khách')}
+        ${this.statTile('Người dự kiến',x.headcount,'theo số mời / xác nhận')}
+        ${this.statTile('Đã xác nhận',x.confirmed,x.confHeads+' người sẽ tham dự','is-ok')}
+        ${this.statTile('Chưa phản hồi',x.pending,'cần gửi hoặc nhắc lời mời','is-wait')}
+        ${this.statTile('Từ chối',x.declined,'không tham dự','is-no')}
+        ${this.statTile('Tiền mừng',Util.fmtMoney(x.gift),'ghi nhận được')}
+      </div>
+      ${evs.length>1?`<div class="gp-evchips"><span class="gp-evchips-l">Lọc theo sự kiện</span>
+        <button type="button" class="gp-evchip${this.filterEvent?'':' on'}" onclick="Guestbook.setEvent('')">Tất cả sự kiện</button>
+        ${evs.map(e=>`<button type="button" class="gp-evchip${this.filterEvent===e.id?' on':''}" onclick="Guestbook.setEvent('${E(e.id)}')">${E(e.name)}</button>`).join('')}</div>`:''}
+      <div class="gp-filters">
+        <div class="search-box">${I.search}<input id="gSearch" type="search" placeholder="Tìm theo tên, SĐT, người mời..." value="${E(this.search)}" aria-label="Tìm khách mời"/></div>
+        <select class="filter-select" id="ffSide" aria-label="Lọc theo bên gia đình"><option value="">Tất cả bên</option><option value="groom" ${this.filterSide==='groom'?'selected':''}>${E(this.sideLabel('groom'))}</option><option value="bride" ${this.filterSide==='bride'?'selected':''}>${E(this.sideLabel('bride'))}</option></select>
+        <select class="filter-select" id="ffGroup" aria-label="Lọc theo nhóm"><option value="">Tất cả nhóm</option>${gOpts}</select>
+        <select class="filter-select" id="ffRsvp" aria-label="Lọc theo trạng thái RSVP"><option value="">Tất cả RSVP</option>${Object.keys(RS_MAP).map(k=>`<option value="${k}" ${this.filterRsvp===k?'selected':''}>${RS_MAP[k][0]}</option>`).join('')}</select>
+        <button type="button" class="gp-clear" onclick="Guestbook.clearFilters()">Xóa bộ lọc</button>
+        <span class="gp-count" id="gpCount" role="status"></span>
+      </div>
+      <div class="gp-bulk">
+        <label class="gp-all"><input type="checkbox" id="gpSelView" onchange="Guestbook.selectVisible(this.checked)"/> Chọn tất cả kết quả đang hiển thị</label>
+        <span class="gp-selcount" id="gxSelectedCount" role="status">Chưa chọn khách nào</span>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="Guestbook.selectAllGuests()">Chọn mọi khách trong sổ (${this.guests.length})</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="Guestbook.clearSelection()">Bỏ chọn</button>
+        <button type="button" id="gxDeleteSelected" class="btn btn-danger btn-sm gp-del" onclick="Guestbook.deleteSelected()">Xóa đã chọn</button>
+      </div>
+      <div class="gp-list" id="guestList"></div>
+    </div>`;
+    const q=document.getElementById('gSearch'); if(q) q.addEventListener('input',Util.debounce(e=>{ this.search=e.target.value; this.renderRows(); },220));
+    const fs=document.getElementById('ffSide'); if(fs) fs.onchange=e=>{ this.filterSide=e.target.value; this.renderRows(); };
+    const fg=document.getElementById('ffGroup'); if(fg) fg.onchange=e=>{ this.filterGroup=e.target.value; this.renderRows(); };
+    const fr=document.getElementById('ffRsvp'); if(fr) fr.onchange=e=>{ this.filterRsvp=e.target.value; this.renderRows(); };
     this.renderRows();
   },
-
-  selected:new Set(),
-  shownIds:[],
+  emptyPhase(){
+    const loose=this.phaseId===this.LOOSE;
+    return UI.empty(I.guest,'Giai đoạn này chưa có khách mời',
+      loose?'Những khách chưa gắn sự kiện nào sẽ nằm ở đây. Hãy chỉnh khách và chọn sự kiện, hoặc thêm khách mới.'
+        :`Chưa có khách nào được mời tới các sự kiện của <b>${Util.esc(this.scopeName())}</b>. Thêm khách mới hoặc nhập từ file — khách thêm ở đây sẽ được gắn vào sự kiện của giai đoạn này.`,
+      `<button type="button" class="btn btn-primary" onclick="Guestbook.openAdd()">${I.plus} Thêm khách vào giai đoạn</button> <button type="button" class="btn btn-ghost" onclick="Guestbook.backToPhases()">Đổi giai đoạn</button>`);
+  },
+  emptyFilter(){
+    return UI.empty(I.search,'Không có khách phù hợp',
+      'Không tìm thấy khách nào khớp từ khóa và bộ lọc hiện tại trong giai đoạn này.',
+      `<button type="button" class="btn btn-ghost" onclick="Guestbook.clearFilters()">Xóa bộ lọc</button>`);
+  },
   renderRows(){
-    let l=this.guests; const q=this.search;
-    if(q) l=l.filter(g=>[g.full_name,g.display_name,g.phone,g.inviter_name].some(v=>(v||'').toLowerCase().includes(q)));
+    const host=document.getElementById('guestList'); if(!host) return;
+    const E=Util.esc, scope=this.scopeList(), evs=this.scopeEvents(), multi=evs.length>1;
+    let l=scope; const q=(this.search||'').trim().toLowerCase();
+    if(this.filterEvent) l=l.filter(g=>(g.event_ids||[]).includes(this.filterEvent));
+    if(q) l=l.filter(g=>[g.full_name,g.display_name,g.phone,g.inviter_name,g.relationship].some(v=>(v||'').toLowerCase().includes(q)));
     if(this.filterSide) l=l.filter(g=>g.side===this.filterSide);
     if(this.filterGroup) l=l.filter(g=>g.group_id===this.filterGroup);
     if(this.filterRsvp) l=l.filter(g=>(g.rsvp_status||'not_sent')===this.filterRsvp);
     const col=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});
-    l=[...l].sort((a,b)=>col.compare(a.full_name||'',b.full_name||'')); this.shownIds=l.map(g=>g.id);
-    const E=Util.esc;
-    const control=(g,f)=>{
-      const k=f.key, id=E(g.id), label=E(f.label), value=k==='table'?(this.tableOf(g.id)||{}).id:g[k];
-      const attrs='data-key="'+k+'" aria-label="'+label+'" class="gx-cell"';
-      let opts=null;
-      if(k==='side') opts=[['groom',this.sideLabel('groom')],['bride',this.sideLabel('bride')]];
-      if(k==='group') opts=[['','— Chưa phân nhóm —'],...this.groups.map(x=>[x.id,x.name+' · '+this.sideLabel(x.side)])];
-      if(k==='is_representative') opts=[['false','Không'],['true','Đại diện hộ']];
-      if(k==='rsvp_status') opts=Object.keys(RS_MAP).map(x=>[x,RS_MAP[x][0]]);
-      if(k==='gift_method') opts=Object.keys(PAY_MAP).map(x=>[x,PAY_MAP[x]]);
-      if(k==='table') opts=[['','— Chưa xếp bàn —'],...this.tables.map(t=>[t.id,t.name+' ('+t.capacity+' chỗ)'])];
-      if(k==='events') return '<details class="gx-event-pick"><summary>Sự kiện ('+(g.event_ids||[]).length+')</summary><div>'+(this.events.length?this.events.map(e=>'<label><input data-event type="checkbox" value="'+E(e.id)+'" '+((g.event_ids||[]).includes(e.id)?'checked':'')+'/> '+E(e.name)+'</label>').join(''):'Chưa có sự kiện')+'</div></details>';
-      if(opts){ const cur=k==='group'?g.group_id:k==='is_representative'?String(!!value):k==='rsvp_status'?(value||'not_sent'):k==='gift_method'?(value||'cash'):(value||''); return '<select '+attrs+'>'+opts.map(o=>'<option value="'+E(o[0])+'" '+(String(cur)===String(o[0])?'selected':'')+'>'+E(o[1])+'</option>').join('')+'</select>'; }
-      if(k==='notes'||k==='dietary') return '<textarea '+attrs+' rows="2">'+E(value||'')+'</textarea>';
-      const num=['invited_count','confirmed_count'].includes(k), money=k==='gift_amount';
-      return '<input '+attrs+' '+(money?Money.attrs:num?'type="number" step="1" min="'+(k==='invited_count'?1:0)+'"':k==='email'?'type="email"':k==='phone'?'type="tel"':'type="text"')+' value="'+E(money?Money.fmt(value):num?(value==null?(k==='invited_count'?1:0):value):(value||''))+'" '+(k==='full_name'?'required':'')+'/>';
-    };
-    const rows=l.map(g=>'<tr data-guest="'+E(g.id)+'"><td class="gx-check"><input type="checkbox" data-select="'+E(g.id)+'" aria-label="Chọn '+E(g.full_name)+'" '+(this.selected.has(g.id)?'checked':'')+' onchange="Guestbook.selectOne(this.dataset.select,this.checked)"/></td>'+G_FIELDS.map(f=>'<td>'+control(g,f)+'</td>').join('')+'<td class="gx-actions"><button class="btn btn-primary btn-sm" onclick="Guestbook.saveInline(this)">Lưu</button><button class="btn btn-ghost btn-sm" onclick="Guestbook.resetInline(this)">Hủy sửa</button><button class="btn btn-danger btn-sm" onclick="Guestbook.confirmDelete(this.closest(\'tr\').dataset.guest)">Xóa</button><span class="gx-row-state" role="status"></span></td></tr>').join('');
-    const el=document.getElementById('guestList'), x=this.stats(l);
-    el.innerHTML='<div class="gx-bulk"><button class="btn btn-ghost btn-sm" onclick="Guestbook.selectAllGuests()">Chọn tất cả '+this.guests.length+' khách</button><button class="btn btn-ghost btn-sm" onclick="Guestbook.clearSelection()">Bỏ chọn</button><button id="gxDeleteSelected" class="btn btn-danger btn-sm" onclick="Guestbook.deleteSelected()">Xóa đã chọn</button><span id="gxSelectedCount"></span><span class="muted">Chỉnh trực tiếp các ô, bấm Lưu ở cuối dòng.</span></div><div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl gx-tb"><thead><tr><th class="gx-check"><input id="gxSelectVisible" type="checkbox" aria-label="Chọn tất cả khách đang hiển thị" onchange="Guestbook.selectVisible(this.checked)"/></th>'+G_FIELDS.map(f=>'<th>'+E(f.label)+'</th>').join('')+'<th>Thao tác</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(!l.length?'<div class="empty">Không có khách phù hợp.</div>':'')+'</div><div class="text-xs muted" style="margin-top:10px">'+l.length+'/'+this.guests.length+' khách · '+x.invited+' người được mời · '+x.confirmed+' xác nhận · Tiền mừng '+Util.fmtMoney(x.gift)+'</div>';
-    el.querySelectorAll('tr[data-guest]').forEach(tr=>tr.addEventListener('input',()=>{tr.classList.add('gx-dirty');tr.querySelector('.gx-row-state').textContent='Chưa lưu';}));
+    l=[...l].sort((a,b)=>col.compare(a.full_name||'',b.full_name||''));
+    this.shownIds=l.map(g=>g.id);
+    const cnt=document.getElementById('gpCount');
+    if(cnt) cnt.textContent=l.length===scope.length?(scope.length+' hồ sơ'):(l.length+' / '+scope.length+' hồ sơ');
+    if(!scope.length){ host.innerHTML=this.emptyPhase(); this.refreshSelection(); return; }
+    if(!l.length){ host.innerHTML=this.emptyFilter(); this.refreshSelection(); return; }
+    const rows=l.map(g=>{
+      const r=RS_MAP[g.rsvp_status||'not_sent']||RS_MAP.not_sent, gr=this.groups.find(x=>x.id===g.group_id);
+      const ev=(g.event_ids||[]).filter(id=>evs.some(e=>e.id===id));
+      const sub=[gr?gr.name:'',g.relationship||'',g.phone||'',(multi&&ev.length)?ev.length+' sự kiện':''].filter(Boolean).join(' · ');
+      const sel=this.selected.has(g.id);
+      return `<li class="gp-row${sel?' is-sel':''}" data-guest="${E(g.id)}">
+        <span class="gp-check"><input type="checkbox" data-select="${E(g.id)}" aria-label="Chọn ${E(g.full_name)}" ${sel?'checked':''} onchange="Guestbook.selectOne(this.dataset.select,this.checked)"/></span>
+        <span class="gp-id"><span class="gp-av ${g.side==='bride'?'bride':'groom'}" aria-hidden="true">${Util.initials(g.full_name)}</span>
+          <span class="gp-idt"><span class="gp-name">${E(g.full_name)}${g.is_representative?'<span class="gp-rep">Đại diện</span>':''}</span>
+          <span class="gp-sub">${sub?E(sub):'<span class="muted">Chưa có thông tin liên hệ</span>'}</span></span></span>
+        <span class="gp-meta">
+          <span class="gp-chip side-${g.side==='bride'?'bride':'groom'}">${E(this.sideLabel(g.side))}</span>
+          <span class="gp-chip">${gr?E(gr.name):'<i>Chưa phân nhóm</i>'}</span>
+          <span class="gp-num"><b>${Util.headcount(g)}</b><small>người</small></span>
+          <span class="pill ${r[1]}">${r[0]}</span>
+        </span>
+        <span class="gp-act">
+          <button type="button" class="gp-ib" title="Chỉnh sửa khách" aria-label="Chỉnh sửa ${E(g.full_name)}" onclick="Guestbook.openEdit('${E(g.id)}')">${I.edit}</button>
+          <button type="button" class="gp-ib danger" title="Xóa khách" aria-label="Xóa ${E(g.full_name)}" onclick="Guestbook.confirmDelete('${E(g.id)}')">${I.trash}</button>
+        </span></li>`;
+    }).join('');
+    const x=this.phaseStats(l);
+    host.innerHTML=`<div class="gp-lhead" role="presentation">
+        <span class="gp-check"><input type="checkbox" id="gpSelHead" aria-label="Chọn tất cả kết quả đang hiển thị" onchange="Guestbook.selectVisible(this.checked)"/></span>
+        <span>Khách mời</span><span>Bên</span><span>Nhóm</span><span>Số người</span><span>RSVP</span><span class="r">Thao tác</span>
+      </div>
+      <ul class="gp-rows">${rows}</ul>
+      <div class="gp-foot">Hiển thị ${l.length}/${scope.length} hồ sơ · ${x.headcount} người dự kiến · ${x.confirmed} đã xác nhận · Tiền mừng ${Util.fmtMoney(x.gift)}</div>`;
     this.refreshSelection();
   },
-  selectOne(id,on){on?this.selected.add(id):this.selected.delete(id);this.refreshSelection();},
-  selectVisible(on){this.shownIds.forEach(id=>on?this.selected.add(id):this.selected.delete(id));this.refreshSelection();},
-  selectAllGuests(){this.guests.forEach(g=>this.selected.add(g.id));this.refreshSelection();},
-  clearSelection(){this.selected.clear();this.refreshSelection();},
+  /* ---------- chọn nhiều (phân biệt rõ: đang hiển thị ⟷ toàn bộ sổ) ---------- */
+  selected:new Set(),
+  shownIds:[],
+  selectOne(id,on){ on?this.selected.add(id):this.selected.delete(id); this.refreshSelection(); },
+  selectVisible(on){ this.shownIds.forEach(id=>{ on?this.selected.add(id):this.selected.delete(id); }); this.refreshSelection(); },
+  selectAllGuests(){ this.guests.forEach(g=>this.selected.add(g.id)); this.refreshSelection(); },
+  clearSelection(){ this.selected.clear(); this.refreshSelection(); },
   refreshSelection(){
-    const valid=new Set(this.guests.map(g=>g.id));this.selected.forEach(id=>{if(!valid.has(id))this.selected.delete(id);});
-    document.querySelectorAll('[data-select]').forEach(c=>c.checked=this.selected.has(c.dataset.select));
-    const n=this.shownIds.filter(id=>this.selected.has(id)).length, c=document.getElementById('gxSelectVisible');if(c){c.checked=!!this.shownIds.length&&n===this.shownIds.length;c.indeterminate=n>0&&n<this.shownIds.length;}
-    const label=document.getElementById('gxSelectedCount');if(label)label.textContent='Đã chọn '+this.selected.size+' khách';
-    const b=document.getElementById('gxDeleteSelected');if(b){b.disabled=!this.selected.size;b.textContent='Xóa đã chọn ('+this.selected.size+')';}
+    const valid=new Set(this.guests.map(g=>g.id)); this.selected.forEach(id=>{ if(!valid.has(id)) this.selected.delete(id); });
+    document.querySelectorAll('[data-select]').forEach(c=>{ const on=this.selected.has(c.dataset.select); c.checked=on; const li=c.closest('.gp-row'); if(li) li.classList.toggle('is-sel',on); });
+    const n=this.shownIds.filter(id=>this.selected.has(id)).length;
+    ['gpSelView','gpSelHead'].forEach(id=>{ const c=document.getElementById(id); if(!c) return; c.checked=!!this.shownIds.length&&n===this.shownIds.length; c.indeterminate=n>0&&n<this.shownIds.length; });
+    const label=document.getElementById('gxSelectedCount'); if(label) label.textContent=this.selected.size?('Đã chọn '+this.selected.size+' khách'):'Chưa chọn khách nào';
+    const b=document.getElementById('gxDeleteSelected'); if(b){ b.disabled=!this.selected.size; b.textContent=this.selected.size?('Xóa đã chọn ('+this.selected.size+')'):'Xóa đã chọn'; }
   },
-  resetInline(btn){
-    const tr=btn.closest('tr'),g=this.guests.find(x=>x.id===tr.dataset.guest);if(!g)return;
-    tr.querySelectorAll('[data-key]').forEach(el=>{const k=el.dataset.key;el.value=k==='group'?(g.group_id||''):k==='table'?((this.tableOf(g.id)||{}).id||''):k==='is_representative'?String(!!g[k]):k==='gift_amount'?Money.fmt(g[k]):k==='rsvp_status'?(g[k]||'not_sent'):k==='gift_method'?(g[k]||'cash'):k==='invited_count'?(g[k]||1):k==='confirmed_count'?(g[k]||0):(g[k]||'');});
-    tr.querySelectorAll('[data-event]').forEach(el=>el.checked=(g.event_ids||[]).includes(el.value));tr.classList.remove('gx-dirty');tr.querySelector('.gx-row-state').textContent='';
-  },
-  async saveInline(btn){
-    const tr=btn.closest('tr'),id=tr.dataset.guest,old=this.guests.find(g=>g.id===id);if(!old)return;
-    const row={},text=['full_name','display_name','relationship','phone','email','inviter_name','dietary','notes'];
-    const read=k=>tr.querySelector('[data-key="'+k+'"]').value;
-    for(const el of tr.querySelectorAll('input[data-key]')){if(!el.checkValidity()){el.reportValidity();return;}}
-    text.forEach(k=>row[k]=read(k).trim()||null);row.side=read('side');row.group_id=read('group')||null;row.is_representative=read('is_representative')==='true';row.invited_count=Number(read('invited_count'));row.confirmed_count=Number(read('confirmed_count'));row.rsvp_status=read('rsvp_status');row.gift_amount=Money.parse(read('gift_amount'));row.gift_method=read('gift_method');row.event_ids=Array.from(tr.querySelectorAll('[data-event]:checked')).map(el=>el.value);
-    if(!row.full_name){Toast.err('Vui lòng nhập họ tên');return;}
-    if(!Number.isInteger(row.invited_count)||row.invited_count<1||!Number.isInteger(row.confirmed_count)||row.confirmed_count<0){Toast.err('Số người phải là số nguyên hợp lệ');return;}
-    const tid=read('table')||null,need=Util.headcount(row),group=this.groups.find(g=>g.id===row.group_id);
-    if(group&&group.side!==row.side){Toast.err('Nhóm không thuộc bên gia đình đã chọn');return;}
-    const status=tr.querySelector('.gx-row-state'),controls=Array.from(tr.querySelectorAll('input,select,textarea,button'));
-    controls.forEach(el=>el.disabled=true);status.textContent='Đang lưu…';
-    try{
-      this.assigns=await DB.list('wed_seating_assignments');
-      if(tid){const t=this.tables.find(t=>t.id===tid);if(!t)throw new Error('Bàn không còn tồn tại');const left=t.capacity-this.seatsUsed(tid,id);if(need>left&&!this.keepsSeat(id,tid,need))throw new Error(t.name+' chỉ còn '+Math.max(0,left)+' chỗ');}
-      const saved=await DB.update('wed_guests',id,row);Object.assign(old,saved);
-      await this.syncTable(id,tid,need);this.assigns=await DB.list('wed_seating_assignments');
-      tr.classList.remove('gx-dirty');status.textContent='Đã lưu';const sum=tr.querySelector('summary');if(sum)sum.textContent='Sự kiện ('+row.event_ids.length+')';this.refreshInlineStats();Toast.ok('Đã lưu '+row.full_name);
-    }catch(e){status.textContent='Chưa lưu hoàn tất';Toast.err('Lưu thất bại: '+(e.message||''));}
-    finally{controls.forEach(el=>el.disabled=false);}
-  },
-  refreshInlineStats(){
-    ['groom','bride'].forEach(side=>{const card=document.querySelector('.gx-side.gx-'+side);if(!card)return;const x=this.stats(this.guests.filter(g=>g.side===side)),pct=x.guests?Math.round(x.replied/x.guests*100):0;card.querySelector('.gx-side-sub').textContent=x.guests+' khách · '+x.invited+' người được mời';card.querySelector('.gx-side-big').innerHTML=x.confirmed+'<small>sẽ tham dự</small>';card.querySelector('.gx-bar i').style.width=pct+'%';card.querySelector('.gx-side-foot').innerHTML='<span>'+pct+'% đã phản hồi</span><span>Tiền mừng: <b>'+Util.fmtMoney(x.gift)+'</b></span>';});
-    const l=this.guests.filter(g=>this.shownIds.includes(g.id)),x=this.stats(l),foot=document.querySelector('#guestList > .text-xs');if(foot)foot.textContent=l.length+'/'+this.guests.length+' khách · '+x.invited+' người được mời · '+x.confirmed+' xác nhận · Tiền mừng '+Util.fmtMoney(x.gift);
-  },
+
   deleteSelected(){
     const ids=[...this.selected].filter(id=>this.guests.some(g=>g.id===id));if(!ids.length)return;
     UI.confirm('Xóa '+ids.length+' khách mời?', 'Bạn sắp xóa <b>'+ids.length+'</b> khách đã chọn'+(ids.length===this.guests.length?' (toàn bộ danh sách)':'')+'. Dữ liệu không thể hoàn tác.',async()=>{
@@ -2585,7 +2427,10 @@ const Guestbook = {
     }catch(e){Toast.err('Lưu thất bại: '+(e.message||''));}
   },
   /* ---------- POPUP THÊM / SỬA KHÁCH ---------- */
-  openAdd(){ this.openDrawer(null); },
+  openAdd(){
+    if(this.tab==='list'&&!this.phaseId){ Toast.warn('Hãy chọn giai đoạn trước khi thêm khách mời'); this.paintBody(); return; }
+    this.openDrawer(null);
+  },
   openEdit(id){ this.openDrawer(this.guests.find(x=>x.id===id)); },
   openDrawer(g){
     this.editId=g?g.id:null; const side=g?g.side:'groom', cur=g?this.tableOf(g.id):null;
@@ -2593,7 +2438,7 @@ const Guestbook = {
     const used=tid=>this.seatsUsed(tid,g?g.id:null);
     const tblOpts=this.tables.map(t=>{const u=used(t.id);return `<option value="${t.id}" ${cur&&cur.id===t.id?'selected':''}>${Util.esc(t.name)} (${u}/${t.capacity})${u>=t.capacity?' · đầy':''}</option>`;}).join('');
     const inviters=[...new Set(this.guests.map(x=>x.inviter_name).filter(Boolean))].map(n=>`<option value="${Util.esc(n)}">`).join('');
-    const ev=this.events.length?this.events.map(e=>`<label class="gx-chk"><input type="checkbox" class="ev-chk" value="${e.id}" ${g&&(g.event_ids||[]).includes(e.id)?'checked':''}/> ${Util.esc(e.name)}${e.event_date?` <span class="text-xs muted">(${Util.fmtDate(e.event_date)})</span>`:''}</label>`).join(''):'<div class="text-xs muted">Chưa có sự kiện. Tạo trong mục Sự kiện.</div>';
+    const ev=this.events.length?this.events.map(e=>`<label class="gx-chk"><input type="checkbox" class="ev-chk" value="${e.id}" ${this.pickEvents(g).includes(e.id)?'checked':''}/> ${Util.esc(e.name)}${e.event_date?` <span class="text-xs muted">(${Util.fmtDate(e.event_date)})</span>`:''}</label>`).join(''):'<div class="text-xs muted">Chưa có sự kiện. Tạo trong mục Sự kiện.</div>';
     const v=(k)=>g?Util.esc(g[k]||''):'';
     const body=`<div class="gx-sec">Thông tin khách</div>
       <div class="field"><label class="label">Họ tên *</label><input class="input" id="gName" value="${v('full_name')}" placeholder="Nguyễn Văn A"/></div>
@@ -2707,13 +2552,16 @@ const Guestbook = {
   async dlXlsx(rows,name,blank){ try{ Toast.show('Đang tạo file Excel...'); const wb=await this.buildBook(rows,blank); this.saveFile(new Blob([await wb.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),name); Toast.ok('Đã tải '+name); }catch(e){ Toast.err(e.message||'Tạo file thất bại'); } },
   dlCsv(rows,name){ const csv='\uFEFF'+[G_FIELDS.map(f=>this.hdr(f)),...rows].map(r=>r.map(v=>Util.csvEscape(v)).join(',')).join('\n'); this.saveFile(new Blob([csv],{type:'text/csv;charset=utf-8'}),name); Toast.ok('Đã tải '+name); },
   wide(html){ UI.modal(html); document.getElementById('modal').classList.add('wide'); },
-  exportCSV(){
-    this.wide(`<div class="imp-head"><div><div class="imp-t">Xuất dữ liệu khách mời</div><div class="imp-s">${this.guests.length} khách · các cột giống hệt file mẫu nhập</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>
-    <div class="imp-body"><div class="imp-cards"><button class="imp-card" onclick="Guestbook.dlXlsx(Guestbook.guests.map(g=>Guestbook.rowValues(g)),'khach-moi.xlsx',false);UI.closeModal()"><span class="imp-ico xl">XLSX</span><b>Excel (khuyên dùng)</b><small>Kẻ viền đầy đủ, tự cân chỉnh độ rộng & chiều cao, có dropdown. Dùng lại để nhập được.</small></button>
-    <button class="imp-card" onclick="Guestbook.dlCsv(Guestbook.guests.map(g=>Guestbook.rowValues(g)),'khach-moi.csv');UI.closeModal()"><span class="imp-ico csv">CSV</span><b>CSV thuần</b><small>Văn bản phân tách bằng dấu phẩy, mở được trên mọi phần mềm (không có viền / dropdown).</small></button></div></div>`);
+  exportCSV(list,label){
+    this._expList=list||null;
+    const rows=list||this.guests, tag=label?(' · giai đoạn '+label):'', slug=label?(norm(label).replace(/ /g,'-').replace(/^-|-$/g,'')||'giai-doan'):'khach-moi';
+    this.wide(`<div class="imp-head"><div><div class="imp-t">Xuất dữ liệu khách mời</div><div class="imp-s">${rows.length} khách${tag} · các cột giống hệt file mẫu nhập</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="imp-body"><div class="imp-cards"><button class="imp-card" onclick="Guestbook.dlXlsx((Guestbook._expList||Guestbook.guests).map(g=>Guestbook.rowValues(g)),'${slug}.xlsx',false);UI.closeModal()"><span class="imp-ico xl">XLSX</span><b>Excel (khuyên dùng)</b><small>Kẻ viền đầy đủ, tự cân chỉnh độ rộng & chiều cao, có dropdown. Dùng lại để nhập được.</small></button>
+    <button class="imp-card" onclick="Guestbook.dlCsv((Guestbook._expList||Guestbook.guests).map(g=>Guestbook.rowValues(g)),'${slug}.csv');UI.closeModal()"><span class="imp-ico csv">CSV</span><b>CSV thuần</b><small>Văn bản phân tách bằng dấu phẩy, mở được trên mọi phần mềm (không có viền / dropdown).</small></button></div></div>`);
   },
+  exportPhase(){ const l=this.scopeList(); if(!l.length){ Toast.warn('Giai đoạn này chưa có khách để xuất'); return; } this.exportCSV(l,this.scopeName()); },
   /* ---------- NHẬP ---------- */
-  importCSV(){ this.imp={}; this.impStep1(); },
+  importCSV(){ this.imp={}; this.impPhaseId=(this.tab==='list'&&this.phaseId&&this.phaseId!==this.LOOSE)?this.phaseId:null; this.impStep1(); },
   stepper(n){ return `<div class="imp-steps">${['Tải file mẫu','Tải file lên','Kiểm tra','Hoàn tất'].map((t,i)=>`<span class="${i+1<n?'done':i+1===n?'on':''}"><i>${i+1<n?'✓':i+1}</i>${t}</span>`).join('<em></em>')}</div>`; },
   impStep1(){
     const chips=G_FIELDS.map(f=>`<span class="imp-chip ${f.req?'req':''} ${f.kind==='list'?'lst':''}">${f.label}${f.req?' *':''}${f.kind==='list'?' ▾':''}</span>`).join('');
@@ -2756,6 +2604,7 @@ const Guestbook = {
     let phone=get('phone'); if(/^\d{9}$/.test(phone)) phone='0'+phone;
     const tn=get('table'); let tid=null; if(tn){ const t=this.tables.find(t=>norm(t.name)===norm(tn)||norm(t.name)===norm('Bàn '+tn)); if(t) tid=t.id; else warn.push('Không thấy bàn “'+tn+'”'); }
     const evIds=[]; get('events').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(n=>{ const e=this.events.find(e=>norm(e.name)===norm(n)); if(e) evIds.push(e.id); else warn.push('Không thấy sự kiện “'+n+'”'); });
+    if(!evIds.length&&this.impPhaseId){ this.phaseEvents(this.impPhaseId).forEach(e=>evIds.push(e.id)); }
     const gname=get('group'); const dup=!!full&&this.guests.some(g=>norm(g.full_name)===norm(full)&&g.side===side);
     return {line,hasData:r.some(x=>String(x).trim()!==''),full_name:full,display_name:get('display_name')||null,side,groupName:gname,newGroup:!!gname&&!this.groups.some(g=>g.side===side&&norm(g.name)===norm(gname)),relationship:get('relationship')||null,phone:phone||null,email:get('email')||null,is_representative:['co','1','true','yes','dai dien ho'].includes(norm(get('is_representative'))),invited_count:Math.max(1,parseInt(get('invited_count'))||1),confirmed_count:Math.max(0,parseInt(get('confirmed_count'))||0),rsvp_status:rsvp,inviter_name:get('inviter_name')||null,tableId:tid,tableName:tn,gift_amount:amt,gift_method:method,dietary:get('dietary')||null,event_ids:evIds,notes:get('notes')||null,warn,err,dup,sideBad:err.some(e=>/bên gia đình/i.test(e))};
   },
@@ -2845,7 +2694,7 @@ const Guestbook = {
     this.wide(`<div class="imp-head"><div><div class="imp-t">Kiểm tra dữ liệu</div><div class="imp-s">📄 ${Util.esc(this.imp.file)}</div></div><button class="btn-close" onclick="UI.closeModal()">✕</button></div>${this.stepper(3)}
     <div class="imp-body"><div class="imp-stats"><div><b data-n="${c.total}">0</b><span>Tổng dòng</span></div><div class="ok"><b data-n="${c.ok}">0</b><span>Hợp lệ</span></div><div class="wr"><b data-n="${c.dup}">0</b><span>Trùng</span></div><div class="er"><b data-n="${c.bad}">0</b><span>Lỗi (bỏ qua)</span></div></div>
     <div class="imp-alert" id="impAlert" style="display:none"></div>
-    <div class="imp-hint">Bạn có thể sửa trực tiếp mọi ô trong bảng. Hệ thống tự kiểm tra lại số người mỗi bàn ngay khi bạn thay đổi.</div>
+    <div class="imp-hint">Bạn có thể sửa trực tiếp mọi ô trong bảng. Hệ thống tự kiểm tra lại số người mỗi bàn ngay khi bạn thay đổi.</div>${this.impPhaseId?`<div class="imp-note">Khách không ghi rõ sự kiện sẽ được gắn vào giai đoạn <b>${Util.esc(this.phaseName(this.impPhaseId))}</b>.</div>`:""}
     <datalist id="impGrp">${[...new Set(this.groups.map(g=>g.name))].map(n=>`<option value="${Util.esc(n)}">`).join('')}</datalist>
     <div class="imp-tbl"><table class="imp-t2"><thead><tr>${th.map(h=>`<th class="${ctr.includes(h)?'c':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
     ${c.wr?`<div class="text-xs muted" style="margin-top:6px">${c.wr} dòng có lưu ý nhỏ, vẫn được nhập.</div>`:''}
