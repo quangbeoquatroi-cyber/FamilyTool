@@ -987,6 +987,98 @@ textarea{ line-height:1.5; }
   .toolbar .filter-select{ flex:1 1 calc(50% - 6px); min-width:0; text-overflow:ellipsis; }
 }
 </style>
+
+<style id="wa-v9">
+/* ===== v9: Màn hình chào mới ===== */
+#transition{background:radial-gradient(ellipse 70% 55% at 50% 42%,rgba(190,154,83,.20) 0%,transparent 65%),radial-gradient(ellipse at 12% 100%,#8A2F45 0%,transparent 55%),radial-gradient(ellipse at 92% 0%,#4A1824 0%,transparent 55%),linear-gradient(160deg,#3B1520 0%,#5A1F2E 55%,#2E101A 100%);color:#FBF3E4}
+.gr-frame{position:absolute;inset:18px;border:1px solid rgba(190,154,83,.38);border-radius:18px;pointer-events:none;opacity:0;animation:grIn 1s var(--ease) .2s forwards}
+.gr-frame::before{content:'';position:absolute;inset:7px;border:1px solid rgba(190,154,83,.18);border-radius:12px}
+.gr-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;animation:grFloat 9s ease-in-out infinite}
+.gr-orb.o1{width:360px;height:360px;background:#BE9A53;top:-120px;left:-100px;opacity:.20}
+.gr-orb.o2{width:420px;height:420px;background:#B24A5E;bottom:-160px;right:-120px;opacity:.30;animation-delay:-4s}
+@keyframes grFloat{50%{transform:translate(30px,-24px) scale(1.08)}}
+.gr-sp{position:absolute;bottom:-10px;left:var(--x);width:4px;height:4px;border-radius:50%;background:#D9B66A;box-shadow:0 0 10px 2px rgba(217,182,106,.6);opacity:0;pointer-events:none;animation:grRise var(--t,7s) linear var(--d,0s) infinite}
+@keyframes grRise{0%{transform:translateY(0);opacity:0}15%{opacity:.85}100%{transform:translateY(-105vh);opacity:0}}
+#transition .gr-stage{position:relative;z-index:2}
+#transition .gr-mark{width:104px;height:104px;margin-bottom:30px}
+#transition .gr-ring{stroke:#D9B66A;stroke-width:1.2}
+#transition .gr-ring2{fill:none;stroke:rgba(217,182,106,.4);stroke-width:.8;stroke-dasharray:252;stroke-dashoffset:252;animation:grDraw 1.2s var(--ease) .3s forwards}
+#transition .gr-mark b{color:#F3DFA8;font-size:46px}
+#transition .gr-hello{color:rgba(251,243,228,.78);letter-spacing:.6px}
+#transition .gr-name{color:#FFF8EA;text-shadow:0 6px 40px rgba(0,0,0,.35);font-size:clamp(56px,14vw,108px)}
+#transition .gr-rule{display:flex;align-items:center;gap:12px;width:210px;height:auto;background:none;margin:26px 0 16px;transform:none;opacity:0;animation:grIn .8s var(--ease) 1.45s forwards}
+.gr-rule i{flex:1;height:1px;background:linear-gradient(90deg,transparent,#D9B66A)}
+.gr-rule i:last-child{background:linear-gradient(270deg,transparent,#D9B66A)}
+.gr-rule b{color:#D9B66A;font-size:12px;font-weight:400}
+#transition .gr-sub{color:#EBD9AD;font-style:italic;font-size:clamp(18px,2.8vw,24px);letter-spacing:.8px}
+.gr-chip{margin-top:20px;padding:8px 20px;border:1px solid rgba(217,182,106,.5);border-radius:30px;background:rgba(255,255,255,.07);color:#F3E6C4;font-size:13.5px;letter-spacing:.4px;opacity:0;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.gr-chip:not(.on){display:none}
+.gr-chip b{font-family:var(--serif);font-size:22px;color:#F3DFA8;margin:0 3px;font-feature-settings:'lnum' 1}
+.gr-chip.on{animation:grIn .7s var(--ease) 1.9s forwards}
+.gr-skip{position:absolute;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));text-align:center;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:rgba(251,243,228,.5);opacity:0;z-index:2;animation:grIn .7s var(--ease) 2s forwards}
+#transition .gr-acct{color:rgba(251,243,228,.55);z-index:2}
+#transition .gr-bar{height:3px;background:linear-gradient(90deg,#BE9A53,#F3DFA8,#BE9A53)}
+@media (prefers-reduced-motion:reduce){.gr-frame,.gr-rule,.gr-chip.on,.gr-skip,.gr-ring2{animation:none!important;opacity:1;stroke-dashoffset:0}.gr-sp,.gr-orb{display:none}}
+
+/* ===== v9: Sự kiện mở rộng — Công việc & Ngân sách ===== */
+.pl-ev.open .pl-ev-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;padding:16px;background:var(--ivory)}
+.pl-ev-body .pl-col,.pl-ev-body .pl-col+.pl-col{padding:18px;background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--forest);border-radius:14px;box-shadow:var(--shadow-sm)}
+.pl-ev-body .pl-col-bud{border-top-color:var(--champagne)}
+.pl-sec-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.pl-sec-t{display:flex;align-items:center;gap:12px;min-width:0}
+.pl-sec-t b{font-family:var(--serif);font-size:21px;font-weight:700;color:var(--ink);display:block;line-height:1.15}
+.pl-sec-t small{font-size:12px;color:var(--muted)}
+.pl-sec-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pl-sec-ico svg{width:20px;height:20px}
+.pl-sec-ico.t{background:var(--forest-soft);color:var(--forest)}
+.pl-sec-ico.b{background:var(--champagne-soft);color:#8A6F2A}
+.pl-add-btn{padding:8px 15px;border-radius:9px;background:var(--burgundy);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;transition:background .15s}
+.pl-add-btn:hover{background:var(--burgundy-2)}
+.pl-mini{height:6px;border-radius:6px;background:var(--ivory-2);overflow:hidden;margin-bottom:14px}
+.pl-mini i{display:block;height:100%;background:var(--forest);border-radius:6px;transition:width .4s}
+.pl-col-task .pl-t{background:var(--ivory);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px;align-items:center;transition:border-color .15s}
+.pl-col-task .pl-t:hover{border-color:var(--forest)}
+.pl-col-task .pl-t.done{background:var(--forest-soft);border-color:transparent}
+.pl-col-task .task-check{width:24px;height:24px;margin-top:0}
+.pl-col-task .pl-t-title{font-size:14.5px;font-weight:600}
+.pl-col-task .pl-t-meta{gap:6px 8px;margin-top:6px}
+.pl-pr{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+.pl-pr-hi{background:var(--danger-soft);color:var(--danger)}.pl-pr-md{background:var(--warn-soft);color:#8A6213}.pl-pr-lo{background:var(--ivory-2);color:#5F564B}
+.pl-chipc{background:var(--champagne-soft);color:#7E6320;font-weight:600;padding:2px 9px;border-radius:20px}
+.pl-col-task .pl-quick input{margin-top:6px;padding:12px 14px;border:1.5px dashed var(--line-2);border-radius:11px;font-size:13.5px;background:transparent}
+.pl-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.pl-tiles>div{padding:11px 13px;border-radius:11px;background:var(--ivory);border:1px solid var(--line)}
+.pl-tiles small{display:block;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pl-tiles b{display:block;font-family:var(--serif);font-size:18px;font-weight:700;margin-top:3px;overflow-wrap:anywhere;font-variant-numeric:lining-nums tabular-nums}
+.pl-tiles .act b{color:var(--burgundy)}.pl-tiles .paid b{color:var(--forest)}
+.pl-col-bud .pl-b{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;padding:13px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:11px;background:var(--paper);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.pl-col-bud .pl-b:hover{border-color:var(--champagne);box-shadow:var(--shadow-sm)}
+.pl-b-l{min-width:0;flex:1}
+.pl-b-name{font-size:14.5px;font-weight:600;color:var(--ink)}
+.pl-b-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.pl-b-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.pl-qty{background:var(--burgundy-soft);color:var(--burgundy);font-weight:700;font-size:12px;padding:2px 11px;border-radius:20px}
+.pl-b-r{text-align:right;flex-shrink:0;max-width:55%}
+.pl-b-r b{display:block;font-family:var(--serif);font-size:21px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:lining-nums tabular-nums}
+.pl-b-r small{display:block;font-size:11.5px;color:var(--muted)}
+.pl-b-r .pl-b-paid{color:var(--forest);font-weight:600}
+.pl-b-del{margin-top:4px;margin-left:auto;opacity:.5}.pl-b:hover .pl-b-del{opacity:1}
+@media(max-width:900px){.pl-ev.open .pl-ev-body{grid-template-columns:1fr}}
+@media(max-width:640px){.pl-ev.open .pl-ev-body{padding:10px;gap:12px}.pl-ev-body .pl-col{padding:14px}.pl-tiles b{font-size:15px}.pl-b-r b{font-size:18px}.pl-col-bud .pl-b{flex-wrap:wrap}.pl-b-r{max-width:100%}}
+
+/* ===== v9: Sơ đồ phòng tiệc trên điện thoại = giống web, có zoom ===== */
+.spm{display:none!important}
+.sp-zb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.sp-zbtn{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:10px;background:var(--paper);overflow:hidden}
+.sp-zbtn button{width:42px;height:38px;font-size:22px;color:var(--burgundy)}
+.sp-zbtn span{min-width:54px;text-align:center;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.sp-hint{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.sp-vp{overflow:auto;border-radius:16px;border:2px solid var(--line-2);touch-action:none;overscroll-behavior:contain;background:#FCFAF5;-webkit-overflow-scrolling:touch}
+.sp-scaler{position:relative;overflow:hidden}
+.sp-vp .sp-floor{position:absolute;left:0;top:0;border:0;border-radius:0;touch-action:none}
+.sp-vp .sp-t{touch-action:none;cursor:pointer}
+.sp-t.sel{box-shadow:0 0 0 4px var(--burgundy-soft),0 0 0 7px var(--burgundy)}
+</style>
 </head>
 <body>
 
@@ -1008,13 +1100,18 @@ textarea{ line-height:1.5; }
 
 <!-- TRANSITION -->
 <div id="transition" role="status" aria-live="polite" onclick="Auth.skipGreeting()">
+  <div class="gr-orb o1"></div><div class="gr-orb o2"></div>
+  <i class="gr-sp" style="--x:12%;--d:0s;--t:7s"></i><i class="gr-sp" style="--x:26%;--d:1.4s;--t:8s"></i><i class="gr-sp" style="--x:41%;--d:.6s;--t:6.5s"></i><i class="gr-sp" style="--x:58%;--d:2.1s;--t:7.5s"></i><i class="gr-sp" style="--x:72%;--d:.9s;--t:8.5s"></i><i class="gr-sp" style="--x:88%;--d:1.8s;--t:7s"></i>
+  <div class="gr-frame"></div>
   <div class="gr-stage">
-    <div class="gr-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="gr-ring" cx="50" cy="50" r="46"/></svg><b>W</b></div>
+    <div class="gr-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="gr-ring" cx="50" cy="50" r="46"/><circle class="gr-ring2" cx="50" cy="50" r="40"/></svg><b>W</b></div>
     <p class="gr-hello" id="grHello">Chào mừng trở lại,</p>
     <h1 class="gr-name" id="grName"></h1>
-    <div class="gr-rule"></div>
+    <div class="gr-rule"><i></i><b>♥</b><i></i></div>
     <p class="gr-sub" id="grSub">Chào mừng bạn trở lại với The Wedding Atelier</p>
+    <div class="gr-chip" id="grChip"></div>
   </div>
+  <div class="gr-skip">Chạm để tiếp tục</div>
   <div class="gr-acct" id="grAcct"></div>
   <div class="gr-bar"></div>
 </div>
@@ -1441,7 +1538,7 @@ const Auth = {
     nameEl.setAttribute('aria-label',given);
     nameEl.innerHTML=[...given.normalize('NFC')].map((ch,i)=>`<span aria-hidden="true" style="--i:${i}">${ch===' '?'&nbsp;':Util.esc(ch)}</span>`).join('');
     document.getElementById('grHello').textContent=this.greetingWord()+',';
-    document.getElementById('grSub').textContent='Chào mừng bạn trở lại với The Wedding Atelier';
+    document.getElementById('grSub').textContent='Chào mừng bạn trở lại với The Wedding Atelier'; { const c0=document.getElementById('grChip'); c0.classList.remove('on'); c0.innerHTML=''; }
     document.getElementById('grAcct').textContent='Đăng nhập với '+(n.full?n.full+' · ':'')+(u.email||'');
     document.getElementById('login').style.display='none';
     document.getElementById('denied').classList.remove('show');
@@ -1450,9 +1547,9 @@ const Auth = {
     DB.list('wed_wedding_settings',{limit:1}).then(r=>{
       const s=r&&r[0]; if(!s||tok!==this._gtok) return;
       const names=[s.groom_name,s.bride_name].filter(Boolean).join(' & '), d=Util.daysUntil(s.wedding_date);
-      const parts=[]; if(names) parts.push(names);
-      if(d!==null&&d>0) parts.push('còn '+d+' ngày đến ngày cưới'); else if(d===0) parts.push('hôm nay là ngày cưới');
-      if(parts.length) document.getElementById('grSub').textContent=parts.join(' · ');
+      if(names) document.getElementById('grSub').textContent=names;
+      let ct=''; if(d!==null&&d>0) ct='Còn <b>'+d+'</b> ngày đến ngày cưới'; else if(d===0) ct='Hôm nay là ngày cưới ♥';
+      if(ct){ const ch=document.getElementById('grChip'); ch.innerHTML=ct; ch.classList.add('on'); }
     }).catch(()=>{});
     const calm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
     this._gt=[ setTimeout(()=>tr.classList.add('leave'), calm?900:2250), setTimeout(()=>this.showApp(), calm?1200:2550) ];
@@ -2318,19 +2415,72 @@ const Seating = {
     this.unseated.forEach(g=>{ h+=`<div class="unseated-chip" draggable="true" ondragstart="Seating.dragStart(event,'${g.id}')" onclick="Seating.openAssign('${g.id}')">${Util.esc(g.full_name)} <span class="muted">${g.side==='groom'?'T':'G'}${Util.headcount(g)>1?' · '+Util.headcount(g)+' người':''}</span></div>`; });
     h+='</div><div class="section-h">Sơ đồ phòng tiệc <span class="sub">'+this.tables.length+' bàn · kéo bàn thả lên bàn khác để đổi chỗ</span></div>';
     if(!this.tables.length){ document.getElementById('content').innerHTML=h+UI.empty(I.seating,'Chưa có bàn nào','Bấm “Thêm bàn”, nhập số bàn cần tổ chức, hệ thống sẽ tự tạo và xếp vị trí.',`<button class="btn btn-primary" onclick="Seating.openAddTable()">Thêm bàn</button>`); return; }
-    const H=Math.max(660,Math.max(...this.tables.map(t=>t.pos_y))+130);
-    h+=`<div class="sp-wrap"><div class="sp-floor" id="spFloor" style="height:${H}px">
+    const M=window.innerWidth<=860, BW=900, H=Math.max(660,Math.max(...this.tables.map(t=>t.pos_y))+130);
+    this._wasM=M; const ov=document.getElementById('spVp'); if(ov) this._sc=[ov.scrollLeft,ov.scrollTop];
+    let fl=`<div class="sp-floor" id="spFloor" style="height:${H}px${M?`;width:${BW}px;min-width:0;transform-origin:0 0`:''}">
       <div class="sp-stage"><b>SÂN KHẤU</b><small>♥ Cô dâu &amp; Chú rể ♥</small></div>
       <div class="sp-aisle"><i>LỐI ĐI CÔ DÂU – CHÚ RỂ</i></div>
       <div class="sp-door"><span>▲</span> CỬA VÀO</div>`;
     this.tables.forEach(t=>{
       const ta=this.assignments.filter(a=>a.table_id===t.id), used=ta.reduce((s,a)=>s+this.seatsOf(a),0), full=used>=t.capacity, pct=Math.min(100,Math.round(used/(t.capacity||1)*100));
       const gN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='groom').reduce((x,a)=>x+this.seatsOf(a),0), bN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='bride').reduce((x,a)=>x+this.seatsOf(a),0);
-      h+=`<div class="sp-t ${t.table_type==='long'?'long':''} ${full?'full':''}" id="sp-${t.id}" style="left:${t.pos_x}%;top:${t.pos_y}px;--p:${pct}%" title="${Util.esc(t.name)}: ${used}/${t.capacity} chỗ" onpointerdown="Seating.tDown(event,'${t.id}')" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)"><div class="sp-in"><b>${Util.esc(t.name)}</b><span>${used}/${t.capacity}</span></div>${gN+bN?`<div class="sp-sd"><i class="g">${gN}</i><i class="b">${bN}</i></div>`:''}</div>`;
+      const ev=M?`onclick="Seating.mTap('${t.id}')"`:`onpointerdown="Seating.tDown(event,'${t.id}')" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)"`;
+      fl+=`<div class="sp-t ${t.table_type==='long'?'long':''} ${full?'full':''} ${M&&this.swapFirst===t.id?'sel':''}" id="sp-${t.id}" style="left:${t.pos_x}%;top:${t.pos_y}px;--p:${pct}%" title="${Util.esc(t.name)}: ${used}/${t.capacity} chỗ" ${ev}><div class="sp-in"><b>${Util.esc(t.name)}</b><span>${used}/${t.capacity}</span></div>${gN+bN?`<div class="sp-sd"><i class="g">${gN}</i><i class="b">${bN}</i></div>`:''}</div>`;
     });
-    h+=`</div></div>${this.mobilePlan(gm)}<div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
+    fl+='</div>';
+    if(M){
+      const hint=this.swapMode?(this.swapFirst?'Chạm bàn thứ hai để hoán đổi vị trí':'Chạm bàn thứ nhất'):'Chụm 2 ngón để phóng to / thu nhỏ · kéo để di chuyển · chạm đúp để zoom nhanh · chạm bàn để xem & xếp khách';
+      h+=`<div class="sp-zb"><div class="sp-zbtn"><button type="button" onclick="Seating.zoomBy(-1)" aria-label="Thu nhỏ">−</button><span id="spZl">100%</span><button type="button" onclick="Seating.zoomBy(1)" aria-label="Phóng to">+</button></div><button type="button" class="btn btn-ghost btn-sm" onclick="Seating.zoomFit()">Vừa khung</button><button type="button" class="btn btn-ghost btn-sm" onclick="Seating.zoomTo(1)">100%</button><button type="button" class="btn ${this.swapMode?'btn-primary':'btn-ghost'} btn-sm" onclick="Seating.toggleSwap()">⇄ Đổi chỗ bàn</button></div><div class="sp-hint">${hint}</div><div class="sp-vp" id="spVp"><div class="sp-scaler" id="spSc">${fl}</div></div>`;
+    } else h+=`<div class="sp-wrap">${fl}</div>`;
+    h+=`<div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
     document.getElementById('content').innerHTML=h;
+    if(M) this.initZoom(BW,H);
+    if(!this._rz){ this._rz=1; window.addEventListener('resize',Util.debounce(()=>{ if(Router.current==='seating'&&this.view==='plan'&&this.tables.length){ const m=window.innerWidth<=860; if(m!==this._wasM){ this.z=null; this.renderView(); } } },250)); }
   },
+  /* ----- Zoom bản đồ phòng tiệc (điện thoại): giữ nguyên bố cục như web, chụm/kéo/chạm đúp ----- */
+  initZoom(BW,H){
+    const vp=document.getElementById('spVp'); if(!vp) return;
+    this.BW=BW; this.H=H; this.fit=Math.min(1,vp.clientWidth/BW)||.4;
+    const keep=this._sc; this._sc=null; let z=this.z; if(!z||z<this.fit) z=this.fit;
+    this.z=null; this.applyZoom(z,0,0);
+    if(keep){ vp.scrollLeft=keep[0]; vp.scrollTop=keep[1]; }
+    const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+    let mode=null, st=null, last=null;
+    vp.addEventListener('touchstart',e=>{
+      if(e.touches.length===2){ mode='pinch'; st={d:dist(e.touches),z:this.z}; }
+      else if(e.touches.length===1){ const t=e.touches[0]; mode='pan'; st={x:t.clientX,y:t.clientY,sl:vp.scrollLeft,sy:vp.scrollTop,moved:false}; }
+    },{passive:true});
+    vp.addEventListener('touchmove',e=>{
+      if(mode==='pinch'&&e.touches.length===2){ e.preventDefault(); const r=vp.getBoundingClientRect(), t=e.touches;
+        this.applyZoom(st.z*dist(t)/st.d,(t[0].clientX+t[1].clientX)/2-r.left,(t[0].clientY+t[1].clientY)/2-r.top); }
+      else if(mode==='pan'&&e.touches.length===1){ const t=e.touches[0], dx=t.clientX-st.x, dy=t.clientY-st.y;
+        if(Math.abs(dx)+Math.abs(dy)>6) st.moved=true;
+        if(st.moved){ e.preventDefault(); vp.scrollLeft=st.sl-dx; vp.scrollTop=st.sy-dy; } }
+    },{passive:false});
+    vp.addEventListener('touchend',e=>{
+      if(e.touches.length===0){
+        if(mode==='pan'&&st&&!st.moved&&!(e.target.closest&&e.target.closest('.sp-t'))){
+          const c=e.changedTouches[0], now=Date.now(), r=vp.getBoundingClientRect();
+          if(last&&now-last.t<320&&Math.hypot(c.clientX-last.x,c.clientY-last.y)<30){ this.applyZoom(this.z<.95?1:this.fit,c.clientX-r.left,c.clientY-r.top); last=null; }
+          else last={t:now,x:c.clientX,y:c.clientY};
+        }
+        mode=null;
+      } else if(e.touches.length===1){ const t=e.touches[0]; mode='pan'; st={x:t.clientX,y:t.clientY,sl:vp.scrollLeft,sy:vp.scrollTop,moved:true}; }
+    },{passive:true});
+  },
+  applyZoom(z,fx,fy){
+    const vp=document.getElementById('spVp'), sc=document.getElementById('spSc'), fl=document.getElementById('spFloor'); if(!vp||!sc||!fl) return;
+    z=Math.max(this.fit,Math.min(2.2,z)); const z0=this.z||z;
+    if(fx==null){ fx=vp.clientWidth/2; fy=vp.clientHeight/2; }
+    const cx=(vp.scrollLeft+fx)/z0, cy=(vp.scrollTop+fy)/z0;
+    this.z=z; sc.style.width=Math.round(this.BW*z)+'px'; sc.style.height=Math.round(this.H*z)+'px'; fl.style.transform=`scale(${z})`;
+    vp.style.height=Math.min(Math.round(this.H*z),Math.round(window.innerHeight*.7))+'px';
+    vp.scrollLeft=cx*z-fx; vp.scrollTop=cy*z-fy;
+    const l=document.getElementById('spZl'); if(l) l.textContent=Math.round(z*100)+'%';
+  },
+  zoomBy(dir){ this.applyZoom((this.z||this.fit)*(dir>0?1.25:.8)); },
+  zoomFit(){ this.applyZoom(this.fit); const v=document.getElementById('spVp'); if(v){ v.scrollLeft=0; v.scrollTop=0; } },
+  zoomTo(v){ this.applyZoom(v); },
   /* Bản điện thoại: thẻ bàn to, rõ, hai bên lối đi; chạm để xem/xếp khách, bật "Đổi chỗ" để hoán đổi 2 bàn */
   mobilePlan(gm){
     const info=t=>{ const ta=this.assignments.filter(a=>a.table_id===t.id), sd=k=>ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side===k).reduce((x,a)=>x+this.seatsOf(a),0); return {used:ta.reduce((x,a)=>x+this.seatsOf(a),0),g:sd('groom'),b:sd('bride')}; };
@@ -2462,7 +2612,7 @@ const Plan = {
   dbHint:'<div class="text-xs muted" style="margin-top:6px">Database chưa có cột liên kết — chạy file <b>wedding-plan-phases.sql</b> trong Supabase SQL Editor rồi tải lại trang.</div>',
   ic(i){ return i.replace('<svg','<svg style="width:15px;height:15px"'); },
   chev:'<svg class="pl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>',
-  money(n){ n=Number(n)||0; const a=Math.abs(n); if(a>=1e9) return (n/1e9).toLocaleString('vi-VN',{maximumFractionDigits:2})+' tỷ'; if(a>=1e6) return (n/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tr'; return n.toLocaleString('vi-VN')+' ₫'; },
+  money(n){ return (Number(n)||0).toLocaleString('vi-VN')+' ₫'; },
   today(){ return new Date().toISOString().slice(0,10); },
   addDays(d,n){ const x=new Date(d+'T00:00:00'); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); },
   errMsg(e){ const m=(e&&e.message)||''; return /phase_id|event_id|wed_phases|schema cache|column/i.test(m)?'Thiếu cột/bảng mới trong database — hãy chạy file wedding-plan-phases.sql trong Supabase SQL Editor':'Lưu thất bại: '+m; },
@@ -2471,7 +2621,7 @@ const Plan = {
   /* ---------- tải dữ liệu ---------- */
   actions(){
     const P=this.ic(I.plus);
-    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Plan.openGift()">Quà mừng</button><button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button><button class="btn btn-primary" onclick="Plan.openEvent()">${P} Thêm sự kiện</button>`;
+    document.getElementById('topbarActions').innerHTML=`<button class="btn btn-ghost" onclick="Plan.openPhase()">+ Giai đoạn</button><button class="btn btn-primary" onclick="Plan.openEvent()">${P} Thêm sự kiện</button>`;
   },
   async render(){
     this.actions();
@@ -2538,29 +2688,41 @@ const Plan = {
 
   /* ---------- TAB 1: LỘ TRÌNH ---------- */
   taskRow(t){
-    const done=t.status==='done', d=Util.daysUntil(t.due_date), od=d!==null&&d<0&&!done&&t.status!=='cancelled', pr={urgent:'#B5453A',high:'#B5453A',medium:'#B8862F',low:'#BFB3A6'}[t.priority]||'#BFB3A6';
+    const done=t.status==='done', d=Util.daysUntil(t.due_date), od=d!==null&&d<0&&!done&&t.status!=='cancelled';
+    const PR={urgent:['Khẩn','pl-pr-hi'],high:['Cao','pl-pr-hi'],medium:['Trung bình','pl-pr-md'],low:['Thấp','pl-pr-lo']}[t.priority]||['Trung bình','pl-pr-md'];
     return `<div class="pl-t ${done?'done':''} ${t.status==='cancelled'?'cx':''}"><div class="task-check ${done?'done':''}" onclick="Plan.toggleTask('${t.id}')">${done?I.check:''}</div>
-      <div class="pl-t-b" onclick="Plan.openTask('${t.id}')"><div class="pl-t-title">${Util.esc(t.title)}</div><div class="pl-t-meta"><i class="pl-dot" style="background:${pr}"></i>${t.status==='in_progress'?'<span class="pill pill-sent">Đang làm</span>':''}${t.status==='cancelled'?'<span class="pill pill-declined">Đã hủy</span>':''}${t.category?`<span>${Util.esc(t.category)}</span>`:''}${t.assignee?`<span>· ${Util.esc(t.assignee)}</span>`:''}${t.due_date?`<span class="${od?'od':''}">· ${od?'Quá hạn ':''}${Util.fmtDate(t.due_date)}</span>`:''}</div></div>
+      <div class="pl-t-b" onclick="Plan.openTask('${t.id}')"><div class="pl-t-title">${Util.esc(t.title)}</div><div class="pl-t-meta"><span class="pl-pr ${PR[1]}">${PR[0]}</span>${t.status==='in_progress'?'<span class="pill pill-sent">Đang làm</span>':''}${t.status==='cancelled'?'<span class="pill pill-declined">Đã hủy</span>':''}${t.category?`<span class="pl-chipc">${Util.esc(t.category)}</span>`:''}${t.assignee?`<span>👤 ${Util.esc(t.assignee)}</span>`:''}${t.due_date?`<span class="${od?'od':''}">${od?'Quá hạn · ':'Hạn · '}${Util.fmtDate(t.due_date)}</span>`:''}</div></div>
       <button class="btn-close" title="Xóa" onclick="Plan.delTask('${t.id}')">${this.ic(I.trash)}</button></div>`;
   },
-  bRow(i){ const s=this.BST[i.status]||this.BST.planned, has=Number(i.actual_amount)>0;
-    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-t">${Util.esc(i.description||i.category)}<small>${[i.description?i.category:'',i.vendor,Number(i.quantity)>1?'SL '+Number(i.quantity):''].filter(Boolean).map(Util.esc).join(' · ')}</small></div><div class="pl-b-m"><b>${this.money(has?i.actual_amount:i.estimated_amount)}</b><small>${has?'thực tế':'dự kiến'}${Number(i.paid_amount)>0?' · trả '+this.money(i.paid_amount):''}</small></div><span class="pill ${s[1]}">${s[0]}</span></div>`; },
+  bRow(i){
+    const s=this.BST[i.status]||this.BST.planned, has=Number(i.actual_amount)>0, q=Math.max(1,Number(i.quantity)||1), amt=has?Number(i.actual_amount):(Number(i.estimated_amount)||0), paid=Number(i.paid_amount)||0;
+    const sub=[i.description?i.category:'',i.vendor].filter(Boolean).map(Util.esc).join(' · ');
+    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-l"><div class="pl-b-name">${Util.esc(i.description||i.category)}</div>${sub?`<div class="pl-b-sub">${sub}</div>`:''}<div class="pl-b-tags"><span class="pl-qty">SL: ${q}</span><span class="pill ${s[1]}">${s[0]}</span></div></div>
+      <div class="pl-b-r"><b>${this.money(amt)}</b><small>${has?'thực tế':'dự kiến'}${q>1?' · '+this.money(Math.round(amt/q))+'/đv':''}</small>${paid>0?`<small class="pl-b-paid">Đã trả ${this.money(paid)}</small>`:''}<button class="btn-close pl-b-del" title="Xóa" onclick="event.stopPropagation();Plan.delBudget('${i.id}')">${this.ic(I.trash)}</button></div></div>`;
+  },
   evCard(e){
     const virt=!e.id, T=this.evTasks(e.id), B=this.evItems(e.id), A=this.agg(T,B), open=this.open.has(e.id), d=e.event_date?new Date(e.event_date+'T00:00:00'):null;
     const eg=virt?[]:this.guests.filter(x=>(x.event_ids||[]).includes(e.id)), conf=eg.filter(x=>x.rsvp_status==='confirmed').reduce((s,x)=>s+(Number(x.confirmed_count)||0),0), du=virt?null:Util.daysUntil(e.event_date);
     const cd=du===null?'':(du>0?`<span class="pill pill-sent">Còn ${du} ngày</span>`:du===0?'<span class="pill pill-confirmed">Hôm nay</span>':'<span class="pill pill-notsent">Đã diễn ra</span>');
+    const ico=i=>i.replace('<svg','<svg ');
     return `<article class="pl-ev ${open?'open':''} ${virt?'virt':''}" id="pev-${e.id||'x'}">
       <div class="pl-ev-h" onclick="Plan.toggleEv('${e.id}')">
         <div class="pl-date">${d?`<b>${d.getDate()}</b><span>Th${d.getMonth()+1}</span>`:'<b>—</b><span>chưa đặt</span>'}</div>
         <div class="pl-ev-main"><div class="pl-ev-name">${virt?'Chưa gắn sự kiện':Util.esc(e.name)}</div><div class="pl-ev-meta">${virt?'<span>Công việc & khoản chi chưa thuộc sự kiện nào</span>':[e.event_time?e.event_time.slice(0,5):'',e.venue?Util.esc(e.venue):''].filter(Boolean).map(x=>`<span>${x}</span>`).join('')}${cd}</div></div>
         <div class="pl-kpis">${virt?'':`<div class="pl-kpi"><b>${eg.length}</b>khách${conf?` · ${conf} xác nhận`:''}</div>`}<div class="pl-kpi"><b>${A.td}/${A.tt}</b>việc${A.od?` · <i class="od">${A.od} quá hạn</i>`:''}</div><div class="pl-kpi"><b>${this.money(A.act||A.est)}</b>${A.act?'thực tế':'dự kiến'}</div></div>
         <div class="pl-tools" onclick="event.stopPropagation()">${virt?'':`<button class="btn-close" title="Sửa" onclick="Plan.openEvent('${e.id}')">${this.ic(I.edit)}</button><button class="btn-close" title="Xóa" onclick="Plan.delEvent('${e.id}')">${this.ic(I.trash)}</button>`}</div>${this.chev}</div>
-      <div class="pl-ev-body"><div class="pl-col"><div class="pl-col-h"><span>Công việc chuẩn bị <em>${A.td}/${A.tt}</em></span><button class="pl-add" onclick="Plan.openTask(null,'${e.id}')">+ Chi tiết</button></div>
-        ${T.length?T.map(t=>this.taskRow(t)).join(''):'<div class="pl-none">Chưa có công việc</div>'}
-        <div class="pl-quick"><input placeholder="+ Thêm nhanh công việc rồi nhấn Enter" onkeydown="if(event.key==='Enter')Plan.quickTask('${e.id}',this)"/></div></div>
-        <div class="pl-col"><div class="pl-col-h"><span>Ngân sách <em>${this.money(A.act)} / ${this.money(A.est)}</em></span><button class="pl-add" onclick="Plan.openBudget(null,'${e.id}')">+ Khoản chi</button></div>
-        ${B.length?B.map(i=>this.bRow(i)).join(''):'<div class="pl-none">Chưa có khoản chi</div>'}
-        ${B.length?`<div class="pl-sum"><span>Dự kiến <b>${this.money(A.est)}</b></span><span>Thực tế <b>${this.money(A.act)}</b></span><span>Đã trả <b>${this.money(A.paid)}</b></span></div>`:''}</div></div>
+      <div class="pl-ev-body">
+        <section class="pl-col pl-col-task">
+          <header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico t">${ico(I.tasks)}</span><div><b>Công việc chuẩn bị</b><small>${A.td}/${A.tt} hoàn thành${A.od?` · <i class="od">${A.od} quá hạn</i>`:''}</small></div></div><button class="pl-add-btn" onclick="Plan.openTask(null,'${e.id}')">+ Thêm</button></header>
+          <div class="pl-mini"><i style="width:${A.pct}%"></i></div>
+          ${T.length?T.map(t=>this.taskRow(t)).join(''):'<div class="pl-none">Chưa có công việc</div>'}
+          <div class="pl-quick"><input placeholder="+ Thêm nhanh công việc rồi nhấn Enter" onkeydown="if(event.key==='Enter')Plan.quickTask('${e.id}',this)"/></div>
+        </section>
+        <section class="pl-col pl-col-bud">
+          <header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico b">${ico(I.budget)}</span><div><b>Ngân sách</b><small>${B.length} khoản chi</small></div></div><button class="pl-add-btn" onclick="Plan.openBudget(null,'${e.id}')">+ Khoản chi</button></header>
+          ${B.length?`<div class="pl-tiles"><div class="est"><small>Dự kiến</small><b>${this.money(A.est)}</b></div><div class="act"><small>Thực tế</small><b>${this.money(A.act)}</b></div><div class="paid"><small>Đã trả</small><b>${this.money(A.paid)}</b></div></div>${B.map(i=>this.bRow(i)).join('')}`:'<div class="pl-none">Chưa có khoản chi</div>'}
+        </section>
+      </div>
     </article>`;
   },
   paintRoute(){
