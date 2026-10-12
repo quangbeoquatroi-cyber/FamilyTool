@@ -62,10 +62,45 @@ a{color:inherit;text-decoration:none}
 .login-error.show{display:block}
 
 /* ===== TRANSITION ===== */
-#transition{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--ivory);z-index:99}
+/* ===== MÀN HÌNH CHÀO ===== */
+#transition{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:99;cursor:pointer;overflow:hidden;
+  background:radial-gradient(ellipse 60% 50% at 50% 44%,#FFFFFF 0%,rgba(255,255,255,0) 70%),radial-gradient(ellipse at 12% 100%,#F3E8EA 0%,transparent 55%),radial-gradient(ellipse at 92% 0%,#F7F0E4 0%,transparent 50%),var(--ivory);
+  transition:opacity .3s var(--ease)}
 #transition.show{display:flex}
-.trans-monogram{width:80px;height:80px;border:1px solid var(--champagne);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:38px;font-style:italic;color:var(--burgundy);animation:pop .6s ease}
-.trans-text{margin-top:24px;font-family:var(--serif);font-style:italic;font-size:20px;color:var(--ink-2);animation:fadeUp .8s ease .2s both}
+#transition.leave{opacity:0}
+.gr-stage{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 24px;max-width:min(680px,100%)}
+.gr-mark{position:relative;width:88px;height:88px;display:flex;align-items:center;justify-content:center;margin-bottom:32px}
+.gr-mark svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.gr-ring{fill:none;stroke:var(--champagne);stroke-width:1.2;stroke-dasharray:290;stroke-dashoffset:290;animation:grDraw 1s var(--ease) .1s forwards}
+.gr-mark b{font-family:var(--serif);font-style:italic;font-weight:500;font-size:40px;color:var(--burgundy);opacity:0;animation:grIn .7s var(--ease) .45s forwards}
+.gr-hello{font-family:var(--serif);font-style:italic;font-size:clamp(20px,3.4vw,26px);color:var(--ink-2);opacity:0;animation:grIn .7s var(--ease) .6s forwards}
+.gr-name{font-family:var(--serif);font-weight:500;font-size:clamp(52px,13vw,96px);line-height:1.08;letter-spacing:-1px;color:var(--ink);margin-top:4px;display:flex;flex-wrap:wrap;justify-content:center}
+.gr-name span{display:inline-block;opacity:0;transform:translateY(18px);filter:blur(8px);animation:grLetter .75s var(--ease) forwards;animation-delay:calc(.85s + var(--i) * 60ms)}
+.gr-rule{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--champagne),transparent);margin:24px 0 16px;transform:scaleX(0);animation:grRule .8s var(--ease) 1.45s forwards}
+.gr-sub{font-family:var(--serif);font-size:clamp(16px,2.4vw,19px);color:var(--muted);min-height:1.5em;opacity:0;animation:grIn .7s var(--ease) 1.6s forwards}
+.gr-acct{position:absolute;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom));padding:0 24px;text-align:center;font-size:12px;color:var(--muted);overflow-wrap:anywhere;opacity:0;animation:grIn .7s var(--ease) 1.7s forwards}
+.gr-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:linear-gradient(90deg,var(--champagne),var(--burgundy));transform:scaleX(0);transform-origin:left;animation:grBar 2.5s linear forwards}
+@keyframes grDraw{to{stroke-dashoffset:0}}
+@keyframes grIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes grLetter{to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes grRule{to{transform:scaleX(1)}}
+@keyframes grBar{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){
+  .gr-ring{animation:none;stroke-dashoffset:0}
+  .gr-mark b,.gr-hello,.gr-name span,.gr-sub,.gr-acct{animation:none;opacity:1;transform:none;filter:none}
+  .gr-rule{animation:none;transform:none}.gr-bar{animation:none;transform:scaleX(1)}
+}
+
+/* ===== PHIÊN HẾT HẠN (giữ nguyên dữ liệu đang nhập) ===== */
+#sessionExpired{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(36,31,28,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:150}
+#sessionExpired.show{display:flex}
+.se-card{width:min(420px,100%);background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:30px 28px 26px;text-align:center}
+.se-icon{width:48px;height:48px;margin:0 auto 14px;border:1px solid var(--champagne);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:24px;color:var(--burgundy)}
+.se-card h2{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.se-card p{font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.se-msg{min-height:18px;margin:10px 0 4px;font-size:12.5px;color:var(--danger)}
+.se-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.se-note{margin-top:10px;font-size:11.5px;color:var(--muted)}
 @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes fadeUp{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
 
@@ -345,7 +380,7 @@ a{color:inherit;text-decoration:none}
 .sp-seg{display:inline-flex;gap:2px;padding:3px;background:var(--ivory-2);border-radius:10px}
 .sp-seg button{padding:7px 12px;border-radius:7px;font-size:12.5px;color:var(--ink-2)}.sp-seg button.on{background:var(--paper);color:var(--burgundy);font-weight:600;box-shadow:var(--shadow-sm)}
 .sp-wrap{overflow-x:auto;border-radius:16px}
-.sp-floor{position:relative;min-width:780px;border:2px solid var(--line-2);border-radius:16px;overflow:hidden;background-color:#FCFAF5;background-image:radial-gradient(var(--line-2) 1px,transparent 1px);background-size:22px 22px;touch-action:pan-y}
+.sp-floor{position:relative;min-width:780px;border:2px solid var(--line-2);border-radius:16px;overflow:hidden;background-color:#FCFAF5;background-image:radial-gradient(var(--line-2) 1px,transparent 1px);background-size:22px 22px;touch-action:pan-x pan-y}
 .sp-stage{position:absolute;top:0;left:50%;transform:translateX(-50%);width:46%;height:92px;border-radius:0 0 34px 34px;background:linear-gradient(180deg,#5A1F2E,#873347);color:#F7E9C8;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(107,39,55,.28);z-index:2;border-bottom:5px solid var(--champagne)}
 .sp-stage b{font-family:var(--serif);font-size:22px;letter-spacing:5px}.sp-stage small{font-size:11px;opacity:.85;letter-spacing:1px}
 .sp-aisle{position:absolute;top:92px;bottom:0;left:50%;transform:translateX(-50%);width:100px;background:repeating-linear-gradient(180deg,rgba(255,255,255,.0) 0 38px,rgba(255,255,255,.10) 38px 40px),linear-gradient(90deg,#8E2F45,#B24A5E 50%,#8E2F45);border-left:3px solid var(--champagne);border-right:3px solid var(--champagne);display:flex;align-items:center;justify-content:center;z-index:1;opacity:.93}
@@ -363,6 +398,31 @@ a{color:inherit;text-decoration:none}
 .sp-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:12px;color:var(--ink-2)}
 .sp-legend span{display:inline-flex;align-items:center;gap:6px}.lg{display:inline-block;width:14px;height:14px;border-radius:4px}
 .lg.stage{background:#873347}.lg.aisle{background:#B24A5E;border:2px solid var(--champagne)}.lg.door{background:var(--forest)}.lg.g{background:#3A3A6B;border-radius:50%}.lg.b{background:var(--burgundy);border-radius:50%}.lg.full{background:var(--danger);border-radius:50%}
+
+/* ===== SƠ ĐỒ PHÒNG TIỆC — BẢN ĐIỆN THOẠI ===== */
+.spm{display:none}
+@media (max-width:860px){ .sp-wrap{display:none} .spm{display:block} }
+.spm-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:12.5px;color:var(--muted)}
+.spm-room{border:1.5px solid var(--line-2);border-radius:16px;overflow:hidden;background-color:#FCFAF5;background-image:radial-gradient(var(--line-2) 1px,transparent 1px);background-size:20px 20px}
+.spm-stage{width:70%;margin:0 auto;padding:11px 8px 13px;text-align:center;color:#F7E9C8;background:linear-gradient(180deg,#5A1F2E,#873347);border-radius:0 0 26px 26px;border-bottom:4px solid var(--champagne);box-shadow:0 6px 16px rgba(107,39,55,.25)}
+.spm-stage b{display:block;font-family:var(--serif);font-size:18px;letter-spacing:4px}
+.spm-stage small{font-size:10.5px;opacity:.85;letter-spacing:.5px}
+.spm-cols{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);gap:10px;padding:18px 10px 22px;align-items:stretch}
+.spm-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.spm-aisle{display:flex;align-items:center;justify-content:center;border-radius:6px;border-left:2px solid var(--champagne);border-right:2px solid var(--champagne);background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 30px,rgba(255,255,255,.12) 30px 32px),linear-gradient(90deg,#8E2F45,#B24A5E 50%,#8E2F45)}
+.spm-aisle i{writing-mode:vertical-rl;transform:rotate(180deg);color:#F7E9C8;font-style:normal;font-size:10px;font-weight:600;letter-spacing:3px;white-space:nowrap}
+.spm-t{display:flex;flex-direction:column;gap:5px;width:100%;min-height:80px;padding:11px 12px 10px;text-align:left;background:var(--paper);border:1px solid var(--line-2);border-radius:14px;box-shadow:var(--shadow-sm);transition:box-shadow .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.spm-t.long{border-radius:9px}
+.spm-t:active{background:var(--ivory)}
+.spm-n{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.15;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spm-c{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.spm-c b{font-size:13px;color:var(--ink)}
+.spm-bar{height:4px;border-radius:4px;background:var(--ivory-2);overflow:hidden}.spm-bar i{display:block;height:100%;border-radius:4px;background:var(--champagne)}
+.spm-sd{display:flex;gap:4px}.spm-sd i{font-style:normal;font-size:10.5px;font-weight:700;color:#fff;padding:1px 7px;border-radius:9px}.spm-sd .g{background:#3A3A6B}.spm-sd .b{background:var(--burgundy)}
+.spm-t.full{background:var(--danger-soft);border-color:#E8C9C4}.spm-t.full .spm-bar i{background:var(--danger)}.spm-t.full .spm-c,.spm-t.full .spm-c b{color:var(--danger)}
+.spm-room.swap .spm-t{border-style:dashed;border-color:var(--burgundy-2)}
+.spm-t.sel{border-style:solid;box-shadow:0 0 0 3px var(--burgundy-soft),0 0 0 5px var(--burgundy)}
+.spm-door{width:56%;margin:0 auto;padding:9px;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:2px;color:#fff;background:var(--forest);border-radius:12px 12px 0 0}
+@media (max-width:768px){ .stat-grid > .stat:last-child:nth-child(odd){ grid-column:1/-1 } }
 
 /* ===== NHẬP / XUẤT FILE ===== */
 .modal.wide{width:min(1400px,97vw);max-height:min(94vh,94dvh);padding:0;overflow:hidden;display:flex;flex-direction:column}
@@ -947,9 +1007,31 @@ textarea{ line-height:1.5; }
 </div>
 
 <!-- TRANSITION -->
-<div id="transition">
-  <div class="trans-monogram">W</div>
-  <div class="trans-text">Chào mừng trở lại</div>
+<div id="transition" role="status" aria-live="polite" onclick="Auth.skipGreeting()">
+  <div class="gr-stage">
+    <div class="gr-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="gr-ring" cx="50" cy="50" r="46"/></svg><b>W</b></div>
+    <p class="gr-hello" id="grHello">Chào mừng trở lại,</p>
+    <h1 class="gr-name" id="grName"></h1>
+    <div class="gr-rule"></div>
+    <p class="gr-sub" id="grSub">Chào mừng bạn trở lại với The Wedding Atelier</p>
+  </div>
+  <div class="gr-acct" id="grAcct"></div>
+  <div class="gr-bar"></div>
+</div>
+
+<!-- PHIÊN HẾT HẠN -->
+<div id="sessionExpired" role="alertdialog" aria-modal="true" aria-labelledby="seTitle">
+  <div class="se-card">
+    <div class="se-icon">!</div>
+    <h2 id="seTitle">Phiên đăng nhập đã hết hạn</h2>
+    <p>Những gì bạn đang nhập vẫn còn nguyên trên màn hình. Hãy đăng nhập lại để tiếp tục và lưu.</p>
+    <div class="se-msg" id="seMsg" role="alert"></div>
+    <div class="se-actions">
+      <button class="btn btn-primary" id="seBtn" onclick="Auth.reauth()">Đăng nhập lại</button>
+      <button class="btn btn-ghost" onclick="location.reload()">Tải lại trang</button>
+    </div>
+    <div class="se-note">“Tải lại trang” sẽ làm mất dữ liệu chưa lưu.</div>
+  </div>
 </div>
 
 <!-- DENIED -->
@@ -1075,6 +1157,25 @@ const Util = {
   }
 };
 
+/* ---------- MONEY INPUT: tự định dạng 1000000 -> 1,000,000 khi đang gõ ---------- */
+const Money = {
+  attrs:'type="text" inputmode="numeric" autocomplete="off" data-money',
+  group(d){ return String(d).replace(/\B(?=(\d{3})+(?!\d))/g,','); },
+  fmt(n){ const v=Math.round(Number(n)||0); return v>0?this.group(v):''; },
+  parse(s){ return parseInt(String(s==null?'':s).replace(/\D/g,''),10)||0; },
+  format(el){
+    const raw=el.value, pos=(el.selectionStart==null?raw.length:el.selectionStart);
+    const before=raw.slice(0,pos).replace(/\D/g,'').length;          // số chữ số đứng trước con trỏ
+    const d=raw.replace(/\D/g,'').replace(/^0+(?=\d)/,'');
+    const out=d?this.group(d):'';
+    if(out===raw) return;
+    el.value=out;
+    let c=0,n=0; while(c<out.length && n<before){ if(/\d/.test(out[c])) n++; c++; }   // giữ nguyên vị trí con trỏ
+    try{ el.setSelectionRange(c,c); }catch(e){}
+  }
+};
+document.addEventListener('input', e=>{ const el=e.target; if(el && el.matches && el.matches('input[data-money]')) Money.format(el); });
+
 /* ---------- TOAST ---------- */
 const Toast = {
   show(msg, type='info', ms=3000){
@@ -1164,11 +1265,38 @@ const Auth = {
     // QUAN TRỌNG: không await/gọi API supabase bên trong callback này (gây deadlock -> treo).
     // Luôn đẩy sang tick sau bằng setTimeout.
     sb.auth.onAuthStateChange((evt, session)=>{
-      if(evt==='SIGNED_OUT'){ setTimeout(()=>{ if(this._denied||this._manualOut) return; this.user=null; this.showLogin(); },0); }
-      else if(session && (evt==='SIGNED_IN' || evt==='USER_UPDATED') && !this.user && !this._handling){
-        setTimeout(()=>this.handleSession(session),0);
+      console.debug('[auth]', evt);
+      if(evt==='SIGNED_OUT'){ setTimeout(()=>this.onSignedOut(),0); }
+      else if(session && (evt==='SIGNED_IN' || evt==='USER_UPDATED')){
+        if(this._expired){ setTimeout(()=>this.resumeAfterReauth(session),0); }
+        else if(!this.user && !this._handling){ setTimeout(()=>this.handleSession(session),0); }
       }
     });
+    this.keepAlive();
+  },
+  // Supabase báo SIGNED_OUT (refresh token hỏng/hết hạn, hoặc tab khác đăng xuất).
+  // Nếu đang ở trong app: KHÔNG đá ra màn hình đăng nhập (mất dữ liệu đang nhập),
+  // chỉ phủ lớp "phiên hết hạn" lên trên để đăng nhập lại mà giữ nguyên form.
+  async onSignedOut(){
+    if(this._denied || this._manualOut) return;
+    if(!this.user){ this.showLogin(); return; }
+    if(this._recovering || this._expired) return;
+    this._recovering = true;
+    try{
+      const {data} = await sb.auth.getSession();
+      if(data && data.session) return;   // phiên vẫn còn (tab khác vừa làm mới) -> bỏ qua
+      this.showSessionExpired();
+    }catch(e){ this.showSessionExpired(); }
+    finally{ this._recovering = false; }
+  },
+  // Chủ động làm mới token khi quay lại tab / có mạng lại / định kỳ (trình duyệt hay đóng băng timer nền)
+  keepAlive(){
+    if(this._ka) return; this._ka = true;
+    const ping = ()=>{ if(!this.user || this._expired || !sb || document.visibilityState==='hidden') return; sb.auth.getSession().catch(()=>{}); };
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') setTimeout(ping,0); });
+    window.addEventListener('online', ()=>setTimeout(ping,0));
+    window.addEventListener('focus', ()=>setTimeout(ping,0));
+    setInterval(ping, 60000);
   },
   async handleSession(session){
     if(this._handling) return;
@@ -1180,18 +1308,25 @@ const Auth = {
       if(!allowed){ await this.deny(email); return; }
       this.user = session.user;
       this.showTransition();
-      setTimeout(()=>{ this.showApp(); }, 900);
     }finally{ this._handling = false; }
   },
   async checkAllowed(email){
     // 1) Frontend check
     if(!CONFIG.ALLOWED_EMAILS.includes(email)) return false;
-    // 2) Backend allowlist table check (RLS-protected)
-    try{
-      const {data,error} = await sb.from('wed_allowed_users').select('email').eq('email',email).maybeSingle();
-      if(error) { console.warn('Allowlist check error'); return false; }
-      return !!data;
-    }catch(e){ return false; }
+    // 2) Backend allowlist table check (RLS-protected).
+    //    Chỉ từ chối khi server TRẢ LỜI là không được phép. Lỗi mạng/JWT tạm thời KHÔNG được
+    //    coi là "bị từ chối" (trước đây gây đăng xuất oan); RLS phía server vẫn chặn dữ liệu.
+    for(let i=0;i<2;i++){
+      try{
+        const {data,error} = await sb.from('wed_allowed_users').select('email').eq('email',email).maybeSingle();
+        if(!error) return !!data;
+        const msg = (error.message||'')+' '+(error.code||'');
+        if(!/jwt|fetch|network|timeout|load failed|PGRST301/i.test(msg)) return false;
+        console.warn('Allowlist check: lỗi tạm thời', msg);
+      }catch(e){ console.warn('Allowlist check exception', e); }
+      await new Promise(r=>setTimeout(r,700));
+    }
+    return true;
   },
   async signInWithGoogle(){
     const btn=document.getElementById('btnGoogleLogin');
@@ -1251,7 +1386,7 @@ const Auth = {
       }catch(err){ showError('Không thiết lập được phiên đăng nhập: '+(err.message||err)); }
     };
     window.addEventListener('message', onMsg);
-    const timer=setInterval(()=>{ if(popup.closed){ done(); const b=document.getElementById('btnGoogleLogin'); if(b && !Auth.user){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } } }, 600);
+    const timer=setInterval(()=>{ if(popup.closed){ done(); const b=document.getElementById('btnGoogleLogin'); if(b && !Auth.user){ b.disabled=false; document.getElementById('googleBtnText').textContent='Tiếp tục với Google'; } const rb=document.getElementById('seBtn'); if(rb) rb.disabled=false; } }, 600);
   },
   async deny(email){
     this._denied=true;
@@ -1265,9 +1400,10 @@ const Auth = {
     document.getElementById('denied').classList.add('show');
     Toast.err('Tài khoản '+(email||'này')+' không được phép truy cập');
   },
-  async _hardSignOut(){
-    // signOut local (không phụ thuộc mạng, có timeout) rồi xoá sạch token còn sót
-    try{ await Promise.race([ sb.auth.signOut({scope:'local'}), new Promise(r=>setTimeout(r,2500)) ]); }catch(e){}
+  async _hardSignOut(global){
+    // global=true: thu hồi refresh token trên server (đăng xuất thật, các tab khác không tự "sống lại").
+    // Có timeout để không treo khi mất mạng, rồi xoá sạch token còn sót ở máy.
+    try{ await Promise.race([ sb.auth.signOut({scope:global?'global':'local'}), new Promise(r=>setTimeout(r,2500)) ]); }catch(e){}
     try{
       [localStorage, sessionStorage].forEach(st=>{
         Object.keys(st).filter(k=>/^sb-|supabase/i.test(k)).forEach(k=>st.removeItem(k));
@@ -1278,35 +1414,105 @@ const Auth = {
     const b=document.getElementById('btnGoogleLogin'), t=document.getElementById('googleBtnText'), e=document.getElementById('loginError');
     if(b) b.disabled=false; if(t) t.textContent='Tiếp tục với Google'; if(e) e.classList.remove('show');
   },
+  _clearGreeting(){ (this._gt||[]).forEach(clearTimeout); this._gt=[]; this._gtok=(this._gtok||0)+1; },
   showLogin(){
+    this._clearGreeting();
+    this._expired=false;
+    document.getElementById('sessionExpired').classList.remove('show');
     this.resetLoginUI();
     try{ if(location.hash||location.search) history.replaceState(null,'',location.pathname); }catch(e){}
     document.getElementById('app').classList.remove('show');
-    document.getElementById('transition').classList.remove('show');
+    document.getElementById('transition').classList.remove('show','leave');
     document.getElementById('denied').classList.remove('show');
     document.getElementById('login').style.display='flex';
   },
+  /* ----- Màn hình chào: chào đúng tên người đăng nhập ----- */
+  greetingWord(){ const h=new Date().getHours(); return h<11?'Chào buổi sáng':h<13?'Chào buổi trưa':h<18?'Chào buổi chiều':'Chào buổi tối'; },
+  displayName(u){
+    const m=(u&&u.user_metadata)||{}, full=String(m.full_name||m.name||'').trim().normalize('NFC');
+    if(!full) return {given:'',full:''};
+    const parts=full.split(/\s+/);
+    return {given:parts[parts.length-1], full};   // tên gọi của người Việt = từ cuối
+  },
   showTransition(){
+    this._clearGreeting();
+    const u=this.user, n=this.displayName(u), given=n.given||'Bạn', tok=this._gtok;
+    const nameEl=document.getElementById('grName');
+    nameEl.setAttribute('aria-label',given);
+    nameEl.innerHTML=[...given.normalize('NFC')].map((ch,i)=>`<span aria-hidden="true" style="--i:${i}">${ch===' '?'&nbsp;':Util.esc(ch)}</span>`).join('');
+    document.getElementById('grHello').textContent=this.greetingWord()+',';
+    document.getElementById('grSub').textContent='Chào mừng bạn trở lại với The Wedding Atelier';
+    document.getElementById('grAcct').textContent='Đăng nhập với '+(n.full?n.full+' · ':'')+(u.email||'');
     document.getElementById('login').style.display='none';
     document.getElementById('denied').classList.remove('show');
-    document.getElementById('transition').classList.add('show');
+    const tr=document.getElementById('transition'); tr.classList.remove('leave'); tr.classList.add('show');
+    // Bổ sung tên cặp đôi + đếm ngược nếu lấy được cấu hình đám cưới (không chặn màn hình chào)
+    DB.list('wed_wedding_settings',{limit:1}).then(r=>{
+      const s=r&&r[0]; if(!s||tok!==this._gtok) return;
+      const names=[s.groom_name,s.bride_name].filter(Boolean).join(' & '), d=Util.daysUntil(s.wedding_date);
+      const parts=[]; if(names) parts.push(names);
+      if(d!==null&&d>0) parts.push('còn '+d+' ngày đến ngày cưới'); else if(d===0) parts.push('hôm nay là ngày cưới');
+      if(parts.length) document.getElementById('grSub').textContent=parts.join(' · ');
+    }).catch(()=>{});
+    const calm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this._gt=[ setTimeout(()=>tr.classList.add('leave'), calm?900:2250), setTimeout(()=>this.showApp(), calm?1200:2550) ];
   },
-  showApp(){
-    document.getElementById('login').style.display='none';
-    document.getElementById('transition').classList.remove('show');
-    document.getElementById('app').classList.add('show');
-    // user chip
-    const u=this.user;
+  skipGreeting(){ if(!this.user) return; this._clearGreeting(); this.showApp(); },
+  renderUserChip(){
+    const u=this.user; if(!u) return;
     document.getElementById('userName').textContent=u.user_metadata?.full_name || u.email.split('@')[0];
     document.getElementById('userEmail').textContent=u.email;
     document.getElementById('userAvatar').textContent=Util.initials(u.user_metadata?.full_name || u.email);
+  },
+  showApp(){
+    if(!this.user) return;   // đã đăng xuất trong lúc đang chào
+    this._clearGreeting();
+    document.getElementById('login').style.display='none';
+    document.getElementById('transition').classList.remove('show','leave');
+    document.getElementById('app').classList.add('show');
+    this.renderUserChip();
     Router.init();
-    Toast.ok('Đăng nhập thành công — chào '+(u.user_metadata?.full_name || u.email.split('@')[0]));
+  },
+  /* ----- Phiên hết hạn: phủ lớp lên trên, KHÔNG xoá giao diện/form đang nhập ----- */
+  showSessionExpired(){
+    this._expired=true;
+    const m=document.getElementById('seMsg'), b=document.getElementById('seBtn'); m.textContent=''; b.disabled=false;
+    document.getElementById('sessionExpired').classList.add('show');
+    try{ b.focus(); }catch(e){}
+  },
+  async reauth(){
+    const msg=document.getElementById('seMsg'), btn=document.getElementById('seBtn');
+    const fail=t=>{ msg.textContent=t; btn.disabled=false; };
+    btn.disabled=true; msg.textContent='';
+    if(!sb){ fail('Chưa khởi tạo được kết nối. Hãy bấm “Tải lại trang”.'); return; }
+    // Mở popup NGAY trong sự kiện click (đồng bộ) để không bị chặn
+    const w=500,h=650, left=Math.max(0,(screen.width-w)/2), top=Math.max(0,(screen.height-h)/2);
+    const popup=window.open('about:blank', POPUP_NAME, `width=${w},height=${h},left=${left},top=${top}`);
+    if(!popup){ fail('Trình duyệt chặn cửa sổ đăng nhập. Hãy cho phép popup rồi bấm lại, hoặc bấm “Tải lại trang”.'); return; }
+    try{ popup.document.write('<p style="font-family:sans-serif;padding:24px;color:#555">Đang mở Google…</p>'); }catch(e){}
+    try{
+      const {data,error}=await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:location.origin+location.pathname, scopes:'openid email profile', skipBrowserRedirect:true, queryParams:{ prompt:'select_account' } } });
+      if(error||!data?.url){ popup.close(); throw error||new Error('Không lấy được URL đăng nhập'); }
+      popup.location.href=data.url;
+      Auth._waitPopup(popup, fail);
+    }catch(e){ fail('Đăng nhập thất bại: '+((e&&e.message)||e)); }
+  },
+  async resumeAfterReauth(session){
+    if(this._handling) return;
+    this._handling=true;
+    try{
+      const ok=await this.checkAllowed(session.user.email);
+      if(!ok){ this._expired=false; document.getElementById('sessionExpired').classList.remove('show'); await this.deny(session.user.email); return; }
+      this.user=session.user; this._expired=false;
+      document.getElementById('sessionExpired').classList.remove('show');
+      this.renderUserChip();
+      Toast.ok('Đã đăng nhập lại — bạn có thể tiếp tục lưu');
+    }finally{ this._handling=false; }
   },
   async signOut(){
     const wasDenied=this._denied;
     this._manualOut=true;
-    await this._hardSignOut();
+    await this._hardSignOut(!wasDenied);
     setTimeout(()=>{ this._manualOut=false; },300);
     this.user=null;
     this._handling=false;
@@ -1351,7 +1557,11 @@ const Router = {
     this.renderNav();
     const hash = location.hash.slice(2) || 'overview';
     this.go(hash);
-    window.addEventListener('hashchange', ()=> this.go(location.hash.slice(2)||'overview'));
+    if(!this._bound){
+      this._bound=true;
+      // go() tự đặt location.hash -> hashchange bắn lại. Chỉ điều hướng khi người dùng đổi hash thủ công.
+      window.addEventListener('hashchange', ()=>{ const r=location.hash.slice(2)||'overview'; if(r!==this.current) this.go(r); });
+    }
   },
   renderNav(){
     let lastGroup='';
@@ -1677,7 +1887,7 @@ const Guestbook = {
       <div class="gx-box">
         <div class="row"><div class="field"><label class="label">Người mời</label><input class="input" id="gInviter" list="gInvList" value="${v('inviter_name')}" placeholder="Ai mời khách này?"/><datalist id="gInvList">${inviters}</datalist></div>
         <div class="field"><label class="label">Số bàn</label><select class="select" id="gTable" onchange="Guestbook.seatHint()"><option value="">— Chưa xếp bàn —</option>${tblOpts}</select>${this.tables.length?'':'<div class="text-xs muted" style="margin-top:4px">Chưa có bàn. Tạo ở mục Sơ đồ bàn tiệc.</div>'}<div class="text-xs" id="gSeatHint" style="margin-top:4px;font-weight:600"></div></div></div>
-        <div class="row"><div class="field" style="margin-bottom:0"><label class="label">Số tiền mừng</label><div class="gx-money"><input class="input" id="gAmount" inputmode="numeric" placeholder="0" value="${g&&g.gift_amount?Number(g.gift_amount).toLocaleString('vi-VN'):''}" oninput="Guestbook.fmtMoney(this)"/><span>₫</span></div></div>
+        <div class="row"><div class="field" style="margin-bottom:0"><label class="label">Số tiền mừng</label><div class="gx-money"><input class="input" id="gAmount" ${Money.attrs} placeholder="0" value="${g&&g.gift_amount?Money.fmt(g.gift_amount):''}"/><span>₫</span></div></div>
         <div class="field" style="margin-bottom:0"><label class="label">Hình thức</label><select class="select" id="gMethod"><option value="cash" ${!g||g.gift_method!=='transfer'?'selected':''}>Tiền mặt</option><option value="transfer" ${g&&g.gift_method==='transfer'?'selected':''}>Chuyển khoản</option></select></div></div>
       </div>
       <div class="gx-sec">Khác</div>
@@ -1690,7 +1900,7 @@ const Guestbook = {
   },
   groupOpts(side,sel){ return this.groups.filter(x=>x.side===side).map(x=>`<option value="${x.id}" ${sel===x.id?'selected':''}>${Util.esc(x.name)}</option>`).join(''); },
   refreshGroups(side){ const el=document.getElementById('gGroup'); el.innerHTML='<option value="">— Chưa phân nhóm —</option>'+this.groupOpts(side,el.value); },
-  fmtMoney(el){ const d=el.value.replace(/\D/g,''); el.value=d?Number(d).toLocaleString('vi-VN'):''; },
+  fmtMoney(el){ Money.format(el); },
   async save(id){
     const btn=document.getElementById('btnSaveGuest'), lbl=id?'Lưu thay đổi':'Thêm khách';
     const $=i=>document.getElementById(i).value;
@@ -1875,7 +2085,7 @@ const Guestbook = {
     else if(k==='groupName'){ x.groupName=v.trim(); grp(); }
     else if(k==='invited_count') x.invited_count=Math.max(1,parseInt(v)||1);
     else if(k==='confirmed_count') x.confirmed_count=Math.max(0,parseInt(v)||0);
-    else if(k==='gift_amount'){ const d=v.replace(/\D/g,''); x.gift_amount=parseInt(d)||0; el.value=d?Number(d).toLocaleString('vi-VN'):''; }
+    else if(k==='gift_amount'){ const d=v.replace(/\D/g,''); x.gift_amount=parseInt(d)||0; }   /* định dạng 1,000,000 do Money tự xử lý */
     else if(k==='table'){ x.warn=x.warn.filter(w=>!/^Không thấy bàn/.test(w)); if(v.startsWith('n:')){ x.tableId=null; } else if(v){ const t=this.tables.find(t=>t.id===v); x.tableId=v; x.tableName=t?t.name:''; } else { x.tableId=null; x.tableName=''; } }
     else if(k==='is_representative') x.is_representative=(v==='true');
     else if(k==='rsvp_status'){ x.rsvp_status=v; x.warn=x.warn.filter(w=>!/^RSVP lạ/.test(w)); }
@@ -1897,7 +2107,7 @@ const Guestbook = {
       <td class="c" style="width:84px">${num('invited_count',1,64)}</td><td class="c" style="width:84px">${num('confirmed_count',0,64)}</td>
       <td class="c" id="ims${i}"><b>${Util.headcount(x)}</b></td>
       <td>${sel('table',tOpts,x.tableId?x.tableId:(x.tableName?'n:'+norm(x.tableName):''),150,'cap')}</td>
-      <td><input class="imp-in" style="min-width:110px" inputmode="numeric" value="${x.gift_amount?Number(x.gift_amount).toLocaleString('vi-VN'):''}" oninput="Guestbook.impEdit(${i},'gift_amount',this)"/></td>
+      <td><input class="imp-in" style="min-width:110px" ${Money.attrs} value="${x.gift_amount?Money.fmt(x.gift_amount):''}" oninput="Guestbook.impEdit(${i},'gift_amount',this)"/></td>
       <td>${sel('gift_method',Object.keys(PAY_MAP).map(k=>[k,PAY_MAP[k]]),x.gift_method,120)}</td>
       <td>${sel('rsvp_status',Object.keys(RS_MAP).map(k=>[k,RS_MAP[k][0]]),x.rsvp_status,110)}</td>
       <td>${sel('is_representative',[['false','Không'],['true','Đại diện hộ']],x.is_representative?'true':'false',110)}</td>
@@ -2080,7 +2290,7 @@ const Seating = {
     }, 'Di chuyển');
   },
   /* ===== SƠ ĐỒ PHÒNG TIỆC (kéo thả bàn) ===== */
-  AISLE:100, STAGE:92, DOOR:34,
+  AISLE:100, STAGE:92, DOOR:34, swapMode:false, swapFirst:null,
   setView(v){ this.view=v; this.render(); },
   tSize(t){ return t.table_type==='long'?{hw:62,hh:32}:{hw:38,hh:38}; },
   slotAt(i,n){ const L=Math.ceil(n/2), right=i>=L, j=right?i-L:i, c=j%3, r=Math.floor(j/3); return {x:(right?64:14)+c*11,y:150+r*112}; },
@@ -2118,8 +2328,30 @@ const Seating = {
       const gN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='groom').reduce((x,a)=>x+this.seatsOf(a),0), bN=ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side==='bride').reduce((x,a)=>x+this.seatsOf(a),0);
       h+=`<div class="sp-t ${t.table_type==='long'?'long':''} ${full?'full':''}" id="sp-${t.id}" style="left:${t.pos_x}%;top:${t.pos_y}px;--p:${pct}%" title="${Util.esc(t.name)}: ${used}/${t.capacity} chỗ" onpointerdown="Seating.tDown(event,'${t.id}')" ondrop="Seating.dropOnTable(event,'${t.id}')" ondragover="Seating.dragOver(event)" ondragleave="Seating.dragLeave(event)"><div class="sp-in"><b>${Util.esc(t.name)}</b><span>${used}/${t.capacity}</span></div>${gN+bN?`<div class="sp-sd"><i class="g">${gN}</i><i class="b">${bN}</i></div>`:''}</div>`;
     });
-    h+=`</div></div><div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
+    h+=`</div></div>${this.mobilePlan(gm)}<div class="sp-legend"><span><i class="lg stage"></i>Sân khấu</span><span><i class="lg aisle"></i>Lối đi cô dâu chú rể</span><span><i class="lg door"></i>Cửa vào</span><span><i class="lg g"></i>Khách nhà trai</span><span><i class="lg b"></i>Khách nhà gái</span><span><i class="lg full"></i>Bàn đã đầy</span></div>`;
     document.getElementById('content').innerHTML=h;
+  },
+  /* Bản điện thoại: thẻ bàn to, rõ, hai bên lối đi; chạm để xem/xếp khách, bật "Đổi chỗ" để hoán đổi 2 bàn */
+  mobilePlan(gm){
+    const info=t=>{ const ta=this.assignments.filter(a=>a.table_id===t.id), sd=k=>ta.filter(a=>gm[a.guest_id]&&gm[a.guest_id].side===k).reduce((x,a)=>x+this.seatsOf(a),0); return {used:ta.reduce((x,a)=>x+this.seatsOf(a),0),g:sd('groom'),b:sd('bride')}; };
+    const card=t=>{ const c=info(t), cap=t.capacity||0, full=cap>0&&c.used>=cap, pct=Math.min(100,Math.round(c.used/(cap||1)*100));
+      return `<button type="button" class="spm-t ${t.table_type==='long'?'long':''} ${full?'full':''} ${this.swapFirst===t.id?'sel':''}" onclick="Seating.mTap('${t.id}')" aria-label="${Util.esc(t.name)}: ${c.used}/${cap} chỗ"><span class="spm-n">${Util.esc(t.name)}</span><span class="spm-c"><b>${c.used}</b>/${cap} chỗ${full?' · Đầy':''}${t.table_type==='long'?' · bàn dài':''}</span><span class="spm-bar"><i style="width:${pct}%"></i></span>${c.g+c.b?`<span class="spm-sd"><i class="g">${c.g}</i><i class="b">${c.b}</i></span>`:''}</button>`; };
+    const L=[], R=[]; [...this.tables].sort((a,b)=>(a.pos_y-b.pos_y)||(a.pos_x-b.pos_x)).forEach(t=>(Number(t.pos_x)<50?L:R).push(t));
+    const hint=this.swapMode?(this.swapFirst?'Chạm bàn thứ hai để hoán đổi vị trí':'Chạm bàn thứ nhất'):'Chạm vào bàn để xem và xếp khách';
+    return `<div class="spm" id="spMobile"><div class="spm-tools"><button type="button" class="btn ${this.swapMode?'btn-primary':'btn-ghost'} btn-sm" onclick="Seating.toggleSwap()">⇄ Đổi chỗ bàn</button><span>${hint}</span></div>
+      <div class="spm-room ${this.swapMode?'swap':''}"><div class="spm-stage"><b>SÂN KHẤU</b><small>♥ Cô dâu &amp; Chú rể ♥</small></div>
+      <div class="spm-cols"><div class="spm-col">${L.map(card).join('')}</div><div class="spm-aisle"><i>LỐI ĐI</i></div><div class="spm-col">${R.map(card).join('')}</div></div>
+      <div class="spm-door">▲ CỬA VÀO</div></div></div>`;
+  },
+  toggleSwap(){ this.swapMode=!this.swapMode; this.swapFirst=null; this.renderView(); },
+  async mTap(id){
+    if(!this.swapMode){ this.openTableInfo(id); return; }
+    if(!this.swapFirst){ this.swapFirst=id; this.renderView(); return; }
+    if(this.swapFirst===id){ this.swapFirst=null; this.renderView(); return; }
+    const a=this.tables.find(x=>x.id===this.swapFirst), b=this.tables.find(x=>x.id===id); this.swapFirst=null;
+    if(!a||!b){ this.renderView(); return; }
+    [a.pos_x,b.pos_x]=[b.pos_x,a.pos_x]; [a.pos_y,b.pos_y]=[b.pos_y,a.pos_y];
+    this.renderView(); Toast.ok(`Đã đổi chỗ ${a.name} ↔ ${b.name}`); await this.persist([a,b]);
   },
   clampPos(x,y,W,H,d){
     x=Math.min(W-d.hw-6,Math.max(d.hw+6,x)); y=Math.min(H-d.hh-this.DOOR-8,Math.max(this.STAGE+d.hh+12,y));
@@ -2298,7 +2530,6 @@ const Plan = {
     h+=`<div class="stat-grid">
       <div class="stat"><div class="accent-bar"></div><div class="stat-label">${days!==null&&days>=0?'Đếm ngược ngày cưới':'Giai đoạn'}</div><div class="stat-value">${days!==null&&days>=0?days:doneP+'/'+g.length}</div><div class="stat-sub">${days!==null&&days>=0?'ngày nữa · '+doneP+'/'+g.length+' giai đoạn xong':'hoàn tất'}</div></div>
       <div class="stat forest"><div class="accent-bar"></div><div class="stat-label">Công việc</div><div class="stat-value">${all.td}/${all.tt}</div><div class="stat-sub">${all.pct}% hoàn thành${all.od?` · <span style="color:var(--danger)">${all.od} quá hạn</span>`:''}</div></div>
-      <div class="stat warn"><div class="accent-bar"></div><div class="stat-label">Chi phí thực tế</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(all.act)}</div><div class="stat-sub">dự kiến ${this.money(all.est)} · đã trả ${this.money(all.paid)}</div></div>
       <div class="stat champagne"><div class="accent-bar"></div><div class="stat-label">Quà mừng</div><div class="stat-value" style="font-size:26px">${Util.fmtMoney(totalGifts)}</div><div class="stat-sub">${this.gifts.length} món · ${this.guestGifts.length} khách mừng</div></div></div>
       <div id="plBody"></div>`;
     c.innerHTML=h; this.paintBody(); if(sc) sc.scrollTop=top;
@@ -2313,7 +2544,7 @@ const Plan = {
       <button class="btn-close" title="Xóa" onclick="Plan.delTask('${t.id}')">${this.ic(I.trash)}</button></div>`;
   },
   bRow(i){ const s=this.BST[i.status]||this.BST.planned, has=Number(i.actual_amount)>0;
-    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-t">${Util.esc(i.description||i.category)}<small>${[i.description?i.category:'',i.vendor].filter(Boolean).map(Util.esc).join(' · ')}</small></div><div class="pl-b-m"><b>${this.money(has?i.actual_amount:i.estimated_amount)}</b><small>${has?'thực tế':'dự kiến'}${Number(i.paid_amount)>0?' · trả '+this.money(i.paid_amount):''}</small></div><span class="pill ${s[1]}">${s[0]}</span></div>`; },
+    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-t">${Util.esc(i.description||i.category)}<small>${[i.description?i.category:'',i.vendor,Number(i.quantity)>1?'SL '+Number(i.quantity):''].filter(Boolean).map(Util.esc).join(' · ')}</small></div><div class="pl-b-m"><b>${this.money(has?i.actual_amount:i.estimated_amount)}</b><small>${has?'thực tế':'dự kiến'}${Number(i.paid_amount)>0?' · trả '+this.money(i.paid_amount):''}</small></div><span class="pill ${s[1]}">${s[0]}</span></div>`; },
   evCard(e){
     const virt=!e.id, T=this.evTasks(e.id), B=this.evItems(e.id), A=this.agg(T,B), open=this.open.has(e.id), d=e.event_date?new Date(e.event_date+'T00:00:00'):null;
     const eg=virt?[]:this.guests.filter(x=>(x.event_ids||[]).includes(e.id)), conf=eg.filter(x=>x.rsvp_status==='confirmed').reduce((s,x)=>s+(Number(x.confirmed_count)||0),0), du=virt?null:Util.daysUntil(e.event_date);
@@ -2359,10 +2590,8 @@ const Plan = {
   /* ---------- QUÀ MỪNG (cuối trang lộ trình) ---------- */
   giftsHtml(){
     let h='';
-    const gGuest=this.guestGifts.reduce((s,x)=>s+Number(x.gift_amount),0), gCash=this.guestGifts.filter(x=>x.gift_method!=='transfer').reduce((s,x)=>s+Number(x.gift_amount),0);
-    h+=`<div class="section-h" style="margin-top:34px">Quà mừng<span class="sub">tiền mừng ghi ở danh sách khách: ${Util.fmtMoney(gGuest)} (${this.guestGifts.length} khách · TM ${this.money(gCash)} · CK ${this.money(gGuest-gCash)})</span></div>`;
-    if(!this.gifts.length) h+='<div class="card" style="padding:18px 22px;color:var(--muted);font-size:13px">Chưa có quà mừng ghi riêng. Bấm “Quà mừng” để thêm phong bì hoặc quà vật chất ngoài danh sách khách.</div>';
-    else h+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Người tặng</th><th class="right">Số tiền</th><th>Ngày nhận</th><th>Mô tả</th><th>Cảm ơn</th><th></th></tr></thead><tbody>${this.gifts.map(x=>`<tr><td style="font-weight:500">${Util.esc(x.giver_name||'—')}</td><td class="right">${Util.fmtMoney(x.amount)}</td><td>${x.received_date?Util.fmtDate(x.received_date):'—'}</td><td>${Util.esc(x.gift_description||'—')}</td><td><button class="pill ${x.thank_you_sent?'pill-confirmed':'pill-pending'}" onclick="Plan.toggleThank('${x.id}')">${x.thank_you_sent?'Đã cảm ơn':'Chưa cảm ơn'}</button></td><td class="right"><button class="btn-close" onclick="Plan.delGift('${x.id}')">${this.ic(I.trash)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    if(this.gifts.length) h+='<div style="height:28px"></div>';
+    if(this.gifts.length) h+=`<div class="tbl-wrap"><div class="tbl-scroll"><table class="tbl"><thead><tr><th>Người tặng</th><th class="right">Số tiền</th><th>Ngày nhận</th><th>Mô tả</th><th>Cảm ơn</th><th></th></tr></thead><tbody>${this.gifts.map(x=>`<tr><td style="font-weight:500">${Util.esc(x.giver_name||'—')}</td><td class="right">${Util.fmtMoney(x.amount)}</td><td>${x.received_date?Util.fmtDate(x.received_date):'—'}</td><td>${Util.esc(x.gift_description||'—')}</td><td><button class="pill ${x.thank_you_sent?'pill-confirmed':'pill-pending'}" onclick="Plan.toggleThank('${x.id}')">${x.thank_you_sent?'Đã cảm ơn':'Chưa cảm ơn'}</button></td><td class="right"><button class="btn-close" onclick="Plan.delGift('${x.id}')">${this.ic(I.trash)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
     return h;
   },
 
@@ -2397,27 +2626,45 @@ const Plan = {
     const body=`<div class="field"><label class="label">Thuộc sự kiện</label><select class="select" id="bEvent" ${this.ok?'':'disabled'}>${this.evOptions(ev||'')}</select>${this.ok?'':this.dbHint}</div>
       <div class="row"><div class="field"><label class="label">Danh mục *</label><input class="input" id="bCat" value="${i?Util.esc(i.category):''}" placeholder="Địa điểm / Ảnh cưới..."/></div><div class="field"><label class="label">Nhà cung cấp</label><input class="input" id="bVendor" value="${i?Util.esc(i.vendor||''):''}"/></div></div>
       <div class="field"><label class="label">Mô tả</label><input class="input" id="bDesc" value="${i?Util.esc(i.description||''):''}"/></div>
-      <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" type="number" id="bEst" value="${i?i.estimated_amount||0:0}"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" type="number" id="bAct" value="${i?i.actual_amount||0:0}"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" type="number" id="bPaid" value="${i?i.paid_amount||0:0}"/></div></div>
+      <div class="row"><div class="field"><label class="label">Số lượng</label><input class="input" type="number" min="1" step="1" inputmode="numeric" id="bQty" value="${i?(Number(i.quantity)||1):1}" oninput="Plan.unitHint()"/></div><div class="field"><label class="label">Đơn giá (tự tính)</label><div class="input" id="bUnit" style="display:flex;align-items:center;color:var(--muted);background:var(--ivory)">—</div></div></div>
+      <div class="row-3"><div class="field"><label class="label">Dự kiến (₫)</label><input class="input" ${Money.attrs} placeholder="0" id="bEst" value="${i?Money.fmt(i.estimated_amount):''}" oninput="Plan.unitHint()"/></div><div class="field"><label class="label">Thực tế (₫)</label><input class="input" ${Money.attrs} placeholder="0" id="bAct" value="${i?Money.fmt(i.actual_amount):''}" oninput="Plan.unitHint()"/></div><div class="field"><label class="label">Đã trả (₫)</label><input class="input" ${Money.attrs} placeholder="0" id="bPaid" value="${i?Money.fmt(i.paid_amount):''}"/></div></div>
       <div class="row"><div class="field"><label class="label">Hạn thanh toán</label><input class="input" type="date" id="bDue" value="${i?i.due_date||'':''}"/></div><div class="field"><label class="label">Trạng thái</label><select class="select" id="bStatus">${Object.keys(this.BST).map(k=>`<option value="${k}" ${(i?i.status:'planned')===k?'selected':''}>${this.BST[k][0]}</option>`).join('')}</select></div></div>
       <div class="field"><label class="label">Ghi chú</label><textarea class="textarea" id="bNotes">${i?Util.esc(i.notes||''):''}</textarea></div>`;
     UI.openDrawer(i?'Sửa khoản chi':'Thêm khoản chi',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveBudget('${id||''}')">${i?'Lưu':'Thêm'}</button>`);
+    this.unitHint();
+  },
+  unitHint(){
+    const q=document.getElementById('bQty'), el=document.getElementById('bUnit'); if(!q||!el) return;
+    const qty=Math.max(1,parseInt(q.value)||1), amt=Money.parse(document.getElementById('bAct').value)||Money.parse(document.getElementById('bEst').value);
+    el.textContent=amt?Money.group(Math.round(amt/qty))+' ₫ / đơn vị':'—';
   },
   async saveBudget(id){
-    const v=i=>document.getElementById(i).value, n=i=>parseFloat(v(i))||0;
-    const row={category:v('bCat').trim(),description:v('bDesc').trim()||null,vendor:v('bVendor').trim()||null,estimated_amount:n('bEst'),actual_amount:n('bAct'),paid_amount:n('bPaid'),due_date:v('bDue')||null,status:v('bStatus'),notes:v('bNotes').trim()||null};
+    const v=i=>document.getElementById(i).value, n=i=>Money.parse(v(i));
+    const row={category:v('bCat').trim(),description:v('bDesc').trim()||null,vendor:v('bVendor').trim()||null,quantity:Math.max(1,parseInt(v('bQty'))||1),estimated_amount:n('bEst'),actual_amount:n('bAct'),paid_amount:n('bPaid'),due_date:v('bDue')||null,status:v('bStatus'),notes:v('bNotes').trim()||null};
     if(!row.category){ Toast.err('Nhập danh mục'); return; }
     if(this.ok) row.event_id=v('bEvent')||null;
-    try{ if(id) await DB.update('wed_budget_items',id,row); else { const r=await DB.insert('wed_budget_items',row); if(r.event_id) this.open.add(r.event_id); } Toast.ok('Đã lưu'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err(this.errMsg(e)); }
+    const write=r=>id?DB.update('wed_budget_items',id,r):DB.insert('wed_budget_items',r);
+    try{
+      let saved, noQty=false;
+      try{ saved=await write(row); }
+      catch(e){
+        if(!/quantity/i.test((e&&e.message)||'')) throw e;
+        const {quantity,...rest}=row; saved=await write(rest); noQty=true;   // DB chưa có cột quantity: vẫn lưu phần còn lại
+      }
+      if(!id && saved && saved.event_id) this.open.add(saved.event_id);
+      if(noQty) Toast.warn('Đã lưu, nhưng chưa lưu được số lượng — hãy chạy file wedding-budget-quantity.sql trong Supabase'); else Toast.ok('Đã lưu');
+      UI.closeDrawer(); await this.load();
+    }catch(e){ Toast.err(this.errMsg(e)); }
   },
   delBudget(id){ UI.confirm('Xóa khoản chi?','Không thể hoàn tác.',async()=>{ try{ await DB.remove('wed_budget_items',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
   openGift(){
     const body=`<div class="field"><label class="label">Người tặng</label><input class="input" id="gfGiver" placeholder="Tên khách"/></div>
-      <div class="row"><div class="field"><label class="label">Số tiền (₫)</label><input class="input" type="number" id="gfAmount" value="0"/></div><div class="field"><label class="label">Ngày nhận</label><input class="input" type="date" id="gfDate" value="${this.today()}"/></div></div>
+      <div class="row"><div class="field"><label class="label">Số tiền (₫)</label><input class="input" ${Money.attrs} placeholder="0" id="gfAmount"/></div><div class="field"><label class="label">Ngày nhận</label><input class="input" type="date" id="gfDate" value="${this.today()}"/></div></div>
       <div class="field"><label class="label">Mô tả quà</label><input class="input" id="gfDesc" placeholder="Phong bì / quà vật chất..."/></div>
       <div class="field"><label class="label">Đã cảm ơn?</label><select class="select" id="gfThank"><option value="false">Chưa</option><option value="true">Rồi</option></select></div>`;
     UI.openDrawer('Thêm quà mừng',body,`<button class="btn btn-ghost" onclick="UI.closeDrawer()">Hủy</button><button class="btn btn-primary" onclick="Plan.saveGift()">Lưu</button>`);
   },
-  async saveGift(){ const v=i=>document.getElementById(i).value, row={giver_name:v('gfGiver').trim()||null,amount:parseFloat(v('gfAmount'))||0,received_date:v('gfDate')||null,gift_description:v('gfDesc').trim()||null,thank_you_sent:v('gfThank')==='true'};
+  async saveGift(){ const v=i=>document.getElementById(i).value, row={giver_name:v('gfGiver').trim()||null,amount:Money.parse(v('gfAmount')),received_date:v('gfDate')||null,gift_description:v('gfDesc').trim()||null,thank_you_sent:v('gfThank')==='true'};
     try{ await DB.insert('wed_gifts',row); Toast.ok('Đã lưu quà mừng'); UI.closeDrawer(); await this.load(); }catch(e){ Toast.err('Lưu thất bại: '+(e.message||'')); } },
   async toggleThank(id){ const x=this.gifts.find(g=>g.id===id); if(!x) return; try{ const r=await DB.update('wed_gifts',id,{thank_you_sent:!x.thank_you_sent}); Object.assign(x,r); this.paint(); }catch(e){ Toast.err('Cập nhật thất bại: '+(e.message||'')); } },
   delGift(id){ UI.confirm('Xóa quà mừng?','Không thể hoàn tác.',async()=>{ try{ await DB.remove('wed_gifts',id); Toast.ok('Đã xóa'); await this.load(); }catch(e){ Toast.err('Xóa thất bại: '+(e.message||'')); } },'Xóa',true); },
