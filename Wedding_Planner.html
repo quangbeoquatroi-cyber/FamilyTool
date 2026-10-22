@@ -3743,9 +3743,23 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 .gs-scroll{overflow:auto;max-height:min(66vh,760px);-webkit-overflow-scrolling:touch}
 .gs-table{
   --gs-cols:34px 210px 150px 132px 156px 140px 138px 186px 152px 116px 138px 148px 152px 140px 156px 140px 232px 214px 202px 86px;
-  min-width:3022px;
+  width:max-content;min-width:100%;   /* JS đặt lại width theo tổng độ rộng các cột */
 }
 .gs-grid{display:grid;grid-template-columns:var(--gs-cols);align-items:center}
+/* LỖI HEADER: .gp-row có gap:12px còn .gs-headrow thì không -> mỗi cột của dòng dữ liệu lệch thêm 12px so với tiêu đề.
+   Ép gap = 0 cho cả hai để cột tiêu đề và cột dữ liệu luôn thẳng hàng. */
+@media (min-width:821px){
+  .gs-grid,.gs-headrow.gs-grid,.gs-row.gs-grid{gap:0;column-gap:0;row-gap:0}
+}
+/* Tay nắm kéo độ rộng cột */
+.gs-headrow .gs-c:not(.gs-c-fix):not(.gs-c-fix2){position:relative}
+.gs-headrow .gs-c{display:flex;align-items:center;height:100%;overflow:visible}
+.gs-rz{position:absolute;top:0;right:-5px;width:11px;height:100%;cursor:col-resize;z-index:1;touch-action:none}
+.gs-rz::after{content:"";position:absolute;left:5px;top:26%;height:48%;width:1px;background:var(--line-2);transition:background .15s,width .15s,left .15s,top .15s,height .15s}
+.gs-rz:hover::after,.gs-resizing .gs-rz.is-drag::after{left:4px;width:3px;top:14%;height:72%;border-radius:2px;background:var(--burgundy)}
+body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none!important}
+.gs-reset{font:inherit;font-size:11.5px;font-weight:600;color:var(--burgundy);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.gs-reset:hover{color:var(--burgundy-2,var(--burgundy))}
 .gs-headrow{
   position:sticky;top:0;z-index:6;height:44px;
   background:linear-gradient(180deg,var(--head-a),var(--head-b));color:var(--head-ink);
@@ -3801,7 +3815,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 .gs-act{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .gs-act .gp-ib{width:30px;height:30px;border-radius:8px}
 .gs-act .gp-ib svg{width:14px;height:14px}
-.gs-act-label{font-size:10.5px;letter-spacing:1.05px;text-transform:uppercase;opacity:.5;font-weight:700;padding-right:6px}
+.gs-act-label{font-size:10px;letter-spacing:.8px;text-transform:uppercase;opacity:.5;font-weight:700;padding-right:0;white-space:nowrap}
 
 /* Ô nhiều lựa chọn (sự kiện được mời) */
 .gs-multi{display:flex;align-items:center;gap:6px;width:100%;max-width:100%;overflow:hidden;text-align:left;cursor:pointer;
@@ -3932,7 +3946,8 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       '<div><div class="gs-eyebrow">Sổ khách mời · dạng bảng tính</div>' +
       '<h3>Danh sách khách mời</h3></div>' +
       '<div class="gs-hint"><span aria-hidden="true">⇄</span> Cuộn ngang để xem đủ <b>18 cột</b> · ' +
-      'bấm tiêu đề cột để <b>sắp xếp</b> · sửa trực tiếp trong ô</div>';
+      'kéo mép tiêu đề để <b>đổi độ rộng</b> · bấm tiêu đề để <b>sắp xếp</b> · ' +
+      '<button type="button" class="gs-reset" data-gs-reset>Vừa khít cột</button></div>';
     panel.appendChild(head);
     /* chèn panel vào vị trí khối đầu tiên TRƯỚC khi di chuyển các khối vào trong */
     view.insertBefore(panel, blocks[0]);
@@ -4026,7 +4041,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   function cellHTML(f, g) {
     if (f.kind === 'text') {
       return '<input class="gs-in gs-cell" type="text" data-field="' + f.k + '" aria-label="' + E(f.t) + '" ' +
-        'value="' + E(g[f.k] == null ? '' : g[f.k]) + '" placeholder="—"/>';
+        'value="' + E(g[f.k] == null ? '' : g[f.k]) + '" title="' + E(g[f.k] == null ? '' : g[f.k]) + '" placeholder="—"/>';
     }
     if (f.kind === 'int' || f.kind === 'money') {
       var v = (g[f.k] == null || g[f.k] === '') ? '' : String(num(g[f.k], 0));
@@ -4059,7 +4074,9 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     return '<span class="gs-c' + (first ? ' gs-c-fix2' : '') + '">' +
       '<button type="button" class="gs-h' + (on ? ' on' : '') + '" data-sort="' + f.k + '" ' +
       'title="Sắp xếp theo ' + E(f.t.replace(' *', '')) + '">' + E(f.t) +
-      '<span class="gs-ar">' + (on ? (sortDir > 0 ? '▲' : '▼') : '↕') + '</span></button></span>';
+      '<span class="gs-ar">' + (on ? (sortDir > 0 ? '▲' : '▼') : '↕') + '</span></button>' +
+      '<i class="gs-rz" data-rz="' + f.k + '" role="separator" aria-orientation="vertical" ' +
+      'title="Kéo để đổi độ rộng · bấm đúp để vừa khít"></i></span>';
   }
   function rowHTML(g) {
     var sel = Guestbook.selected.has(g.id);
@@ -4207,8 +4224,183 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       '</div>' +
       '<div class="gp-foot">Hiển thị ' + l.length + '/' + scope.length + ' hồ sơ · ' + x.headcount +
       ' người dự kiến · ' + x.confirmed + ' đã xác nhận · Tiền mừng ' + Util.fmtMoney(x.gift) + '</div>';
+    try { layout = computeLayout(l, host); applyLayout(); watchWidth(host); }
+    catch (err) { console.warn('[WA] column layout', err); }
     GB.refreshSelection();
   }
+
+
+  /* =========================================================
+     ĐỘ RỘNG CỘT · tự vừa khít nội dung, giãn đều khi còn chỗ,
+     người dùng kéo mép tiêu đề để chỉnh (lưu lại cho lần sau)
+     ========================================================= */
+  var COLW_KEY = 'wa.gs.colw.v1';
+  var CHECK_W = 34, ACT_W = 88, MAX_AUTO = 520, MAX_AUTO_NAME = 340, MAX_USER = 1200;
+  var userW = (function () {
+    try { var o = JSON.parse(localStorage.getItem(COLW_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  })();
+  function saveColW() { try { localStorage.setItem(COLW_KEY, JSON.stringify(userW)); } catch (e) { /* bỏ qua */ } }
+  var layout = null;
+  var measureCtx = document.createElement('canvas').getContext('2d');
+  var mCache = {};
+  function fontOf(el, fb) {
+    if (!el) return fb;
+    var c = getComputedStyle(el);
+    return c.fontStyle + ' ' + c.fontWeight + ' ' + c.fontSize + ' ' + c.fontFamily;
+  }
+  function tw(text, font) {
+    var k = font + '|' + text;
+    if (mCache[k] != null) return mCache[k];
+    measureCtx.font = font;
+    return (mCache[k] = measureCtx.measureText(text).width);
+  }
+  function cellText(f, g) {
+    switch (f.kind) {
+      case 'side': return Guestbook.sideLabel(g.side === 'bride' ? 'bride' : 'groom');
+      case 'group': var gr = groupOf(g); return gr ? gr.name : '— Chưa phân nhóm —';
+      case 'rep': return g.is_representative ? 'Đại diện hộ' : 'Không';
+      case 'rsvp': return (RS_MAP[g.rsvp_status || 'not_sent'] || RS_MAP.not_sent)[0];
+      case 'pay': return PAY_MAP[g.gift_method || 'cash'] || '';
+      case 'table': var t = tableOf(g); return t ? t.name : '— Chưa xếp bàn —';
+      case 'int': case 'money': return (g[f.k] == null || g[f.k] === '') ? '0' : String(num(g[f.k], 0));
+      default: return String(g[f.k] == null ? '' : g[f.k]);
+    }
+  }
+  function computeLayout(list, host) {
+    var inEl = host.querySelector('.gs-in:not(.gs-name)') || host.querySelector('.gs-in');
+    var fIn = fontOf(inEl, '12.5px sans-serif');
+    var fName = fontOf(host.querySelector('.gs-name'), '600 13px sans-serif');
+    var hEl = host.querySelector('.gs-h');
+    var fHead = fontOf(hEl, '700 10.5px sans-serif');
+    var ls = hEl ? (parseFloat(getComputedStyle(hEl).letterSpacing) || 1.05) : 1.05;
+    var fChip = fHead.replace(/^\S+\s+\S+\s+\S+/, '700 10.5px');
+    var keys = [], minW = [], autoW = [];
+
+    FIELDS.forEach(function (f, i) {
+      /* --- nội dung dữ liệu --- */
+      var body = 0;
+      list.forEach(function (g) {
+        var w;
+        if (f.kind === 'events') {
+          var names = (g.event_ids || []).map(function (id) {
+            var e = Guestbook.events.find(function (x) { return x.id === id; }); return e ? e.name : null;
+          }).filter(Boolean);
+          w = names.length
+            ? tw(names[0], fChip) + 14 + (names.length > 1 ? 6 + tw('+' + (names.length - 1), fChip) + 14 : 0)
+            : tw('Chưa chọn sự kiện', fIn);
+          w += 6 + 22 + 16 + 2 + 6;          /* khoảng cách + số đếm + padding ô + viền */
+        } else {
+          w = tw(cellText(f, g), i === 0 ? fName : fIn);
+          if (i === 0) w += 16 + 30 + 9 + 6 + 8 + 2 + 6;                          /* avatar + padding */
+          else if (f.kind === 'text' || f.kind === 'int' || f.kind === 'money') w += 16 + 16 + 2 + 6;
+          else w += 16 + 8 + 24 + 2 + 6;                                           /* select có mũi tên */
+        }
+        if (w > body) body = w;
+      });
+      /* --- tiêu đề: được phép xuống tối đa 2 dòng --- */
+      var words = f.t.toUpperCase().split(/\s+/).filter(Boolean);
+      var ww = words.map(function (w) { return tw(w, fHead) + ls * w.length; });
+      var sp = tw(' ', fHead) + ls;
+      var single = ww.reduce(function (a, b) { return a + b; }, 0) + sp * (ww.length - 1);
+      var longest = Math.max.apply(null, ww);
+      function lines(W) {
+        var n = 1, cur = 0;
+        ww.forEach(function (w, k) { if (k === 0) { cur = w; return; } if (cur + sp + w <= W) cur += sp + w; else { n++; cur = w; } });
+        return n;
+      }
+      var two = longest; while (lines(two) > 2 && two < single) two += 3;
+      var extras = 16 + 6 + 12 + 8;           /* padding + khoảng cách + mũi tên sắp xếp + tay nắm */
+      var hMin = Math.ceil(longest + extras);
+      var hPref = Math.ceil(Math.min(two, single) + extras);
+
+      var mn = Math.max(hMin, i === 0 ? 150 : 64);
+      var au = Math.min(Math.max(body, hPref, mn), i === 0 ? MAX_AUTO_NAME : MAX_AUTO);
+      keys.push(f.k); minW.push(mn); autoW.push(Math.ceil(au));
+    });
+    return { keys: keys, minW: minW, autoW: autoW, cur: autoW.slice() };
+  }
+  function tableEl() { return document.querySelector('#guestList .gs-table'); }
+  function setCols(w) {
+    var t = tableEl(); if (!t) return;
+    var total = CHECK_W + ACT_W + w.reduce(function (a, b) { return a + b; }, 0);
+    t.style.setProperty('--gs-cols', [CHECK_W].concat(w, [ACT_W]).join('px ') + 'px');
+    t.style.width = total + 'px';
+    t.style.minWidth = '0';
+  }
+  function applyLayout() {
+    var t = tableEl(), sc = document.querySelector('#guestList .gs-scroll');
+    if (!t || !sc || !layout) return;
+    if (!window.matchMedia('(min-width:821px)').matches) {     /* điện thoại: giao diện thẻ, không dùng lưới cột */
+      t.style.removeProperty('--gs-cols'); t.style.removeProperty('width'); t.style.removeProperty('min-width');
+      return;
+    }
+    var n = layout.keys.length, w = [], free = [], sum = 0, freeSum = 0;
+    for (var i = 0; i < n; i++) {
+      var u = Number(userW[layout.keys[i]]);
+      if (u > 0) w[i] = Math.min(MAX_USER, Math.max(layout.minW[i], u));
+      else { w[i] = layout.autoW[i]; free.push(i); freeSum += w[i]; }
+      sum += w[i];
+    }
+    var avail = sc.clientWidth - CHECK_W - ACT_W;
+    if (avail > sum && freeSum > 0) {                         /* còn chỗ trống -> giãn đều theo tỉ lệ nội dung */
+      var extra = avail - sum, used = 0;
+      free.forEach(function (i) { var add = Math.floor(extra * layout.autoW[i] / freeSum); w[i] += add; used += add; });
+      w[free[free.length - 1]] += Math.floor(extra - used);
+    }
+    layout.cur = w;
+    setCols(w);
+  }
+  var roFor = null;
+  function watchWidth(host) {
+    var sc = host.querySelector('.gs-scroll');
+    if (!sc || roFor === sc) return;
+    roFor = sc;
+    var last = sc.clientWidth;
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () {
+        var cw = sc.clientWidth;
+        if (cw !== last) { last = cw; applyLayout(); }
+      }).observe(sc);
+    }
+  }
+  window.addEventListener('resize', function () { requestAnimationFrame(applyLayout); });
+
+  /* kéo mép tiêu đề */
+  document.addEventListener('pointerdown', function (ev) {
+    var h = ev.target && ev.target.closest ? ev.target.closest('.gs-rz') : null;
+    if (!h || !layout || ev.button > 0) return;
+    ev.preventDefault();
+    var key = h.getAttribute('data-rz'), i = layout.keys.indexOf(key);
+    if (i < 0) return;
+    var startX = ev.clientX, startW = layout.cur[i], cur = layout.cur.slice(), moved = false;
+    try { h.setPointerCapture(ev.pointerId); } catch (e) { /* bỏ qua */ }
+    h.classList.add('is-drag'); document.body.classList.add('gs-resizing');
+    function move(e) {
+      if (Math.abs(e.clientX - startX) > 2) moved = true;
+      cur[i] = Math.max(layout.minW[i], Math.min(MAX_USER, startW + (e.clientX - startX)));
+      setCols(cur);
+    }
+    function up() {
+      h.removeEventListener('pointermove', move);
+      h.removeEventListener('pointerup', up);
+      h.removeEventListener('pointercancel', up);
+      h.classList.remove('is-drag'); document.body.classList.remove('gs-resizing');
+      if (moved) { userW[key] = Math.round(cur[i]); saveColW(); }
+      applyLayout();
+    }
+    h.addEventListener('pointermove', move);
+    h.addEventListener('pointerup', up);
+    h.addEventListener('pointercancel', up);
+  });
+  document.addEventListener('dblclick', function (ev) {          /* bấm đúp tay nắm = vừa khít cột đó */
+    var h = ev.target && ev.target.closest ? ev.target.closest('.gs-rz') : null;
+    if (!h) return;
+    delete userW[h.getAttribute('data-rz')]; saveColW(); applyLayout();
+  });
+  document.addEventListener('click', function (ev) {
+    if (ev.target && ev.target.closest && ev.target.closest('[data-gs-reset]')) { userW = {}; saveColW(); applyLayout(); }
+  });
 
   var origRenderRows = Guestbook.renderRows;
   Guestbook.renderRows = function () {
@@ -4667,7 +4859,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     bar.innerHTML = '<span class="gs-sortbar-l">Sắp xếp</span>'
       + '<select aria-label="Sắp xếp theo cột">' + opts + '</select>'
       + '<button type="button" class="gs-sortbar-d" aria-label="Đổi chiều sắp xếp" title="Đổi chiều">\u21C5</button>';
-    panel.insertBefore(bar, scroller);
+    (scroller.parentNode || panel).insertBefore(bar, scroller);
     var sel = bar.querySelector('select');
     function fire() {
       var h = head.querySelector('.gs-h[data-sort="' + sel.value + '"]');
@@ -5165,10 +5357,6 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
 <!-- WA v17 · compact desktop guest-table actions; presentation only -->
 <style id="wa-guest-actions-v17">
 @media (min-width:821px){
-  html body .gs-table{
-    --gs-cols:34px 210px 150px 132px 156px 140px 138px 186px 152px 116px 138px 148px 152px 140px 156px 140px 232px 214px 202px 76px;
-    min-width:3012px!important;
-  }
   html body .gs-headrow>.gs-act,
   html body .gs-row>.gs-act{
     box-sizing:border-box;
@@ -5184,5 +5372,74 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
   }
 }
 </style>
+
+<!-- WA · nhớ trang/tab đang mở: bấm F5 vẫn ở đúng chỗ -->
+<script id="wa-persist-state">
+(function () {
+  if (typeof Router === 'undefined') return;
+  var KEY = 'wa.state.v1';
+  function pickStore() {
+    try { localStorage.setItem('__wa_t', '1'); localStorage.removeItem('__wa_t'); return localStorage; }
+    catch (e) { try { return sessionStorage; } catch (e2) { return null; } }
+  }
+  var store = pickStore();
+  function read() { try { return JSON.parse((store && store.getItem(KEY)) || 'null') || {}; } catch (e) { return {}; } }
+  var state = read(), pending = null, booting = false;
+  function write() { try { if (store) store.setItem(KEY, JSON.stringify(state)); } catch (e) { /* bỏ qua */ } }
+  function capture() {
+    if (typeof Guestbook !== 'undefined') {
+      state.phaseId = Guestbook.phaseId || null;
+      state.filterEvent = Guestbook.filterEvent || '';
+    }
+    write();
+  }
+
+  /* 1 · Trang / tab con: ghi mỗi lần điều hướng; khi nạp lại mà URL chưa có #/… thì khôi phục */
+  var origInit = Router.init;
+  Router.init = function () {
+    pending = read();                                   /* chụp trước khi Guestbook.render ghi đè */
+    if (!location.hash && pending.sub && pending.sub !== 'overview') {
+      try { history.replaceState(null, '', '#/' + pending.sub); } catch (e) { /* bỏ qua */ }
+    }
+    booting = true;
+    try { return origInit.apply(this, arguments); } finally { booting = false; }
+  };
+  var origGo = Router.go;
+  Router.go = function () {
+    if (!booting) pending = null;                       /* người dùng tự điều hướng -> không khôi phục nữa */
+    var r = origGo.apply(this, arguments);
+    state.route = Router.current;
+    state.sub = Router.sub || Router.current;
+    capture();
+    return r;
+  };
+
+  /* 2 · Giai đoạn + bộ lọc sự kiện trong "Khách mời & thiệp" */
+  if (typeof Guestbook !== 'undefined') {
+    ['openPhase', 'backToPhases', 'setEvent', 'clearFilters', 'setTab'].forEach(function (name) {
+      var o = Guestbook[name];
+      if (typeof o !== 'function') return;
+      Guestbook[name] = function () { var r = o.apply(this, arguments); capture(); return r; };
+    });
+    var oRender = Guestbook.render;
+    Guestbook.render = function () { var r = oRender.apply(this, arguments); capture(); return r; };
+
+    var oList = Guestbook.paintList;
+    Guestbook.paintList = function () {
+      if (pending) {
+        var p = pending; pending = null;
+        if (Router.current === 'guest' && this.tab === 'list' && p.phaseId &&
+            (p.phaseId === this.LOOSE || (this.phases || []).some(function (x) { return x.id === p.phaseId; }))) {
+          this.phaseId = p.phaseId;
+          this.filterEvent = p.filterEvent || '';
+        }
+      }
+      var r = oList.apply(this, arguments);
+      capture();
+      return r;
+    };
+  }
+})();
+</script>
 </body>
 </html>
