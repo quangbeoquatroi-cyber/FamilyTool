@@ -5216,6 +5216,7 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
     position:relative;
     display:grid!important;
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-areas:none!important;
     gap:12px 10px!important;
     min-width:0;
     padding:14px 14px 16px!important;
@@ -5441,5 +5442,465 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
   }
 })();
 </script>
+<!-- WA v18 · iPhone-first responsive audit; layout only, no data or workflow changes -->
+<style id="wa-mobile-final-iphone-v18">
+@media (max-width:820px){
+  :root{
+    --wa-phone-gutter:clamp(12px,4vw,18px);
+    --wa-phone-radius:16px;
+    --wa-phone-dock:74px;
+  }
+  html,body{
+    width:100%;
+    min-width:0;
+    min-height:100%;
+    overscroll-behavior-x:none;
+    -webkit-text-size-adjust:100%;
+  }
+  body{overflow:hidden}
+  #app.show{
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    min-height:0;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    overflow:hidden;
+  }
+  #app.show>.main{
+    width:100%;
+    min-width:0;
+    min-height:0;
+    height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+  }
+  #app.show>.sidebar{display:none!important}
+  html body .content{
+    width:100%;
+    max-width:none;
+    min-width:0;
+    margin:0;
+    padding:16px var(--wa-phone-gutter) calc(var(--wa-phone-dock) + 42px + env(safe-area-inset-bottom))!important;
+    overflow-x:clip;
+  }
+  html body .content>*{min-width:0;max-width:100%}
+  html body .content .section-h{
+    margin:20px 0 12px!important;
+    font-size:clamp(18px,5vw,21px)!important;
+    line-height:1.25;
+    overflow-wrap:anywhere;
+  }
+  html body .content .section-h:first-child{margin-top:4px!important}
+
+  /* Compact title area; actions become clear, full-width tap targets. */
+  html body .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr);
+    align-items:start;
+    gap:10px;
+    width:100%;
+    padding:calc(12px + env(safe-area-inset-top)) var(--wa-phone-gutter) 11px;
+    background:rgba(250,246,240,.96);
+    -webkit-backdrop-filter:saturate(1.35) blur(16px);
+    backdrop-filter:saturate(1.35) blur(16px);
+  }
+  html body .topbar>div:first-child{width:100%;min-width:0}
+  html body .topbar-title{
+    font-size:clamp(21px,6vw,26px)!important;
+    line-height:1.12;
+    letter-spacing:-.02em;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+  }
+  html body .topbar-sub{display:block;font-size:11.5px;line-height:1.4}
+  html body .topbar-actions{
+    display:flex!important;
+    align-items:stretch;
+    justify-content:flex-start!important;
+    flex-wrap:wrap!important;
+    gap:7px;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  html body .topbar-actions:empty{display:none!important}
+  html body .topbar-actions>.btn{
+    flex:1 1 calc(50% - 4px);
+    min-width:0;
+    min-height:44px;
+    max-width:100%;
+    padding:8px 10px;
+    justify-content:center;
+    text-align:center;
+    white-space:normal;
+    line-height:1.25;
+    overflow-wrap:anywhere;
+  }
+  html body .topbar-actions>.btn:only-child{flex:1 1 100%}
+  html body .topbar-actions .sp-seg{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    flex:1 1 100%;
+    min-width:0;
+    order:0;
+  }
+  html body .topbar-actions .sp-seg button{
+    min-width:0;
+    min-height:42px;
+    padding:7px 5px;
+    white-space:normal;
+    line-height:1.2;
+  }
+
+  /* Five destinations fit on iPhone without clipped names or the home-indicator gap. */
+  html body .mobile-nav{
+    position:fixed!important;
+    z-index:40!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    align-items:stretch;
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(9px + env(safe-area-inset-bottom))!important;
+    width:auto;
+    height:var(--wa-phone-dock)!important;
+    min-height:var(--wa-phone-dock);
+    padding:5px!important;
+    gap:3px!important;
+    overflow:hidden!important;
+    border:1px solid rgba(236,228,215,.96)!important;
+    border-radius:22px!important;
+    background:rgba(255,255,255,.94)!important;
+    -webkit-backdrop-filter:saturate(1.6) blur(20px);
+    backdrop-filter:saturate(1.6) blur(20px);
+    box-shadow:0 12px 34px -12px rgba(36,31,28,.30),0 2px 7px rgba(36,31,28,.06)!important;
+  }
+  html body .mobile-nav .mn-item{
+    display:flex!important;
+    flex:1 1 0;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px!important;
+    width:100%;
+    min-width:0;
+    min-height:0!important;
+    height:100%;
+    padding:4px 2px!important;
+    border-radius:15px!important;
+    background:transparent!important;
+    color:var(--muted)!important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  html body .mobile-nav .mn-item .ico{
+    flex:0 0 auto;
+    width:20px!important;
+    height:20px!important;
+  }
+  html body .mobile-nav .mn-item span{
+    display:block;
+    max-width:100%;
+    overflow:hidden;
+    font-size:clamp(8.5px,2.45vw,10px)!important;
+    font-weight:500;
+    line-height:1.12;
+    letter-spacing:0;
+    text-align:center;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+  }
+  html body .mobile-nav .mn-item.active{
+    color:var(--burgundy)!important;
+    background:var(--burgundy-soft)!important;
+  }
+  html body .mobile-nav .mn-item.active span{font-weight:700}
+
+  /* Flexible cards and metrics; prevent long Vietnamese copy from widening the page. */
+  html body .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:1px!important}
+  html body .stat-grid>.stat{min-width:0}
+  html body .stat-value,html body .stat-label,html body .stat-sub,
+  html body .card,html body .event-card,html body .table-card,
+  html body .pl-b-name,html body .pl-t-title,html body .gp-name{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  html body .col2,html body .row,html body .row-3,html body .seating-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+    min-width:0;
+  }
+  html body .card,html body .event-card,html body .table-card,
+  html body .pl-pcard,html body .gp-phase,html body .gp-list{
+    max-width:100%;
+    border-radius:var(--wa-phone-radius)!important;
+  }
+  html body .card,html body .event-card{padding:15px!important}
+  html body .toolbar,html body .gp-filters,html body .gp-bulk,
+  html body .gp-head-act,html body .sp-zb{
+    min-width:0;
+    max-width:100%;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  html body .toolbar>*{min-width:0;max-width:100%}
+  html body .toolbar .search-box,
+  html body .gp-filters .search-box,
+  html body #content .toolbar .search-box{
+    flex:1 1 100%;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  html body .gp-filters .filter-select{
+    flex:1 1 calc(50% - 5px);
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  html body .gp-count{flex:1 1 100%;margin:0;text-align:right}
+  html body .gp-clear{min-height:40px;padding:8px}
+  html body .gp-head-act .btn{flex:1 1 calc(50% - 5px);min-width:0}
+  html body .gp-all{min-height:40px;line-height:1.35}
+  html body .gp-list{overflow:hidden}
+  html body .gp-row{min-width:0;max-width:100%}
+  html body .gp-meta{min-width:0}
+  html body .gp-chip{white-space:normal;overflow-wrap:anywhere}
+  html body .gp-phase-nums{grid-template-columns:repeat(3,minmax(0,1fr))}
+  html body .gp-act .gp-ib{
+    flex:0 0 40px;
+    width:40px;
+    height:40px;
+  }
+  html body .gs-row>.m-act .gp-ib{
+    flex:0 0 40px;
+    width:40px!important;
+    height:40px!important;
+  }
+  html body .gs-row>.m-check input{width:20px;height:20px}
+  html body .gp-evchip{min-height:40px}
+
+  /* Phone spreadsheet cards: all existing fields remain labelled and editable. */
+  html body .gs-panel,html body .gs-head,html body .gs-scroll,html body .gs-table{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  html body .gs-head{gap:8px}
+  html body .gs-panel>.gp-filters{padding:9px 12px 11px}
+  html body .gs-row{min-width:0;max-width:100%}
+  html body .gs-row>.gs-c{
+    grid-area:auto!important;
+    min-width:0!important;
+    max-width:100%;
+  }
+  html body .gs-row>.m-full_name{grid-row:1!important;grid-column:1/-1!important}
+  html body .gs-row>.m-event_ids,
+  html body .gs-row>.m-dietary,
+  html body .gs-row>.m-notes{grid-column:1/-1!important}
+  /* Older mobile rules left checkbox/action grid coordinates at columns 3–4,
+     which silently created implicit 22px columns and crushed every label. */
+  html body .gs-row>.m-check,
+  html body .gs-row>.m-act{
+    grid-area:auto!important;
+    grid-row:auto!important;
+    grid-column:auto!important;
+  }
+  html body .gs-row .gs-in,
+  html body .gs-row .gs-sel,
+  html body .gs-row .gs-multi{
+    max-width:100%;
+    min-width:0;
+  }
+  html body .gs-row .gs-act{gap:5px}
+
+  /* Tables keep readable column widths and scroll inside their own frame. */
+  html body .tbl-wrap,html body .tbl-scroll,html body .imp-tbl{
+    max-width:100%;
+    min-width:0;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  html body .tbl-scroll .tbl{min-width:600px}
+  html body .tbl-scroll .tbl th,html body .tbl-scroll .tbl td{white-space:normal}
+  html body .tbl-scroll .tbl th:first-child,html body .tbl-scroll .tbl td:first-child{
+    position:sticky;
+    left:0;
+    z-index:2;
+    background:var(--paper);
+    box-shadow:1px 0 0 var(--line);
+  }
+  html body .unseated-list{max-width:100%;flex-wrap:wrap}
+  html body .unseated-chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+  html body .sp-vp{width:100%;max-width:100%;overflow:auto;touch-action:pan-x pan-y}
+  html body .sp-zb>*{max-width:100%}
+
+  /* Inputs, drawers and sheets respect iOS zoom and safe areas. */
+  html body input:not([type=checkbox]):not([type=radio]):not([type=range]),
+  html body select,html body textarea{
+    max-width:100%;
+    font-size:16px!important;
+  }
+  html body .input,html body .select,html body .textarea,
+  html body .filter-select,html body .gs-sortbar select{
+    min-height:44px;
+    border-radius:11px;
+  }
+  html body .btn,html body .gp-ib,html body .btn-close,
+  html body .task-check,html body .sp-zbtn button{touch-action:manipulation}
+  html body .btn{min-height:44px}
+  html body .btn-sm{min-height:40px}
+  html body .drawer{
+    width:100vw!important;
+    max-width:100vw!important;
+    height:100vh;
+    height:100dvh;
+    padding-bottom:0;
+  }
+  html body .drawer-head{
+    padding-top:calc(12px + env(safe-area-inset-top))!important;
+    background:var(--paper);
+  }
+  html body .drawer-body{
+    min-height:0;
+    padding-bottom:24px!important;
+    overscroll-behavior:contain;
+  }
+  html body .drawer-foot{
+    padding-bottom:calc(12px + env(safe-area-inset-bottom))!important;
+  }
+  html body .modal-overlay{padding:0}
+  html body .modal{
+    width:100vw!important;
+    max-width:100vw!important;
+    max-height:calc(100dvh - env(safe-area-inset-top))!important;
+    padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  html body .modal.wide{
+    width:100vw!important;
+    height:100dvh;
+    max-height:100dvh!important;
+    border-radius:0!important;
+  }
+  html body .modal-foot,html body .drawer-foot{gap:8px}
+  html body .modal-foot .btn,html body .drawer-foot .btn{min-width:0;white-space:normal}
+  html body #toaster{
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(var(--wa-phone-dock) + 24px + env(safe-area-inset-bottom))!important;
+    top:auto!important;
+  }
+  html body #toaster>*{max-width:100%;overflow-wrap:anywhere}
+  html body #login{
+    padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  html body .login-card{
+    width:min(440px,100%);
+    padding:clamp(28px,8vh,46px) clamp(20px,7vw,32px) 28px;
+    border-radius:18px;
+  }
+  html body .login-title{font-size:clamp(27px,8vw,34px)}
+}
+
+@media (max-width:380px){
+  :root{--wa-phone-gutter:12px;--wa-phone-dock:72px}
+  html body .mobile-nav{left:8px!important;right:8px!important}
+  html body .mobile-nav .mn-item .ico{width:19px!important;height:19px!important}
+  html body .mobile-nav .mn-item span{font-size:8.5px!important}
+  html body .stat-grid>.stat:first-child:not(:only-child) .stat-value{font-size:38px!important}
+  html body .gp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media (max-width:820px) and (max-height:520px){
+  html body .topbar{position:relative;padding-top:calc(8px + env(safe-area-inset-top))}
+  html body .topbar-actions>.btn{min-height:38px}
+  html body .mobile-nav{height:64px!important;min-height:64px}
+  html body .mobile-nav .mn-item .ico{width:18px!important;height:18px!important}
+  html body .mobile-nav .mn-item span{-webkit-line-clamp:1}
+}
+
+/* iPhone landscape can be wider than 820 CSS px while still being a phone. */
+@media (orientation:landscape) and (max-height:520px) and (min-width:821px) and (max-width:1000px){
+  #app.show{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+  }
+  #app.show>.sidebar{display:none!important}
+  #app.show>.main{
+    min-width:0;
+    min-height:0;
+    height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  html body .topbar{
+    position:sticky;
+    top:0;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr);
+    gap:7px;
+    padding:calc(7px + env(safe-area-inset-top)) 16px 8px;
+  }
+  html body .topbar-title{font-size:21px!important}
+  html body .topbar-sub{display:none}
+  html body .topbar-actions{display:flex!important;flex-wrap:wrap!important;gap:6px;margin:0!important;padding:0!important;overflow:visible!important}
+  html body .topbar-actions>.btn{flex:0 1 auto;min-height:38px;padding:6px 11px}
+  html body .content{max-width:none;padding:12px 16px calc(78px + env(safe-area-inset-bottom))!important}
+  html body .mobile-nav{
+    position:fixed!important;
+    z-index:40!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(7px + env(safe-area-inset-bottom))!important;
+    height:60px!important;
+    min-height:60px;
+    padding:4px!important;
+    gap:3px!important;
+    border:1px solid var(--line)!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.94)!important;
+    -webkit-backdrop-filter:blur(16px);
+    backdrop-filter:blur(16px);
+    box-shadow:0 10px 28px -12px rgba(36,31,28,.3)!important;
+  }
+  html body .mobile-nav .mn-item{display:flex!important;min-width:0;min-height:0!important;padding:3px!important}
+  html body .mobile-nav .mn-item .ico{width:18px!important;height:18px!important}
+  html body .mobile-nav .mn-item span{font-size:9px!important;line-height:1.05;white-space:normal!important;-webkit-line-clamp:1}
+  html body .modal{max-height:calc(100dvh - env(safe-area-inset-top))!important}
+}
+
+@media (hover:none){
+  html body .card:hover,html body .event-card:hover,html body .table-card:hover,
+  html body .gp-phase:hover{transform:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  html body *,html body *::before,html body *::after{
+    scroll-behavior:auto!important;
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+  html body .spin{animation:none!important;border-color:var(--burgundy-soft);border-top-color:var(--burgundy)}
+}
+</style>
 </body>
 </html>
