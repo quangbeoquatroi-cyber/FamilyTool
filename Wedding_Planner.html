@@ -5162,5 +5162,27 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
   .skeleton{animation:none!important;background:var(--ivory-2)!important}
 }
 </style>
+<!-- WA v17 · compact desktop guest-table actions; presentation only -->
+<style id="wa-guest-actions-v17">
+@media (min-width:821px){
+  html body .gs-table{
+    --gs-cols:34px 210px 150px 132px 156px 140px 138px 186px 152px 116px 138px 148px 152px 140px 156px 140px 232px 214px 202px 76px;
+    min-width:3012px!important;
+  }
+  html body .gs-headrow>.gs-act,
+  html body .gs-row>.gs-act{
+    box-sizing:border-box;
+    justify-content:center!important;
+    gap:4px!important;
+    padding:0 2px!important;
+    min-width:0;
+  }
+  html body .gs-row>.gs-act .gp-ib{
+    flex:0 0 30px;
+    width:30px;
+    height:30px;
+  }
+}
+</style>
 </body>
 </html>
