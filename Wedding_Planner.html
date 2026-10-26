@@ -2480,7 +2480,7 @@ const Guestbook = {
     document.querySelectorAll('[data-select]').forEach(c=>{ const on=this.selected.has(c.dataset.select); c.checked=on; const li=c.closest('.gp-row'); if(li) li.classList.toggle('is-sel',on); });
     const n=this.shownIds.filter(id=>this.selected.has(id)).length;
     ['gpSelView','gpSelHead'].forEach(id=>{ const c=document.getElementById(id); if(!c) return; c.checked=!!this.shownIds.length&&n===this.shownIds.length; c.indeterminate=n>0&&n<this.shownIds.length; });
-    const label=document.getElementById('gxSelectedCount'); if(label) label.textContent=this.selected.size?('Đã chọn '+this.selected.size+' khách'):'Chưa chọn khách nào';
+    const label=document.getElementById('gxSelectedCount'); if(label){ label.textContent=this.selected.size?('Đã chọn '+this.selected.size+' khách'):'Chưa chọn khách nào'; label.classList.toggle('has',this.selected.size>0); }
     const b=document.getElementById('gxDeleteSelected'); if(b){ b.disabled=!this.selected.size; b.textContent=this.selected.size?('Xóa đã chọn ('+this.selected.size+')'):'Xóa đã chọn'; }
   },
 
@@ -3960,8 +3960,8 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     var head = document.createElement('div');
     head.className = 'gs-head';
     head.innerHTML =
-      '<div><div class="gs-eyebrow">Sổ khách mời · dạng bảng tính</div>' +
-      '<h3>Danh sách khách mời</h3></div>' +
+      '<div class="gs-head-title"><h3>Danh sách khách mời</h3>' +
+      '<div class="gs-hint"><span aria-hidden="true">⇄</span> Cuộn ngang · kéo mép tiêu đề để <b>đổi độ rộng</b> · bấm tiêu đề để <b>sắp xếp</b></div></div>' +
       '<div class="gs-head-tools">' +
         '<details class="gs-cols-menu"><summary><span aria-hidden="true">☷</span> Hiển thị cột <b class="gs-col-count"></b></summary>' +
           '<div class="gs-cols-pop"><div class="gs-cols-title"><span>Chọn cột hiển thị</span>' +
@@ -3972,8 +3972,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
             }).join('') + '</div>' +
           '</div></details>' +
         '<button type="button" class="gs-reset" data-gs-reset>Vừa khít cột</button>' +
-      '</div>' +
-      '<div class="gs-hint"><span aria-hidden="true">⇄</span> Cuộn ngang · kéo mép tiêu đề để <b>đổi độ rộng</b> · bấm tiêu đề để <b>sắp xếp</b></div>';
+      '</div>';
     panel.appendChild(head);
     /* chèn panel vào vị trí khối đầu tiên TRƯỚC khi di chuyển các khối vào trong */
     view.insertBefore(panel, blocks[0]);
@@ -4100,7 +4099,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       case 'group': return [['', '— Chưa phân nhóm —']].concat(Guestbook.groups.map(function (x) { return [x.id, x.name]; }));
       case 'rep': return [['0', 'Không'], ['1', 'Đại diện hộ']];
       case 'rsvp': return Object.keys(RS_MAP).map(function (k) { return [k, RS_MAP[k][0]]; });
-      case 'pay': return [['', '— Trống —']].concat(Object.keys(PAY_MAP).map(function (k) { return [k, PAY_MAP[k]]; }));
+      case 'pay': return Object.keys(PAY_MAP).map(function (k) { return [k, PAY_MAP[k]]; });
       case 'table': return [['', '— Chưa xếp bàn —']].concat(Guestbook.tables.map(function (t) { return [t.id, t.name]; }));
     }
     return [];
@@ -4338,7 +4337,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       case 'group': var gr = groupOf(g); return gr ? gr.name : '— Chưa phân nhóm —';
       case 'rep': return g.is_representative ? 'Đại diện hộ' : 'Không';
       case 'rsvp': return (RS_MAP[g.rsvp_status || 'not_sent'] || RS_MAP.not_sent)[0];
-      case 'pay': return PAY_MAP[g.gift_method] || '— Trống —';
+      case 'pay': return PAY_MAP[g.gift_method] || PAY_MAP.cash;
       case 'table': var t = tableOf(g); return t ? t.name : '— Chưa xếp bàn —';
       case 'int': case 'money': return (g[f.k] == null || g[f.k] === '') ? '0' : String(num(g[f.k], 0));
       default: return String(g[f.k] == null ? '' : g[f.k]);
@@ -4543,7 +4542,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     } else if (f.kind === 'rsvp') {
       patch.rsvp_status = raw;
     } else if (f.kind === 'pay') {
-      patch.gift_method = raw || null;
+      patch.gift_method = PAY_MAP[raw] ? raw : 'cash';
     } else if (f.kind === 'table') {
       setTable(gid, raw || null);
       return;
@@ -6043,6 +6042,66 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
   .gs-head{align-items:flex-start}
   .gs-head-tools{width:100%;justify-content:flex-end;margin-left:0}
   .gs-cols-pop{max-height:min(62vh,400px)}
+}
+</style>
+
+<style id="wa-guest-toolbar-v2">
+/* ===== Thanh đầu bảng khách mời: head / chip sự kiện / bộ lọc / thao tác loạt =====
+   Cùng một lề trái-phải 20px, cùng chiều cao điều khiển 38px, ngăn cách bằng đường kẻ mảnh. */
+html body .gs-panel{--tb-x:20px;--tb-h:38px}
+
+/* --- Head --- */
+html body .gs-panel>.gs-head{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px var(--tb-x) 16px;background:none;border-bottom:1px solid var(--line)}
+html body .gs-head .gs-head-title{min-width:0}
+html body .gs-head h3{margin:0;font-size:21px;line-height:1.2;letter-spacing:-.2px}
+html body .gs-head .gs-hint{margin:5px 0 0;font-size:12px;line-height:1.4;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+html body .gs-head .gs-hint b{font-weight:600;color:var(--ink-2)}
+html body .gs-head .gs-head-tools{margin-left:0;gap:8px;flex:0 0 auto}
+html body .gs-head .gs-cols-menu>summary,
+html body .gs-head .gs-reset{height:var(--tb-h);min-height:var(--tb-h);padding:0 14px;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink-2);font:inherit;font-size:12.5px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+html body .gs-head .gs-reset:hover{border-color:var(--burgundy);color:var(--burgundy);background:var(--burgundy-soft)}
+
+/* --- Chip sự kiện: thanh phân đoạn --- */
+html body .gs-panel>.gp-evchips{display:flex;align-items:center;gap:14px;flex-wrap:nowrap;padding:14px var(--tb-x) 0;margin:0;background:none;border:0}
+html body .gp-evchips .gp-evchips-l{flex:0 0 auto;margin:0;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+html body .gp-evchips .gp-evchips-seg{display:contents}
+html body .gs-panel>.gp-evchips{overflow-x:auto;scrollbar-width:none}
+html body .gs-panel>.gp-evchips::-webkit-scrollbar{display:none}
+html body .gp-evchips .gp-evchip{flex:0 0 auto;height:34px;padding:0 15px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface);
+  font-size:12.5px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+html body .gp-evchips .gp-evchip:hover{border-color:var(--burgundy);color:var(--burgundy);background:var(--burgundy-soft)}
+html body .gp-evchips .gp-evchip.on{background:var(--burgundy);border-color:var(--burgundy);color:#fff;font-weight:600;box-shadow:0 4px 10px -6px rgba(107,39,55,.7)}
+
+/* --- Bộ lọc: 1 hàng, ô tìm kiếm giãn, 3 select cùng độ rộng, đếm ở cuối --- */
+html body .gs-panel>.gp-filters{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:14px var(--tb-x) 16px;margin:0;background:none;border:0;border-bottom:1px solid var(--line)}
+html body .gs-panel>.gp-filters .search-box{flex:1 1 280px;min-width:200px;max-width:none}
+html body .gs-panel>.gp-filters .search-box input{height:var(--tb-h);box-sizing:border-box;padding:0 12px 0 38px;border-radius:10px;font-size:13px;background:var(--surface)}
+html body .gs-panel>.gp-filters .filter-select{flex:0 0 150px;width:150px;height:var(--tb-h);box-sizing:border-box;padding:0 32px 0 12px;border-radius:10px;font-size:13px;color:var(--ink-2);
+  appearance:none;-webkit-appearance:none;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23857A6E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center}
+html body .gs-panel>.gp-filters .gp-clear{height:var(--tb-h);padding:0 10px;font-size:12.5px;font-weight:500;color:var(--muted);border-radius:8px}
+html body .gs-panel>.gp-filters .gp-clear:hover{color:var(--burgundy);background:var(--burgundy-soft);text-decoration:none}
+html body .gs-panel>.gp-filters .gp-count{margin-left:auto;padding-left:6px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+
+/* --- Thao tác loạt: thanh công cụ gọn --- */
+html body .gs-panel>.gp-bulk{display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;padding:10px var(--tb-x);margin:0;background:var(--surface-2);border:0;border-bottom:1px solid var(--line)}
+html body .gp-bulk .gp-all{font-size:13px;color:var(--ink-2);gap:10px}
+html body .gp-bulk .gp-selcount{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;background:var(--surface-3);color:var(--muted);font-size:12px;font-weight:600}
+html body .gp-bulk .gp-selcount.has,html body .gp-bulk .gp-selcount.on{background:var(--burgundy-soft);color:var(--burgundy)}
+html body .gp-bulk .btn{height:32px;min-height:32px;padding:0 13px;border-radius:9px;font-size:12.5px}
+html body .gp-bulk .gp-del{margin-left:auto}
+html body .gp-bulk .gp-del:disabled,html body .gp-bulk .gp-del[disabled]{opacity:.45}
+
+@media(max-width:820px){
+  html body .gs-panel{--tb-x:14px}
+  html body .gs-panel>.gs-head{flex-direction:column;align-items:stretch;padding-top:16px}
+  html body .gs-head .gs-head-tools{width:100%;justify-content:flex-start}
+  html body .gs-panel>.gp-filters .search-box{flex:1 1 100%}
+  html body .gs-panel>.gp-filters .filter-select{flex:1 1 calc(33% - 8px);width:auto;min-width:0}
+  html body .gs-panel>.gp-filters .gp-count{flex:1 1 100%;text-align:right;margin:0}
+  html body .gp-bulk .gp-del{margin-left:0}
+  html body .gp-evchips .gp-evchip{height:40px}
 }
 </style>
 </body>
