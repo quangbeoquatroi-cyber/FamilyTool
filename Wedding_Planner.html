@@ -2376,7 +2376,7 @@ const Guestbook = {
           <button class="btn btn-primary btn-sm" onclick="Guestbook.openAdd()">${I.plus} Thêm khách</button>
         </div>
       </header>
-      <div class="gp-stats">
+      <div class="gp-stats" id="gpStats">
         ${this.statTile('Hồ sơ khách',x.profiles,list.length?'trong giai đoạn này':'chưa có khách')}
         ${this.statTile('Người dự kiến',x.headcount,'theo số mời / xác nhận')}
         ${this.statTile('Đã xác nhận',x.confirmed,x.confHeads+' người sẽ tham dự','is-ok')}
@@ -2471,6 +2471,23 @@ const Guestbook = {
   /* ---------- chọn nhiều (phân biệt rõ: đang hiển thị ⟷ toàn bộ sổ) ---------- */
   selected:new Set(),
   shownIds:[],
+  /* Thẻ thống kê tự tính lại theo bộ lọc đang áp dụng (sự kiện, tìm kiếm, bên, nhóm, RSVP) */
+  updateStats(){
+    const host=document.getElementById('gpStats'); if(!host) return;
+    const scope=this.scopeList();
+    const filtered=!!(this.filterEvent||(this.search||'').trim()||this.filterSide||this.filterGroup||this.filterRsvp);
+    const ids=new Set(this.shownIds||[]);
+    const list=filtered?scope.filter(g=>ids.has(g.id)):scope;
+    const x=this.phaseStats(list), T=(a,b,c,d)=>this.statTile(a,b,c,d);
+    host.classList.toggle('is-filtered',filtered);
+    host.innerHTML=
+      T('Hồ sơ khách',x.profiles,filtered?('trong '+scope.length+' hồ sơ của giai đoạn'):(scope.length?'trong giai đoạn này':'chưa có khách'))+
+      T('Người dự kiến',x.headcount,filtered?'của các hồ sơ đang lọc':'theo số mời / xác nhận')+
+      T('Đã xác nhận',x.confirmed,x.confHeads+' người sẽ tham dự','is-ok')+
+      T('Chưa phản hồi',x.pending,'cần gửi hoặc nhắc lời mời','is-wait')+
+      T('Từ chối',x.declined,'không tham dự','is-no')+
+      T('Tiền mừng',Util.fmtMoney(x.gift),filtered?'của các hồ sơ đang lọc':'ghi nhận được');
+  },
   selectOne(id,on){ on?this.selected.add(id):this.selected.delete(id); this.refreshSelection(); },
   selectVisible(on){ this.shownIds.forEach(id=>{ on?this.selected.add(id):this.selected.delete(id); }); this.refreshSelection(); },
   selectAllGuests(){ this.guests.forEach(g=>this.selected.add(g.id)); this.refreshSelection(); },
@@ -4192,6 +4209,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     });
   }
   function refreshFoot() {
+    if (Guestbook.updateStats) Guestbook.updateStats();
     var foot = document.querySelector('#guestList .gp-foot');
     if (!foot) return;
     var list = (Guestbook.shownIds || []).map(findGuest).filter(Boolean);
@@ -6103,6 +6121,27 @@ html body .gp-bulk .gp-del:disabled,html body .gp-bulk .gp-del[disabled]{opacity
   html body .gp-bulk .gp-del{margin-left:0}
   html body .gp-evchips .gp-evchip{height:40px}
 }
+</style>
+<script id="wa-stats-follow-filter">
+(function(){
+  if (typeof Guestbook === 'undefined') return;
+  var o = Guestbook.renderRows;
+  Guestbook.renderRows = function(){
+    var r = o.apply(this, arguments);
+    try { this.updateStats(); } catch (e) { console.warn('[WA] stats', e); }
+    return r;
+  };
+  /* lưu ô xong (đổi RSVP / số người / tiền mừng...) thì tính lại */
+  document.addEventListener('change', function(ev){
+    var el = ev.target;
+    if (el && el.classList && el.classList.contains('gs-cell')) {
+      setTimeout(function(){ try { Guestbook.updateStats(); } catch (e) {} }, 400);
+    }
+  });
+})();
+</script>
+<style>
+html body .gp-stats.is-filtered{border-color:var(--champagne);box-shadow:0 0 0 3px rgba(190,154,83,.14)}
 </style>
 </body>
 </html>
