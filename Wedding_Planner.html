@@ -1003,6 +1003,13 @@ textarea{ line-height:1.5; }
 .pl-b-r small{display:block;font-size:11.5px;color:var(--muted)}
 .pl-b-r .pl-b-paid{color:var(--forest);font-weight:600}
 .pl-b-del{margin-top:4px;margin-left:auto;opacity:.5}.pl-b:hover .pl-b-del{opacity:1}
+.pl-col-bud .pl-b{align-items:start;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;padding:14px;margin:0 0 9px;border:1px solid var(--line);border-radius:13px;background:var(--paper);box-shadow:var(--shadow-sm)}
+.pl-b-l{min-width:0}
+.pl-b-note{display:grid;gap:3px;margin-top:10px;padding:9px 11px;border-left:3px solid var(--champagne);border-radius:0 9px 9px 0;background:var(--champagne-soft);color:var(--ink-2)}
+.pl-b-note-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#806528}
+.pl-b-note-text{font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.pl-col-bud .pl-b-r{max-width:min(42vw,260px)}
+.pl-col-bud .pl-b-r b{white-space:normal;overflow-wrap:anywhere}
 @media(max-width:900px){.pl-ev.open .pl-ev-body{grid-template-columns:1fr}}
 @media(max-width:640px){.pl-ev.open .pl-ev-body{padding:10px;gap:12px}.pl-ev-body .pl-col{padding:14px}.pl-tiles b{font-size:15px}.pl-b-r b{font-size:18px}.pl-col-bud .pl-b{flex-wrap:wrap}.pl-b-r{max-width:100%}}
 
@@ -1128,9 +1135,17 @@ textarea{ line-height:1.5; }
 .pl-grow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);cursor:pointer;transition:border-color .15s var(--ease),background .15s var(--ease),transform .15s var(--ease)}
 .pl-grow:hover{border-color:var(--line-2);background:var(--surface-2);transform:translateY(-1px)}
 .pl-grow:focus-visible{outline:none;box-shadow:var(--ring)}
-.pl-gname{flex:1 1 auto;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pl-gnum{font-size:11.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pl-gname{flex:1 1 150px;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink);overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.pl-gnum{flex:0 0 auto;font-size:11.5px;color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--ivory)}
 .pl-gconf{font-style:normal;color:var(--forest);font-weight:600}
+.pl-col-guest{grid-column:1/-1!important;border-left:0!important;border-top:3px solid #8A7E70!important;background:var(--surface)!important}
+.pl-col-guest .pl-sec-h{align-items:flex-start;gap:12px;margin-bottom:14px}
+.pl-col-guest .pl-sec-t{min-width:0}
+.pl-col-guest .pl-gsides{justify-content:flex-end}
+.pl-glist{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:10px}
+.pl-grow{align-items:center;min-height:54px;padding:11px 13px}
+.pl-grow .pl-gside{flex:0 0 auto}
+.pl-grow .pill{flex:0 0 auto}
 /* ---------- 8 · DETAILS ---------- */
 .pl-col-bud .pl-b,.pl-col-task .pl-t{border-radius:12px}
 .pl-t .btn-close{width:30px;height:30px}
@@ -1165,9 +1180,9 @@ textarea{ line-height:1.5; }
   .stat-value{font-size:26px}
   #content .toolbar .search-box{max-width:none;flex:1 1 100%}
   .pl-ph-stats>div{min-width:50%;padding:0 12px}
-  .pl-grow{flex-wrap:wrap}
+  .pl-grow{flex-wrap:wrap;align-items:flex-start}
   .pl-gside{order:1}
-  .pl-gname{order:2;flex:1 1 100%;white-space:normal}
+  .pl-gname{order:2;flex:1 1 100%;white-space:normal;overflow:visible;text-overflow:clip}
   .pl-gnum{order:3}
   .pl-grow .pill{order:4;margin-left:auto}
 }
@@ -3282,7 +3297,8 @@ const Plan = {
   bRow(i){
     const s=this.BST[i.status]||this.BST.planned, has=Number(i.actual_amount)>0, q=Math.max(1,Number(i.quantity)||1), amt=has?Number(i.actual_amount):(Number(i.estimated_amount)||0), paid=Number(i.paid_amount)||0;
     const sub=[i.description?i.category:'',i.vendor].filter(Boolean).map(Util.esc).join(' · ');
-    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-l"><div class="pl-b-name">${Util.esc(i.description||i.category)}</div>${sub?`<div class="pl-b-sub">${sub}</div>`:''}<div class="pl-b-tags"><span class="pl-qty">SL: ${q}</span><span class="pill ${s[1]}">${s[0]}</span></div></div>
+    const note=String(i.notes||'').trim();
+    return `<div class="pl-b" onclick="Plan.openBudget('${i.id}')"><div class="pl-b-l"><div class="pl-b-name">${Util.esc(i.description||i.category)}</div>${sub?`<div class="pl-b-sub">${sub}</div>`:''}<div class="pl-b-tags"><span class="pl-qty">SL: ${q}</span><span class="pill ${s[1]}">${s[0]}</span></div>${note?`<div class="pl-b-note"><span class="pl-b-note-label">Ghi chú</span><span class="pl-b-note-text">${Util.esc(note)}</span></div>`:''}</div>
       <div class="pl-b-r"><b>${this.money(amt)}</b><small>${has?'thực tế':'dự kiến'}${q>1?' · '+this.money(Math.round(amt/q))+'/đv':''}</small>${paid>0?`<small class="pl-b-paid">Đã trả ${this.money(paid)}</small>`:''}<button class="btn-close pl-b-del" title="Xóa" onclick="event.stopPropagation();Plan.delBudget('${i.id}')">${this.ic(I.trash)}</button></div></div>`;
   },
   evCard(e){
@@ -3313,12 +3329,13 @@ const Plan = {
   },
     guestsHtml(eg,conf){
     const ppl=eg.reduce((s,x)=>s+Util.headcount(x),0);
-    const gN=eg.filter(x=>x.side==='groom').length, bN=eg.filter(x=>x.side==='bride').length;
-    const sides=[gN?`<span class="pl-gside groom">${Util.esc(Guestbook.sideLabel('groom'))} · ${gN}</span>`:'',bN?`<span class="pl-gside bride">${Util.esc(Guestbook.sideLabel('bride'))} · ${bN}</span>`:''].join('');
-    const head=`<header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico g">${I.guest}</span><div><b>Khách mời của sự kiện</b><small>${eg.length} khách · ${ppl} người dự kiến${conf?` · <i class="pl-gconf">${conf} xác nhận</i>`:''}</small></div></div><div class="pl-gsides">${sides}</div></header>`;
+    const sideStats=side=>{ const list=eg.filter(x=>x.side===side); return {profiles:list.length,people:list.reduce((n,x)=>n+Util.headcount(x),0)}; };
+    const groom=sideStats('groom'), bride=sideStats('bride');
+    const sides=[groom.profiles?`<span class="pl-gside groom">${Util.esc(Guestbook.sideLabel('groom'))} · ${groom.profiles} khách / ${groom.people} người</span>`:'',bride.profiles?`<span class="pl-gside bride">${Util.esc(Guestbook.sideLabel('bride'))} · ${bride.profiles} khách / ${bride.people} người</span>`:''].join('');
+    const head=`<header class="pl-sec-h"><div class="pl-sec-t"><span class="pl-sec-ico g">${I.guest}</span><div><b>Khách mời của sự kiện</b><small>${eg.length} hồ sơ khách · ${ppl} người dự kiến${conf?` · <i class="pl-gconf">${conf} xác nhận</i>`:''}</small></div></div><div class="pl-gsides">${sides}</div></header>`;
     if(!eg.length) return `<section class="pl-col pl-col-guest">${head}<div class="pl-none">Sự kiện này chưa có khách mời nào được gắn. Vào “Khách mời &amp; thiệp” để gắn khách vào sự kiện.</div></section>`;
     const rows=eg.slice().sort((a,b)=>{ const s=(a.side==='groom'?0:1)-(b.side==='groom'?0:1); return s||String(a.full_name||'').localeCompare(String(b.full_name||''),'vi'); }).map(x=>{ const r=RS_MAP[x.rsvp_status||'not_sent']||RS_MAP.not_sent;
-      return `<button type="button" class="pl-grow" onclick="Guestbook.openRsvp('${x.id}')"><span class="pl-gside ${x.side==='groom'?'groom':'bride'}">${Util.esc(Guestbook.sideLabel(x.side))}</span><span class="pl-gname">${Util.esc(x.full_name)}</span><span class="pl-gnum">${Util.headcount(x)} người</span><span class="pill ${r[1]}">${r[0]}</span></button>`; }).join('');
+      return `<button type="button" class="pl-grow" title="${Util.esc(x.full_name)}" onclick="Guestbook.openRsvp('${x.id}')"><span class="pl-gside ${x.side==='groom'?'groom':'bride'}">${Util.esc(Guestbook.sideLabel(x.side))}</span><span class="pl-gname">${Util.esc(x.full_name)}</span><span class="pl-gnum">${Util.headcount(x)} người</span><span class="pill ${r[1]}">${r[0]}</span></button>`; }).join('');
     return `<section class="pl-col pl-col-guest">${head}<div class="pl-glist">${rows}</div></section>`;
   },
   phGuestStat(g){
@@ -3987,7 +4004,23 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
   var FIELD_BY_KEY = {};
   FIELDS.forEach(function (f) { FIELD_BY_KEY[f.k] = f; });
 
-  var sortKey = 'full_name', sortDir = 1;
+  var SORT_KEY = 'wa.gs.sort.v1';
+  var savedSort = (function () {
+    try { return JSON.parse(localStorage.getItem(SORT_KEY) || 'null') || {}; }
+    catch (e) {
+      try { return JSON.parse(sessionStorage.getItem(SORT_KEY) || 'null') || {}; }
+      catch (e2) { return {}; }
+    }
+  })();
+  var sortKey = FIELDS.some(function (f) { return f.k === savedSort.key; }) ? savedSort.key : 'full_name';
+  var sortDir = savedSort.dir === -1 ? -1 : 1;
+  function persistSort() {
+    try { localStorage.setItem(SORT_KEY, JSON.stringify({ key: sortKey, dir: sortDir })); }
+    catch (e) {
+      try { sessionStorage.setItem(SORT_KEY, JSON.stringify({ key: sortKey, dir: sortDir })); }
+      catch (e2) { /* lưu trạng thái là tùy chọn; không ảnh hưởng thao tác */ }
+    }
+  }
   var pop = null;
 
   function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
@@ -4469,6 +4502,9 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     if (sortBtn) {
       var k = sortBtn.getAttribute('data-sort');
       if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = 1; }
+      persistSort();
+      var mobileSort = document.querySelector('.gs-sortbar select');
+      if (mobileSort) mobileSort.value = sortKey;
       Guestbook.renderRows();
       ev.preventDefault();
       return;
@@ -4861,6 +4897,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       + '<button type="button" class="gs-sortbar-d" aria-label="Đổi chiều sắp xếp" title="Đổi chiều">\u21C5</button>';
     (scroller.parentNode || panel).insertBefore(bar, scroller);
     var sel = bar.querySelector('select');
+    sel.value = sortKey;
     function fire() {
       var h = head.querySelector('.gs-h[data-sort="' + sel.value + '"]');
       if (h) h.click();
@@ -5391,9 +5428,19 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
     if (typeof Guestbook !== 'undefined') {
       state.phaseId = Guestbook.phaseId || null;
       state.filterEvent = Guestbook.filterEvent || '';
+      state.search = Guestbook.search || '';
+      state.filterSide = Guestbook.filterSide || '';
+      state.filterGroup = Guestbook.filterGroup || '';
+      state.filterRsvp = Guestbook.filterRsvp || '';
     }
     write();
   }
+  document.addEventListener('input', function (ev) {
+    if (ev.target && ev.target.id === 'gSearch') {
+      state.search = ev.target.value || '';
+      write();
+    }
+  });
 
   /* 1 · Trang / tab con: ghi mỗi lần điều hướng; khi nạp lại mà URL chưa có #/… thì khôi phục */
   var origInit = Router.init;
@@ -5423,7 +5470,10 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
       Guestbook[name] = function () { var r = o.apply(this, arguments); capture(); return r; };
     });
     var oRender = Guestbook.render;
-    Guestbook.render = function () { var r = oRender.apply(this, arguments); capture(); return r; };
+    Guestbook.render = function () {
+      if (!pending && state.route && state.route !== 'guest' && state.phaseId) pending = read();
+      var r = oRender.apply(this, arguments); capture(); return r;
+    };
 
     var oList = Guestbook.paintList;
     Guestbook.paintList = function () {
@@ -5433,12 +5483,18 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
             (p.phaseId === this.LOOSE || (this.phases || []).some(function (x) { return x.id === p.phaseId; }))) {
           this.phaseId = p.phaseId;
           this.filterEvent = p.filterEvent || '';
+          this.search = p.search || '';
+          this.filterSide = p.filterSide || '';
+          this.filterGroup = p.filterGroup || '';
+          this.filterRsvp = p.filterRsvp || '';
         }
       }
       var r = oList.apply(this, arguments);
       capture();
       return r;
     };
+    var oRows = Guestbook.renderRows;
+    Guestbook.renderRows = function () { var r = oRows.apply(this, arguments); capture(); return r; };
   }
 })();
 </script>
