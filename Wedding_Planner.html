@@ -3962,13 +3962,23 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     head.innerHTML =
       '<div><div class="gs-eyebrow">Sổ khách mời · dạng bảng tính</div>' +
       '<h3>Danh sách khách mời</h3></div>' +
-      '<div class="gs-hint"><span aria-hidden="true">⇄</span> Cuộn ngang để xem đủ <b>18 cột</b> · ' +
-      'kéo mép tiêu đề để <b>đổi độ rộng</b> · bấm tiêu đề để <b>sắp xếp</b> · ' +
-      '<button type="button" class="gs-reset" data-gs-reset>Vừa khít cột</button></div>';
+      '<div class="gs-head-tools">' +
+        '<details class="gs-cols-menu"><summary><span aria-hidden="true">☷</span> Hiển thị cột <b class="gs-col-count"></b></summary>' +
+          '<div class="gs-cols-pop"><div class="gs-cols-title"><span>Chọn cột hiển thị</span>' +
+            '<button type="button" data-gs-cols-all>Hiện tất cả</button></div>' +
+            '<div class="gs-cols-list">' + FIELDS.slice(1).map(function (f) {
+              return '<label><input type="checkbox" data-gs-col="' + E(f.k) + '"' +
+                (isColumnVisible(f.k) ? ' checked' : '') + '><span>' + E(f.t.replace(' *', '')) + '</span></label>';
+            }).join('') + '</div>' +
+          '</div></details>' +
+        '<button type="button" class="gs-reset" data-gs-reset>Vừa khít cột</button>' +
+      '</div>' +
+      '<div class="gs-hint"><span aria-hidden="true">⇄</span> Cuộn ngang · kéo mép tiêu đề để <b>đổi độ rộng</b> · bấm tiêu đề để <b>sắp xếp</b></div>';
     panel.appendChild(head);
     /* chèn panel vào vị trí khối đầu tiên TRƯỚC khi di chuyển các khối vào trong */
     view.insertBefore(panel, blocks[0]);
     blocks.forEach(function (n) { panel.appendChild(n); });
+    syncColumnMenu();
   }
 
   var origPaintPhase = Guestbook.paintPhaseView;
@@ -4021,6 +4031,39 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       catch (e2) { /* lưu trạng thái là tùy chọn; không ảnh hưởng thao tác */ }
     }
   }
+  var COLUMN_KEY = 'wa.gs.columns.v1';
+  var savedColumns = (function () {
+    try {
+      var value = JSON.parse(localStorage.getItem(COLUMN_KEY) || '{}');
+      if (value && typeof value === 'object' && !Array.isArray(value)) return value;
+    } catch (e) {
+      try {
+        var fallback = JSON.parse(sessionStorage.getItem(COLUMN_KEY) || '{}');
+        if (fallback && typeof fallback === 'object' && !Array.isArray(fallback)) return fallback;
+      } catch (e2) { /* dùng cấu hình mặc định */ }
+    }
+    return {};
+  })();
+  function isColumnVisible(key) {
+    return key === 'full_name' || savedColumns[key] !== false;
+  }
+  function visibleFields() {
+    return FIELDS.filter(function (f) { return isColumnVisible(f.k); });
+  }
+  function persistColumns() {
+    try { localStorage.setItem(COLUMN_KEY, JSON.stringify(savedColumns)); }
+    catch (e) {
+      try { sessionStorage.setItem(COLUMN_KEY, JSON.stringify(savedColumns)); }
+      catch (e2) { /* lưu trạng thái là tùy chọn; không ảnh hưởng thao tác */ }
+    }
+  }
+  function syncColumnMenu() {
+    var count = document.querySelector('.gs-col-count');
+    if (count) count.textContent = (visibleFields().length - 1) + '/' + (FIELDS.length - 1);
+    document.querySelectorAll('[data-gs-col]').forEach(function (input) {
+      input.checked = isColumnVisible(input.getAttribute('data-gs-col'));
+    });
+  }
   var pop = null;
 
   function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
@@ -4057,7 +4100,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       case 'group': return [['', '— Chưa phân nhóm —']].concat(Guestbook.groups.map(function (x) { return [x.id, x.name]; }));
       case 'rep': return [['0', 'Không'], ['1', 'Đại diện hộ']];
       case 'rsvp': return Object.keys(RS_MAP).map(function (k) { return [k, RS_MAP[k][0]]; });
-      case 'pay': return Object.keys(PAY_MAP).map(function (k) { return [k, PAY_MAP[k]]; });
+      case 'pay': return [['', '— Trống —']].concat(Object.keys(PAY_MAP).map(function (k) { return [k, PAY_MAP[k]]; }));
       case 'table': return [['', '— Chưa xếp bàn —']].concat(Guestbook.tables.map(function (t) { return [t.id, t.name]; }));
     }
     return [];
@@ -4067,7 +4110,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     if (f.kind === 'group') return g.group_id || '';
     if (f.kind === 'rep') return g.is_representative ? '1' : '0';
     if (f.kind === 'rsvp') return g.rsvp_status || 'not_sent';
-    if (f.kind === 'pay') return g.gift_method || 'cash';
+    if (f.kind === 'pay') return g.gift_method || '';
     if (f.kind === 'table') { var t = tableOf(g); return t ? t.id : ''; }
     return '';
   }
@@ -4113,7 +4156,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
   }
   function rowHTML(g) {
     var sel = Guestbook.selected.has(g.id);
-    var cells = FIELDS.map(function (f, i) {
+    var cells = visibleFields().map(function (f, i) {
       if (i === 0) {
         return '<span class="gs-c gs-c-fix2"><span class="gs-idcell">' +
           '<span class="gp-av ' + (g.side === 'bride' ? 'bride' : 'groom') + '" aria-hidden="true">' + E(Util.initials(g.full_name)) + '</span>' +
@@ -4223,6 +4266,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     var host = document.getElementById('guestList');
     if (!host) return;
     var scope = GB.scopeList();
+    var fields = visibleFields();
     var l = scope.slice();
     var q = (GB.search || '').trim().toLowerCase();
     if (GB.filterEvent) l = l.filter(function (g) { return (g.event_ids || []).indexOf(GB.filterEvent) >= 0; });
@@ -4245,7 +4289,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     var head = '<div class="gs-headrow gs-grid" role="row">' +
       '<span class="gp-check gs-c gs-c-fix"><input type="checkbox" id="gpSelHead" ' +
       'aria-label="Chọn tất cả kết quả đang hiển thị" onchange="Guestbook.selectVisible(this.checked)"/></span>' +
-      FIELDS.map(function (f, i) { return headCell(f, i === 0); }).join('') +
+      fields.map(function (f, i) { return headCell(f, i === 0); }).join('') +
       '<span class="gs-c gs-act"><span class="gs-act-label">Thao tác</span></span></div>';
 
     var x = GB.phaseStats(l);
@@ -4294,7 +4338,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
       case 'group': var gr = groupOf(g); return gr ? gr.name : '— Chưa phân nhóm —';
       case 'rep': return g.is_representative ? 'Đại diện hộ' : 'Không';
       case 'rsvp': return (RS_MAP[g.rsvp_status || 'not_sent'] || RS_MAP.not_sent)[0];
-      case 'pay': return PAY_MAP[g.gift_method || 'cash'] || '';
+      case 'pay': return PAY_MAP[g.gift_method] || '— Trống —';
       case 'table': var t = tableOf(g); return t ? t.name : '— Chưa xếp bàn —';
       case 'int': case 'money': return (g[f.k] == null || g[f.k] === '') ? '0' : String(num(g[f.k], 0));
       default: return String(g[f.k] == null ? '' : g[f.k]);
@@ -4310,7 +4354,7 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     var fChip = fHead.replace(/^\S+\s+\S+\s+\S+/, '700 10.5px');
     var keys = [], minW = [], autoW = [];
 
-    FIELDS.forEach(function (f, i) {
+    visibleFields().forEach(function (f, i) {
       /* --- nội dung dữ liệu --- */
       var body = 0;
       list.forEach(function (g) {
@@ -4432,7 +4476,27 @@ body.gs-resizing,body.gs-resizing *{cursor:col-resize!important;user-select:none
     delete userW[h.getAttribute('data-rz')]; saveColW(); applyLayout();
   });
   document.addEventListener('click', function (ev) {
+    var showAll = ev.target && ev.target.closest ? ev.target.closest('[data-gs-cols-all]') : null;
+    if (showAll) {
+      savedColumns = {};
+      persistColumns();
+      syncColumnMenu();
+      Guestbook.renderRows();
+      ev.preventDefault();
+      return;
+    }
     if (ev.target && ev.target.closest && ev.target.closest('[data-gs-reset]')) { userW = {}; saveColW(); applyLayout(); }
+  });
+  document.addEventListener('change', function (ev) {
+    var input = ev.target && ev.target.closest ? ev.target.closest('[data-gs-col]') : null;
+    if (!input) return;
+    var key = input.getAttribute('data-gs-col');
+    if (!FIELDS.some(function (f) { return f.k === key; }) || key === 'full_name') return;
+    savedColumns[key] = !!input.checked;
+    persistColumns();
+    if (!input.checked && sortKey === key) { sortKey = 'full_name'; sortDir = 1; persistSort(); }
+    syncColumnMenu();
+    Guestbook.renderRows();
   });
 
   var origRenderRows = Guestbook.renderRows;
@@ -5956,6 +6020,29 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
     transition-duration:.001ms!important;
   }
   html body .spin{animation:none!important;border-color:var(--burgundy-soft);border-top-color:var(--burgundy)}
+}
+</style>
+<style id="wa-guest-column-picker">
+.gs-head-tools{display:flex;align-items:center;gap:12px;margin-left:auto;position:relative;z-index:12}
+.gs-cols-menu{position:relative}
+.gs-cols-menu>summary{list-style:none;display:flex;align-items:center;gap:7px;min-height:36px;padding:7px 11px;border:1px solid var(--line-2);border-radius:9px;background:var(--paper);color:var(--ink-2);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.gs-cols-menu>summary::-webkit-details-marker{display:none}
+.gs-cols-menu>summary:hover,.gs-cols-menu[open]>summary{border-color:var(--burgundy);color:var(--burgundy);background:var(--burgundy-soft)}
+.gs-col-count{padding:2px 6px;border-radius:999px;background:var(--ivory-2);color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+.gs-cols-menu[open]{z-index:30}
+.gs-cols-pop{position:absolute;top:calc(100% + 8px);right:0;width:min(340px,calc(100vw - 32px));max-height:min(72vh,440px);overflow:auto;padding:13px;background:var(--paper);border:1px solid var(--line-2);border-radius:13px;box-shadow:var(--shadow-lg);color:var(--ink);z-index:40}
+.gs-cols-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 10px;margin-bottom:8px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700}
+.gs-cols-title button{padding:5px 8px;border-radius:7px;background:var(--burgundy-soft);color:var(--burgundy);font-size:11px;font-weight:600}
+.gs-cols-title button:hover{background:var(--burgundy);color:white}
+.gs-cols-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+.gs-cols-list label{display:flex;align-items:flex-start;gap:7px;min-width:0;padding:7px 5px;border-radius:7px;font-size:11.5px;line-height:1.35;color:var(--ink-2);cursor:pointer}
+.gs-cols-list label:hover{background:var(--surface-2)}
+.gs-cols-list input{flex:0 0 auto;width:15px;height:15px;margin:0;accent-color:var(--burgundy);cursor:pointer}
+.gs-cols-list span{overflow-wrap:anywhere}
+@media(max-width:820px){
+  .gs-head{align-items:flex-start}
+  .gs-head-tools{width:100%;justify-content:flex-end;margin-left:0}
+  .gs-cols-pop{max-height:min(62vh,400px)}
 }
 </style>
 </body>
