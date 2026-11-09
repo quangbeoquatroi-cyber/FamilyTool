@@ -3091,6 +3091,88 @@ html.popup-mode #popup-splash{display:flex}
   .ag[data-state="success"] .ag-ok path{animation:none;stroke-dashoffset:0}
 }
 </style>
+<style id="ui-polish-v3">
+/* ══ UI POLISH v3 — chỉ lớp trình bày, không đổi logic/ID/hàm ══ */
+:root{
+  --muted:#93bba8; --dim:#78a08c;
+  --r:18px; --r2:12px;
+  --ring:0 0 0 3px rgba(0,230,118,.30);
+  --sh1:0 1px 0 rgba(255,255,255,.05) inset,0 14px 34px -16px rgba(0,0,0,.7);
+  --sh2:0 1px 0 rgba(255,255,255,.08) inset,0 26px 60px -20px rgba(0,0,0,.8);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html body{font-variant-numeric:tabular-nums lining-nums;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:rgba(0,230,118,.28);color:#fff}
+h1,h2,h3,.topbar-title,.tq-page-title,.modal-title{text-wrap:balance;letter-spacing:-.01em}
+.tq-page-title{font-size:clamp(22px,2.4vw,28px);font-weight:800}
+
+/* Bề mặt thẻ: viền sáng nhẹ + chiều sâu nhất quán */
+:is(.month-card,.tq-card,.quy-hero,.quy-stat,.sv-wallet,.sv-hero,.tx-card,.dtv-card){
+  border-color:rgba(255,255,255,.07);box-shadow:var(--sh1);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .25s}
+@media (hover:hover){
+  :is(.month-card,.sv-tx,.tx-card):hover{transform:translateY(-2px);border-color:rgba(0,230,118,.28);box-shadow:var(--sh2)}
+}
+
+/* Nút: bước khi hover, nhấn khi click */
+:is(.btn-primary,.btn-cancel,.mc-btn,.quy-btn,.btn-refresh,.year-btn,.dtv-btn-solid,.dtv-btn-outline,.ag-btn){
+  transition:transform .2s var(--ease),filter .2s,box-shadow .25s,background .2s}
+.btn-primary{box-shadow:0 8px 22px -10px rgba(0,230,118,.55),0 1px 0 rgba(255,255,255,.25) inset}
+@media (hover:hover){.btn-primary:hover{transform:translateY(-1px);filter:brightness(1.06)}}
+:is(button,.btn-primary,.btn-cancel,.mc-btn,.year-btn):active{transform:translateY(0) scale(.97)!important}
+
+/* Thanh trên + điều hướng */
+.topbar{backdrop-filter:blur(14px) saturate(130%);-webkit-backdrop-filter:blur(14px) saturate(130%)}
+.topbar-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-right,.year-nav{gap:8px}
+:is(.year-btn,.btn-refresh,.topbar button:not(.menu-toggle)){min-width:40px;min-height:40px;border-radius:12px}
+.nav-item{border-radius:12px;transition:background .2s,transform .25s var(--ease),color .2s}
+@media (hover:hover){.nav-item:hover{transform:translateX(2px)}}
+.nav-item.active,.nav-item.active-anh,.nav-item.active-em{box-shadow:0 8px 24px -14px currentColor}
+
+/* Biểu đồ + số tiền */
+[class*="tq-chart"] [class*="bar"]{border-radius:5px 5px 0 0;transition:filter .2s,transform .3s var(--ease)}
+[class*="tq-chart"] [class*="bar"]:hover{filter:brightness(1.18)}
+[class*="amount"],[class*="amt"],.quy-stat-val,.sv-amount-input{font-feature-settings:"tnum" 1,"lnum" 1}
+
+/* Giao dịch: vùng chạm lớn hơn nhưng hình dạng giữ nguyên */
+.tx-act-btn{position:relative}
+.tx-act-btn::after,.item-del::after{content:'';position:absolute;inset:-8px}
+.tx-act-btn.del{color:#ff8a80;opacity:.8}
+.tx-act-btn.del:hover{opacity:1}
+.modal-close{width:40px!important;height:40px!important;border-radius:12px!important}
+.item-del{position:relative;min-width:36px;min-height:36px}
+
+/* Bộ lọc: dễ bấm, ô tìm không bị cắt, gợi ý cuộn ngang */
+.qf-select{min-height:38px!important;font-size:13px!important;max-width:none!important;border-radius:10px!important;padding-right:24px!important}
+.qf-search{min-width:150px!important;min-height:38px!important;border-radius:10px!important}
+@media (max-width:700px){
+  .qf-select,.qf-search{font-size:16px!important}
+  .modal{border-radius:24px 24px 0 0!important}
+}
+[class*="qf-row"],[class*="quy-filter"]{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+
+/* Cửa sổ: nền mờ, bo lớn, bóng sâu */
+.modal-overlay{backdrop-filter:blur(8px) saturate(120%);-webkit-backdrop-filter:blur(8px) saturate(120%);background:rgba(3,10,7,.64)}
+.modal{border:1px solid rgba(255,255,255,.08);box-shadow:var(--sh2)}
+@media (min-width:701px){.modal{border-radius:24px}}
+
+/* Form + focus: luôn thấy rõ */
+:is(.field-input,.modal input,.modal select,.modal textarea,.qf-search,.qf-select,.sv-search):focus-visible{
+  outline:none!important;border-color:var(--anh)!important;box-shadow:var(--ring)!important}
+:is(button,a,[role="button"],[tabindex="0"]):focus-visible{outline:2px solid #00e676!important;outline-offset:2px!important}
+.modal:focus{outline:none}
+input::placeholder,textarea::placeholder{color:var(--dim);opacity:1}
+
+/* Thông báo + thanh cuộn */
+.toast{border-radius:14px;backdrop-filter:blur(12px);box-shadow:var(--sh2)}
+::-webkit-scrollbar-thumb{background:#2f5242}::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+  :is(.month-card,.sv-tx,.tx-card,.nav-item,.btn-primary):hover{transform:none}
+}
+</style>
 </head>
 <body>
 <div id="popup-splash" class="ag" data-state="loading" data-dir="back" aria-live="polite"></div>
@@ -5874,6 +5956,49 @@ function svSetSearch(value) { SV.fQ = value; clearTimeout(_svSearchTimer); _svSe
     if(!open.length) return;
     open[open.length - 1].classList.remove('open');
   }, false);
+})();
+</script>
+
+<script id="a11y-polish-v3">
+/* Chỉ BỔ SUNG thuộc tính truy cập + quản lý focus; không đổi hành vi nghiệp vụ. Mọi lỗi đều bị nuốt để không ảnh hưởng app. */
+(function(){
+  var NAMES={'✕':'Đóng','⚙️':'Cài đặt quỹ','🔍':'Xem chi tiết','✏️':'Sửa','🗑️':'Xoá','‹':'Năm trước','›':'Năm sau','👁':'Ẩn/hiện số tiền','🔄':'Làm mới','↻':'Làm mới'};
+  var uid=0,last=null,sched=false;
+  function name(b){var t=(b.getAttribute('title')||'').trim();if(t)return t;var x=(b.textContent||'').trim();return NAMES[x]||NAMES[x.replace(/\uFE0F/g,'')]||'';}
+  function run(){sched=false;try{
+    document.querySelectorAll('button:not([aria-label])').forEach(function(b){
+      var txt=(b.textContent||'').replace(/[^\p{L}\p{N}]/gu,'');if(!txt){var n=name(b);if(n)b.setAttribute('aria-label',n);}});
+    document.querySelectorAll('[onclick]:not(button):not(.modal-overlay)').forEach(function(e){
+      if(e.hasAttribute('role')||e.querySelector('button,input,select,textarea,a,[onclick]'))return;
+      e.setAttribute('role','button');if(!e.hasAttribute('tabindex'))e.setAttribute('tabindex','0');});
+    document.querySelectorAll('.modal').forEach(function(m){
+      if(m.getAttribute('role'))return;m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('tabindex','-1');
+      var t=m.querySelector('.modal-title');if(t){if(!t.id)t.id='mt-'+(++uid);m.setAttribute('aria-labelledby',t.id);}});
+    document.querySelectorAll('label:not([for])').forEach(function(l){
+      if(l.querySelector('input,select,textarea'))return;
+      var c=l.nextElementSibling&&l.nextElementSibling.matches('input,select,textarea')?l.nextElementSibling:(l.parentElement&&l.parentElement.querySelector('input,select,textarea'));
+      if(c){if(!c.id)c.id='f-'+(++uid);l.setAttribute('for',c.id);}});
+  }catch(e){}}
+  function sch(){if(!sched){sched=true;requestAnimationFrame(run);}}
+  document.addEventListener('keydown',function(e){try{
+    var t=e.target;
+    if((e.key==='Enter'||e.key===' ')&&t&&t.getAttribute&&t.getAttribute('role')==='button'&&t.tagName!=='BUTTON'){e.preventDefault();t.click();return;}
+    if(e.key==='Tab'){var o=document.querySelectorAll('.modal-overlay.open');if(!o.length)return;
+      var f=[].filter.call(o[o.length-1].querySelectorAll('button,input,select,textarea,a[href],[tabindex="0"]'),function(x){return !x.disabled&&x.offsetParent!==null;});
+      if(!f.length)return;var a=f[0],z=f[f.length-1];
+      if(e.shiftKey&&(document.activeElement===a||!o[o.length-1].contains(document.activeElement))){e.preventDefault();z.focus();}
+      else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus();}}
+  }catch(x){}},true);
+  function watch(){try{
+    new MutationObserver(function(ms){ms.forEach(function(m){
+      if(m.type==='attributes'&&m.target.classList&&m.target.classList.contains('modal-overlay')){
+        var open=m.target.classList.contains('open'),was=(m.oldValue||'').indexOf('open')>-1;
+        if(open&&!was){last=document.activeElement;var d=m.target.querySelector('.modal');if(d)try{d.focus({preventScroll:true});}catch(e){}}
+        if(!open&&was&&last&&document.contains(last)){try{last.focus({preventScroll:true});}catch(e){}last=null;}}});
+    }).observe(document.body,{attributes:true,attributeFilter:['class'],attributeOldValue:true,subtree:true});
+    new MutationObserver(sch).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}run();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();
 })();
 </script>
 
